@@ -1,459 +1,543 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sveta Colours — Original Paintings</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400&display=swap" rel="stylesheet">
-  <style>
-    /* ========================================================
-       SVETA COLOURS — STYLES
-    ======================================================== */
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sveta Colours — Original Paintings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ========================================================
+   SVETA COLOURS — STYLES
+   ======================================================== */
 
-    /* --- Reset & Base --- */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg: #FAF7F2;
-      --bg-warm: #F5F0E8;
-      --text: #3A3632;
-      --text-light: #7A746C;
-      --accent: #C4946A;
-      --accent-hover: #A87B54;
-      --sold: #9E8E82;
-      --white: #FFFFFF;
-      --shadow: 0 2px 20px rgba(58, 54, 50, 0.08);
-      --shadow-hover: 0 8px 36px rgba(58, 54, 50, 0.16);
-      --radius: 4px;
-      --max-w: 1200px;
-      --transition: 0.3s ease;
-      --font-display: 'Cormorant Garamond', Georgia, serif;
-      --font-body: 'Jost', -apple-system, sans-serif;
-    }
+:root {
+  --bg: #FAF7F2;
+  --bg-warm: #F5F0E8;
+  --text: #3A3632;
+  --text-light: #7A746C;
+  --accent: #C4946A;
+  --accent-hover: #A87B54;
+  --sold: #9E8E82;
+  --white: #FFFFFF;
+  --shadow: 0 2px 20px rgba(58, 54, 50, 0.08);
+  --shadow-hover: 0 8px 36px rgba(58, 54, 50, 0.16);
+  --radius: 4px;
+  --max-w: 1200px;
+  --transition: 0.3s ease;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Jost', -apple-system, sans-serif;
+}
 
-    html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; }
 
-    body {
-      font-family: var(--font-body);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
 
-    img { display: block; max-width: 100%; }
-    a { color: inherit; text-decoration: none; }
-    button { cursor: pointer; font-family: inherit; }
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
 
-    /* --- Typography --- */
-    h1 {
-      font-family: var(--font-display);
-      font-size: clamp(2.8rem, 6vw, 5rem);
-      font-weight: 300;
-      letter-spacing: 0.06em;
-      line-height: 1.1;
-    }
-    h2 {
-      font-family: var(--font-display);
-      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-      font-weight: 300;
-      letter-spacing: 0.03em;
-    }
-    h3 {
-      font-family: var(--font-display);
-      font-size: 1.5rem;
-      font-weight: 400;
-    }
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+}
+h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 300;
+  letter-spacing: 0.03em;
+}
+h3 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+}
 
-    /* --- Navigation --- */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      background: rgba(250, 247, 242, 0.94);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(58, 54, 50, 0.07);
-    }
-    nav .nav-inner {
-      max-width: var(--max-w);
-      margin: 0 auto;
-      padding: 1.1rem 2.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    nav .logo {
-      font-family: var(--font-display);
-      font-size: 1.6rem;
-      font-weight: 400;
-      letter-spacing: 0.12em;
-      color: var(--text);
-    }
-    nav .nav-links {
-      display: flex;
-      gap: 2.5rem;
-      list-style: none;
-    }
-    nav .nav-links a {
-      font-family: var(--font-body);
-      font-size: 0.78rem;
-      letter-spacing: 0.1em;
-      color: var(--text-light);
-      transition: color var(--transition);
-      font-weight: 300;
-    }
-    nav .nav-links a:hover,
-    nav .nav-links a.active { color: var(--text); }
+/* --- Navigation --- */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(250, 247, 242, 0.94);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(58, 54, 50, 0.07);
+}
 
-    .hamburger {
-      display: none;
-      background: none;
-      border: none;
-      width: 28px;
-      height: 20px;
-      position: relative;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .hamburger span {
-      display: block;
-      width: 100%;
-      height: 1px;
-      background: var(--text);
-      transition: var(--transition);
-    }
+nav .nav-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 1.1rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-    /* --- Buttons --- */
-    .btn {
-      display: inline-block;
-      padding: 0.75rem 2rem;
-      border: none;
-      border-radius: 0;
-      font-family: var(--font-body);
-      font-size: 0.78rem;
-      letter-spacing: 0.05em;
-      font-weight: 300;
-      transition: all var(--transition);
-    }
-    .btn-primary { background: var(--accent); color: var(--white); }
-    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
-    .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-    .btn-outline:hover { background: var(--accent); color: var(--white); }
-    .btn-ghost {
-      background: transparent;
-      color: var(--accent);
-      padding: 0.5rem 0;
-      border-bottom: 1px solid rgba(196, 148, 106, 0.4);
-      border-radius: 0;
-      font-size: 0.82rem;
-      letter-spacing: 0.05em;
-    }
-    .btn-ghost:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
+nav .logo {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  font-style: italic;
+}
 
-    /* --- Sections --- */
-    section { padding: 5rem 2.5rem; }
-    .section-inner { max-width: var(--max-w); margin: 0 auto; }
-    .section-title { text-align: center; margin-bottom: 3.5rem; }
-    .section-title p {
-      margin-top: 0.8rem;
-      color: var(--text-light);
-      font-size: 0.92rem;
-      letter-spacing: 0.04em;
-    }
+nav .nav-links { display: flex; gap: 2.5rem; list-style: none; }
 
-    /* --- Hero --- */
-    .hero {
-      min-height: 90vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding-top: 5rem;
-      position: relative;
-    }
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 50% 60%, rgba(196,148,106,0.07) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .hero h1 { margin-bottom: 1rem; }
-    .hero .subtitle {
-      font-family: var(--font-display);
-      font-size: clamp(1.1rem, 2vw, 1.4rem);
-      color: var(--text-light);
-      font-weight: 300;
-      margin-bottom: 3rem;
-      letter-spacing: 0.02em;
-    }
-    .hero .hero-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+nav .nav-links a {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  transition: color var(--transition);
+  font-weight: 300;
+}
 
-    /* --- Gallery Grid --- */
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 2rem;
-    }
-    .painting-card {
-      background: var(--white);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      transition: all var(--transition);
-      cursor: pointer;
-    }
-    .painting-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-4px); }
-    .painting-card .card-image {
-      height: 260px;
-      overflow: hidden;
-      background: var(--bg-warm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .painting-card .card-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      transition: transform 0.5s ease;
-    }
-    .painting-card:hover .card-image img { transform: scale(1.03); }
-    .painting-card .card-info {
-      padding: 1rem 1.2rem 1.2rem;
-      border-top: 1px solid rgba(58,54,50,0.05);
-    }
-    .painting-card .card-title {
-      font-family: var(--font-display);
-      font-size: 1.05rem;
-      font-weight: 400;
-      color: var(--text);
-    }
+nav .nav-links a:hover,
+nav .nav-links a.active { color: var(--text); }
 
-    /* --- Category Split --- */
-    .categories { background: var(--bg-warm); }
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 2rem;
-    }
-    .category-card {
-      text-align: center;
-      padding: 3.5rem 2rem;
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      transition: box-shadow var(--transition);
-    }
-    .category-card:hover { box-shadow: var(--shadow-hover); }
-    .category-card h3 { font-size: 1.8rem; font-weight: 300; margin-bottom: 0.6rem; }
-    .category-card p { color: var(--text-light); margin-bottom: 2rem; font-size: 0.9rem; }
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  width: 28px;
+  height: 20px;
+  position: relative;
+  flex-direction: column;
+  justify-content: space-between;
+}
 
-    /* --- About Preview --- */
-    .about-preview { max-width: 640px; margin: 0 auto; text-align: center; }
-    .about-preview p {
-      color: var(--text-light);
-      font-size: 1rem;
-      line-height: 1.9;
-      margin-bottom: 1rem;
-      font-weight: 300;
-    }
-    .about-preview .btn-ghost { margin-top: 1.5rem; }
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: var(--text);
+  transition: var(--transition);
+}
 
-    /* --- Contact --- */
-    .contact { background: var(--bg-warm); text-align: center; }
-    .contact p {
-      color: var(--text-light);
-      margin-bottom: 1.5rem;
-      font-size: 0.95rem;
-      font-weight: 300;
-    }
-    .contact .email-link {
-      font-family: var(--font-display);
-      font-size: 1.3rem;
-      color: var(--accent);
-      display: inline-block;
-      margin-top: 0.5rem;
-    }
-    .contact .email-link:hover { color: var(--accent-hover); }
+/* --- Buttons --- */
+.btn {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 0;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 300;
+  transition: all var(--transition);
+}
 
-    /* --- Collection View --- */
-    .collection-header { text-align: center; padding: 8rem 2.5rem 3rem; }
-    .collection-header h1 { margin-bottom: 0.6rem; }
-    .collection-header p {
-      color: var(--text-light);
-      font-family: var(--font-display);
-      font-size: 1.2rem;
-    }
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--text-light);
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
-      margin-bottom: 2.5rem;
-      transition: color var(--transition);
-    }
-    .back-link:hover { color: var(--text); }
+.btn-primary { background: var(--accent); color: var(--white); }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
-    /* --- Modal --- */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      background: rgba(40, 36, 32, 0.6);
-      backdrop-filter: blur(6px);
-      overflow-y: auto;
-      padding: 2rem;
-    }
-    .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
-    .modal {
-      background: var(--white);
-      border-radius: var(--radius);
-      max-width: 900px;
-      width: 100%;
-      margin: 3rem auto;
-      overflow: hidden;
-      box-shadow: 0 16px 60px rgba(0,0,0,0.2);
-      animation: modalIn 0.35s ease;
-    }
-    @keyframes modalIn {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .modal-close {
-      position: absolute;
-      top: 1.2rem; right: 1.4rem;
-      background: none; border: none;
-      font-size: 1.6rem;
-      color: var(--text-light);
-      z-index: 10;
-      line-height: 1;
-    }
-    .modal-close:hover { color: var(--text); }
-    .modal-content { position: relative; display: grid; grid-template-columns: 1fr 1fr; }
-    .modal-image {
-      background: var(--bg-warm);
-      min-height: 400px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-image img { width: 100%; height: 100%; object-fit: contain; }
-    .modal-details { padding: 2.8rem; display: flex; flex-direction: column; }
-    .modal-details h2 { font-size: 1.9rem; margin-bottom: 1rem; line-height: 1.2; }
-    .modal-details .description {
-      color: var(--text-light);
-      margin-bottom: 2rem;
-      line-height: 1.8;
-      font-size: 0.95rem;
-      font-weight: 300;
-    }
-    .modal-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      font-size: 0.88rem;
-    }
-    .modal-meta span { display: flex; gap: 0.8rem; }
-    .modal-meta .label {
-      color: var(--text-light);
-      min-width: 70px;
-      font-size: 0.75rem;
-      letter-spacing: 0.06em;
-      padding-top: 0.1rem;
-    }
-    .modal-status {
-      display: inline-block;
-      padding: 0.3rem 0.9rem;
-      border-radius: 2px;
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-      margin-bottom: 1.8rem;
-      width: fit-content;
-      font-weight: 400;
-    }
-    .modal-status.available { background: rgba(196, 148, 106, 0.1); color: var(--accent); }
-    .modal-status.sold { background: rgba(158, 142, 130, 0.12); color: var(--sold); }
-    .modal-details .btn { margin-top: auto; text-align: center; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.btn-outline:hover { background: var(--accent); color: var(--white); }
 
-    /* --- About Page --- */
-    .about-full { max-width: 640px; margin: 0 auto; }
-    .about-full p {
-      font-size: 1rem;
-      line-height: 1.9;
-      color: var(--text-light);
-      margin-bottom: 1.4rem;
-      font-weight: 300;
-    }
+.btn-ghost {
+  background: transparent;
+  color: var(--accent);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(196, 148, 106, 0.4);
+  border-radius: 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.btn-ghost:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
 
-    /* --- Filter Tabs --- */
-    .filter-tabs { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 3rem; flex-wrap: wrap; }
-    .filter-tab {
-      padding: 0.45rem 1.3rem;
-      border: 1px solid rgba(58, 54, 50, 0.15);
-      border-radius: 0;
-      background: transparent;
-      font-family: var(--font-body);
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-      color: var(--text-light);
-      transition: all var(--transition);
-    }
-    .filter-tab:hover { border-color: var(--accent); color: var(--accent); }
-    .filter-tab.active { background: var(--accent); color: var(--white); border-color: var(--accent); }
+/* --- Sections --- */
+section { padding: 5rem 2.5rem; }
 
-    /* --- Footer --- */
-    footer {
-      text-align: center;
-      padding: 2.5rem;
-      color: var(--text-light);
-      font-size: 0.75rem;
-      letter-spacing: 0.06em;
-      border-top: 1px solid rgba(58, 54, 50, 0.07);
-    }
+.section-inner { max-width: var(--max-w); margin: 0 auto; }
 
-    /* --- Responsive --- */
-    @media (max-width: 768px) {
-      .hamburger { display: flex; }
-      nav .nav-links {
-        display: none;
-        position: absolute;
-        top: 100%; left: 0; right: 0;
-        background: rgba(250, 247, 242, 0.98);
-        backdrop-filter: blur(16px);
-        flex-direction: column;
-        padding: 1.5rem 2.5rem;
-        gap: 1.4rem;
-        border-bottom: 1px solid rgba(58, 54, 50, 0.07);
-      }
-      nav .nav-links.open { display: flex; }
-      .modal-content { grid-template-columns: 1fr; }
-      .modal-image { min-height: 280px; }
-      section { padding: 3.5rem 1.5rem; }
-      .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
-    }
-    @media (max-width: 480px) {
-      .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-      .painting-card .card-image { height: 180px; }
-      .painting-card .card-info { padding: 0.8rem 1rem; }
-      .category-grid { grid-template-columns: 1fr; }
-    }
+.section-title { text-align: center; margin-bottom: 3.5rem; }
 
-    /* --- Scroll reveal --- */
-    .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-  </style>
+.section-title p {
+  margin-top: 0.8rem;
+  color: var(--text-light);
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+}
+
+/* ========================================================
+   HERO — painting background with gradient overlay
+   ======================================================== */
+.hero {
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The painting background — Google Drive direct URL */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('https://lh3.googleusercontent.com/d/1HBTm8Jb_GnUuzF3_A0i--YLeiVcb75ip');
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+
+/* Left/right fade — painting on edges, transparent center */
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(250, 247, 242, 0.72) 0%,
+      rgba(250, 247, 242, 0.0) 25%,
+      rgba(250, 247, 242, 0.0) 75%,
+      rgba(250, 247, 242, 0.72) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(250, 247, 242, 0.78) 0%,
+      rgba(250, 247, 242, 0.18) 28%,
+      rgba(250, 247, 242, 0.0) 45%,
+      rgba(250, 247, 242, 0.0) 55%,
+      rgba(250, 247, 242, 0.18) 72%,
+      rgba(250, 247, 242, 0.78) 100%
+    );
+}
+
+/* Soft center veil for text legibility */
+.hero-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 55% 65% at 50% 50%,
+    rgba(250, 247, 242, 0.55) 0%,
+    rgba(250, 247, 242, 0.0) 100%
+  );
+  z-index: 1;
+}
+
+/* Hero content above overlays */
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.hero h1 { margin-bottom: 1rem; }
+
+.hero .subtitle {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: var(--text-light);
+  font-weight: 300;
+  font-style: italic;
+  margin-bottom: 3rem;
+  letter-spacing: 0.02em;
+}
+
+.hero .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* --- Gallery Grid --- */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.painting-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.painting-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+
+.painting-card .card-image {
+  height: 260px;
+  overflow: hidden;
+  background: var(--bg-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.painting-card .card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.5s ease;
+}
+
+.painting-card:hover .card-image img { transform: scale(1.03); }
+
+.painting-card .card-info {
+  padding: 1rem 1.2rem 1.2rem;
+  border-top: 1px solid rgba(58,54,50,0.05);
+}
+
+.painting-card .card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 400;
+  margin-bottom: 0.2rem;
+  color: var(--text);
+}
+
+.painting-card .card-price {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--text-light);
+  font-weight: 300;
+}
+
+.painting-card .card-price.sold {
+  color: var(--sold);
+  font-style: italic;
+}
+
+/* --- Category Split --- */
+.categories { background: var(--bg-warm); }
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.category-card {
+  text-align: center;
+  padding: 3.5rem 2rem;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: box-shadow var(--transition);
+}
+
+.category-card:hover { box-shadow: var(--shadow-hover); }
+.category-card h3 { font-size: 1.8rem; font-weight: 300; margin-bottom: 0.6rem; }
+.category-card p { color: var(--text-light); margin-bottom: 2rem; font-size: 0.9rem; }
+
+/* --- About Preview --- */
+.about-preview { max-width: 640px; margin: 0 auto; text-align: center; }
+
+.about-preview p {
+  color: var(--text-light);
+  font-size: 1rem;
+  line-height: 1.9;
+  margin-bottom: 1rem;
+  font-weight: 300;
+}
+
+.about-preview .btn-ghost { margin-top: 1.5rem; }
+
+/* --- Contact --- */
+.contact { background: var(--bg-warm); text-align: center; }
+
+.contact p { color: var(--text-light); margin-bottom: 1.5rem; font-size: 0.95rem; font-weight: 300; }
+
+.contact .email-link {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--accent);
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.contact .email-link:hover { color: var(--accent-hover); }
+
+/* --- Collection View --- */
+.collection-header { text-align: center; padding: 8rem 2.5rem 3rem; }
+.collection-header h1 { margin-bottom: 0.6rem; }
+.collection-header p {
+  color: var(--text-light);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-style: italic;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-light);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 2.5rem;
+  transition: color var(--transition);
+}
+.back-link:hover { color: var(--text); }
+
+/* --- Modal --- */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(40, 36, 32, 0.6);
+  backdrop-filter: blur(6px);
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+
+.modal {
+  background: var(--white);
+  border-radius: var(--radius);
+  max-width: 900px;
+  width: 100%;
+  margin: 3rem auto;
+  overflow: hidden;
+  box-shadow: 0 16px 60px rgba(0,0,0,0.2);
+  animation: modalIn 0.35s ease;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.2rem; right: 1.4rem;
+  background: none; border: none;
+  font-size: 1.6rem;
+  color: var(--text-light);
+  z-index: 10;
+  line-height: 1;
+}
+.modal-close:hover { color: var(--text); }
+
+.modal-content {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.modal-image {
+  background: var(--bg-warm);
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-image img { width: 100%; height: 100%; object-fit: contain; }
+
+.modal-details { padding: 2.8rem; display: flex; flex-direction: column; }
+.modal-details h2 { font-size: 1.9rem; margin-bottom: 1rem; line-height: 1.2; }
+
+.modal-details .description {
+  color: var(--text-light);
+  margin-bottom: 2rem;
+  line-height: 1.8;
+  font-size: 0.95rem;
+  font-weight: 300;
+}
+
+.modal-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.88rem; }
+.modal-meta span { display: flex; gap: 0.8rem; }
+.modal-meta .label {
+  color: var(--text-light);
+  min-width: 70px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-top: 0.1rem;
+}
+
+.modal-status {
+  display: inline-block;
+  padding: 0.3rem 0.9rem;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1.8rem;
+  width: fit-content;
+  font-weight: 400;
+}
+
+.modal-status.available { background: rgba(196, 148, 106, 0.1); color: var(--accent); }
+.modal-status.sold { background: rgba(158, 142, 130, 0.12); color: var(--sold); }
+.modal-details .btn { margin-top: auto; text-align: center; }
+
+/* --- About Page --- */
+.about-full { max-width: 640px; margin: 0 auto; }
+.about-full p { font-size: 1rem; line-height: 1.9; color: var(--text-light); margin-bottom: 1.4rem; font-weight: 300; }
+
+/* --- Footer --- */
+footer {
+  text-align: center;
+  padding: 2.5rem;
+  color: var(--text-light);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  border-top: 1px solid rgba(58, 54, 50, 0.07);
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+  nav .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: rgba(250, 247, 242, 0.98);
+    backdrop-filter: blur(16px);
+    flex-direction: column;
+    padding: 1.5rem 2.5rem;
+    gap: 1.4rem;
+    border-bottom: 1px solid rgba(58, 54, 50, 0.07);
+  }
+  nav .nav-links.open { display: flex; }
+  .modal-content { grid-template-columns: 1fr; }
+  .modal-image { min-height: 280px; }
+  section { padding: 3.5rem 1.5rem; }
+  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
+}
+
+@media (max-width: 480px) {
+  .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .painting-card .card-image { height: 180px; }
+  .painting-card .card-info { padding: 0.8rem 1rem; }
+  .category-grid { grid-template-columns: 1fr; }
+}
+
+/* --- Scroll reveal --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
 </head>
 <body>
 
@@ -486,290 +570,305 @@
 </footer>
 
 <script>
-  let PAINTINGS = [
-    {
-      id: 1,
-      title: "Holding On in Winter",
-      medium: "acrylic",
-      price: 500,
-      sold: false,
-      size: "16 x 20 in",
-      image: "",
-      description: "A family stands as a point of warmth and color against towering high-rises and the cold air.",
-      longDescription: "\"Holding On in Winter\" is about contrast and harmony.",
-      featured: true
+let PAINTINGS = [
+  {
+    id: 1,
+    title: "Holding On in Winter",
+    medium: "acrylic",
+    price: 500,
+    sold: false,
+    size: "16 x 20 in",
+    image: "",
+    description: "A family stands as a point of warmth and color against towering high-rises and the cold air.",
+    longDescription: "\"Holding On in Winter\" is about contrast and harmony.",
+    featured: true
+  }
+];
+
+const CONTACT_EMAIL = "sveta.colours@gmail.com";
+const CURRENCY = "$";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv";
+
+function parseCSV(text) {
+  const rows = [];
+  let current = '', inQuotes = false, row = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"' && text[i+1] === '"') { current += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { current += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { row.push(current.trim()); current = ''; }
+      else if (ch === '\n' || (ch === '\r' && text[i+1] === '\n')) {
+        row.push(current.trim());
+        if (row.some(c => c !== '')) rows.push(row);
+        row = []; current = '';
+        if (ch === '\r') i++;
+      } else { current += ch; }
     }
-  ];
-
-  const CONTACT_EMAIL = "sveta.colours@gmail.com";
-  const CURRENCY = "$";
-  const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv";
-
-  function parseCSV(text) {
-    const rows = [];
-    let current = '', inQuotes = false, row = [];
-    for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
-      if (inQuotes) {
-        if (ch === '"' && text[i+1] === '"') { current += '"'; i++; }
-        else if (ch === '"') { inQuotes = false; }
-        else { current += ch; }
-      } else {
-        if (ch === '"') { inQuotes = true; }
-        else if (ch === ',') { row.push(current.trim()); current = ''; }
-        else if (ch === '\n' || (ch === '\r' && text[i+1] === '\n')) {
-          row.push(current.trim());
-          if (row.some(c => c !== '')) rows.push(row);
-          row = []; current = '';
-          if (ch === '\r') i++;
-        } else { current += ch; }
-      }
-    }
-    row.push(current.trim());
-    if (row.some(c => c !== '')) rows.push(row);
-    return rows;
   }
+  row.push(current.trim());
+  if (row.some(c => c !== '')) rows.push(row);
+  return rows;
+}
 
-  function driveImageURL(raw) {
-    if (!raw) return '';
-    let match = raw.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (!match) match = raw.match(/id=([a-zA-Z0-9_-]+)/);
-    if (!match) match = raw.match(/^([a-zA-Z0-9_-]{20,})$/);
-    if (match) return `https://lh3.googleusercontent.com/d/${match[1]}`;
-    if (raw.startsWith('http')) return raw;
-    return '';
-  }
+function driveImageURL(raw) {
+  if (!raw) return '';
+  let match = raw.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) match = raw.match(/id=([a-zA-Z0-9_-]+)/);
+  if (!match) match = raw.match(/^([a-zA-Z0-9_-]{20,})$/);
+  if (match) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+  if (raw.startsWith('http')) return raw;
+  return '';
+}
 
-  function sheetRowToPainting(row, headers, index) {
-    const get = (name) => {
-      const i = headers.findIndex(h => h.toLowerCase().replace(/[^a-z]/g, '') === name);
-      return i >= 0 ? (row[i] || '') : '';
-    };
-    const priceStr = get('price');
-    const soldStr = get('sold').toLowerCase();
-    const featuredStr = get('featured').toLowerCase();
-    return {
-      id: index + 1,
-      title: get('title'),
-      medium: get('medium').toLowerCase(),
-      price: priceStr ? parseFloat(priceStr.replace(/[^0-9.]/g, '')) : null,
-      sold: soldStr === 'yes' || soldStr === 'true' || soldStr === '1' || soldStr === 'sold',
-      size: get('size'),
-      image: driveImageURL(get('image')),
-      description: get('description'),
-      longDescription: get('longdescription'),
-      featured: featuredStr === '' || featuredStr === 'yes' || featuredStr === 'true' || featuredStr === '1'
-    };
-  }
+function sheetRowToPainting(row, headers, index) {
+  const get = (name) => {
+    const i = headers.findIndex(h => h.toLowerCase().replace(/[^a-z]/g, '') === name);
+    return i >= 0 ? (row[i] || '') : '';
+  };
+  const priceStr = get('price');
+  const soldStr = get('sold').toLowerCase();
+  const featuredStr = get('featured').toLowerCase();
+  return {
+    id: index + 1,
+    title: get('title'),
+    medium: get('medium').toLowerCase(),
+    price: priceStr ? parseFloat(priceStr.replace(/[^0-9.]/g, '')) : null,
+    sold: soldStr === 'yes' || soldStr === 'true' || soldStr === '1' || soldStr === 'sold',
+    size: get('size'),
+    image: driveImageURL(get('image')),
+    description: get('description'),
+    longDescription: get('longdescription'),
+    featured: featuredStr === '' || featuredStr === 'yes' || featuredStr === 'true' || featuredStr === '1'
+  };
+}
 
-  async function loadFromSheet() {
-    if (!SHEET_CSV_URL) return;
-    try {
-      document.getElementById('app').innerHTML = `
-        <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
-          <p style="color:var(--text-light);font-size:0.85rem;letter-spacing:0.05em;">Loading…</p>
-        </div>`;
-      const response = await fetch(SHEET_CSV_URL);
-      if (!response.ok) throw new Error('Could not fetch sheet');
-      const text = await response.text();
-      const rows = parseCSV(text);
-      if (rows.length < 2) throw new Error('Sheet appears empty');
-      const headers = rows[0].map(h => h.toLowerCase().replace(/[^a-z]/g, ''));
-      const paintings = rows.slice(1).map((row, i) => sheetRowToPainting(row, headers, i)).filter(p => p.title);
-      if (paintings.length > 0) PAINTINGS = paintings;
-    } catch (err) {
-      console.warn('Could not load from Google Sheet, using fallback data:', err.message);
-    }
-    render();
-  }
-
-  let currentPage = 'home';
-
-  function showPage(page) {
-    currentPage = page;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    render();
-  }
-
-  function toggleMenu() { document.getElementById('navLinks').classList.toggle('open'); }
-  function closeMenu() { document.getElementById('navLinks').classList.remove('open'); }
-
-  function placeholderColor(id) {
-    const colors = ['#D4C5B2','#B8C9D4','#C9D4B8','#D4B8B8','#C5B8D4','#D4CDB8','#B8D4C9','#D4B8C5','#C2C9D4'];
-    return colors[id % colors.length];
-  }
-
-  function paintingImage(p, fallbackHeight) {
-    if (p.image) return `<img src="${p.image}" alt="${p.title}" loading="lazy">`;
-    return `<div style="width:100%;height:${fallbackHeight||'260px'};background:${placeholderColor(p.id)};display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,0.15);font-size:0.8rem;letter-spacing:0.05em;">Image</div>`;
-  }
-
-  function cardHTML(p) {
-    return `
-      <div class="painting-card reveal" onclick="openModal(${p.id})">
-        <div class="card-image">${paintingImage(p, '260px')}</div>
-        <div class="card-info">
-          <div class="card-title">${p.title}</div>
-        </div>
+async function loadFromSheet() {
+  if (!SHEET_CSV_URL) return;
+  try {
+    document.getElementById('app').innerHTML = `
+      <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
+        <p style="color:var(--text-light);font-size:0.85rem;letter-spacing:0.08em;">Loading…</p>
       </div>`;
+    const response = await fetch(SHEET_CSV_URL);
+    if (!response.ok) throw new Error('Could not fetch sheet');
+    const text = await response.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) throw new Error('Sheet appears empty');
+    const headers = rows[0].map(h => h.toLowerCase().replace(/[^a-z]/g, ''));
+    const paintings = rows.slice(1).map((row, i) => sheetRowToPainting(row, headers, i)).filter(p => p.title);
+    if (paintings.length > 0) PAINTINGS = paintings;
+  } catch (err) {
+    console.warn('Could not load from Google Sheet, using fallback data:', err.message);
   }
+  render();
+}
 
-  function openModal(id) {
-    const p = PAINTINGS.find(x => x.id === id);
-    if (!p) return;
-    const subject = encodeURIComponent(`Inquiry about "${p.title}"`);
-    const statusClass = p.sold ? 'sold' : 'available';
-    const statusText = p.sold ? 'Sold' : 'Available';
-    const ctaBtn = p.sold ? '' : `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="btn btn-primary">Inquire about this painting</a>`;
-    document.getElementById('modalContent').innerHTML = `
-      <button class="modal-close" onclick="closeModal()">&times;</button>
-      <div class="modal-image">${paintingImage(p, '400px')}</div>
-      <div class="modal-details">
-        <h2>${p.title}</h2>
-        <p class="description">${p.description}${p.longDescription ? '<br><br>' + p.longDescription : ''}</p>
-        <div class="modal-meta">
-          <span><span class="label">Size</span> ${p.size}</span>
-          <span><span class="label">Medium</span> ${p.medium.charAt(0).toUpperCase() + p.medium.slice(1)}</span>
-        </div>
-        <div class="modal-status ${statusClass}">${statusText}</div>
-        ${ctaBtn}
-      </div>`;
-    document.getElementById('modal').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
+let currentPage = 'home';
 
-  function closeModal() {
-    document.getElementById('modal').classList.remove('open');
-    document.body.style.overflow = '';
-  }
+function showPage(page) {
+  currentPage = page;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  render();
+}
 
-  document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+function toggleMenu() { document.getElementById('navLinks').classList.toggle('open'); }
+function closeMenu() { document.getElementById('navLinks').classList.remove('open'); }
 
-  function renderHome() {
-    const featured = PAINTINGS.filter(p => p.featured).slice(0, 9);
-    return `
-      <section class="hero">
-        <div>
-          <h1>Sveta Colours</h1>
-          <p class="subtitle">Light, color, and quiet atmosphere</p>
-          <div class="hero-buttons">
-            <a href="#" class="btn btn-primary" onclick="showPage('acrylic')">View Acrylic</a>
-            <a href="#" class="btn btn-outline" onclick="showPage('watercolor')">View Watercolor</a>
-          </div>
-        </div>
-      </section>
-      <section>
-        <div class="section-inner">
-          <div class="section-title reveal">
-            <h2>Selected Works</h2>
-            <p>A mix of recent watercolor and acrylic paintings</p>
-          </div>
-          <div class="gallery-grid">
-            ${featured.map(cardHTML).join('')}
-          </div>
-        </div>
-      </section>
-      <section class="categories">
-        <div class="section-inner">
-          <div class="category-grid">
-            <div class="category-card reveal">
-              <h3>Acrylic</h3>
-              <p>Big paintings — rich color, texture, and depth</p>
-              <a href="#" class="btn btn-outline" onclick="showPage('acrylic')">View Collection</a>
-            </div>
-            <div class="category-card reveal">
-              <h3>Watercolor</h3>
-              <p>Seasonal postcards — soft, light, atmospheric</p>
-              <a href="#" class="btn btn-outline" onclick="showPage('watercolor')">View Collection</a>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section>
-        <div class="section-inner about-preview reveal">
-          <h2 style="margin-bottom:1.5rem;">About the Artist</h2>
-          <p>I paint to capture the quiet moments — the way light falls on a surface, the mood of a still afternoon. My work lives between watercolor and acrylic, between softness and depth.</p>
-          <p>Each painting is an original, made with care and attention to atmosphere.</p>
-          <a href="#" class="btn-ghost" onclick="showPage('about')">Read more</a>
-        </div>
-      </section>
-      <section class="contact" id="contact">
-        <div class="section-inner">
-          <h2 style="margin-bottom:1rem;">Get in Touch</h2>
-          <p>Interested in a painting? I'd love to hear from you.</p>
-          <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
-        </div>
-      </section>`;
-  }
+function formatPrice(painting) {
+  if (painting.sold) return '<span class="card-price sold">Sold</span>';
+  return `<span class="card-price">${CURRENCY}${painting.price}</span>`;
+}
 
-  function renderCollection(medium) {
-    const items = PAINTINGS.filter(p => p.medium === medium);
-    const title = medium === 'watercolor' ? 'Watercolor' : 'Acrylic';
-    const subtitle = medium === 'watercolor'
-      ? 'Seasonal postcards — soft, light, atmospheric'
-      : 'Big paintings — rich color, texture, and depth';
-    return `
-      <div class="collection-header">
-        <a href="#" class="back-link" onclick="showPage('home')">&larr; Back</a>
-        <h1>${title}</h1>
-        <p>${subtitle}</p>
+function placeholderColor(id) {
+  const colors = ['#D4C5B2','#B8C9D4','#C9D4B8','#D4B8B8','#C5B8D4','#D4CDB8','#B8D4C9','#D4B8C5','#C2C9D4'];
+  return colors[id % colors.length];
+}
+
+function paintingImage(p, fallbackHeight) {
+  if (p.image) return `<img src="${p.image}" alt="${p.title}" loading="lazy">`;
+  return `<div style="width:100%;height:${fallbackHeight||'260px'};background:${placeholderColor(p.id)};display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,0.15);font-size:0.8rem;letter-spacing:0.05em;">Image</div>`;
+}
+
+function cardHTML(p) {
+  return `
+    <div class="painting-card reveal" onclick="openModal(${p.id})">
+      <div class="card-image">${paintingImage(p, '260px')}</div>
+      <div class="card-info">
+        <div class="card-title">${p.title}</div>
+        ${formatPrice(p)}
       </div>
-      <section style="padding-top:1rem;">
-        <div class="section-inner">
-          <div class="gallery-grid">
-            ${items.length ? items.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-light);">No paintings in this collection yet.</p>'}
+    </div>`;
+}
+
+function openModal(id) {
+  const p = PAINTINGS.find(x => x.id === id);
+  if (!p) return;
+  const subject = encodeURIComponent(`Inquiry about "${p.title}"`);
+  const statusClass = p.sold ? 'sold' : 'available';
+  const statusText = p.sold ? 'Sold' : 'Available';
+  const priceText = p.sold ? 'Sold' : `${CURRENCY}${p.price}`;
+  const ctaBtn = p.sold ? '' : `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="btn btn-primary">Inquire about this painting</a>`;
+
+  document.getElementById('modalContent').innerHTML = `
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-image">${paintingImage(p, '400px')}</div>
+    <div class="modal-details">
+      <h2>${p.title}</h2>
+      <p class="description">${p.description}${p.longDescription ? '<br><br>' + p.longDescription : ''}</p>
+      <div class="modal-meta">
+        <span><span class="label">Price</span> ${priceText}</span>
+        <span><span class="label">Size</span> ${p.size}</span>
+        <span><span class="label">Medium</span> ${p.medium.charAt(0).toUpperCase() + p.medium.slice(1)}</span>
+      </div>
+      <div class="modal-status ${statusClass}">${statusText}</div>
+      ${ctaBtn}
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+function renderHome() {
+  const featured = PAINTINGS.filter(p => p.featured).slice(0, 9);
+  return `
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <h1>Sveta Colours</h1>
+        <p class="subtitle">Light, color, and quiet atmosphere</p>
+        <div class="hero-buttons">
+          <a href="#" class="btn btn-primary" onclick="showPage('acrylic')">View Acrylic</a>
+          <a href="#" class="btn btn-outline" onclick="showPage('watercolor')">View Watercolor</a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-inner">
+        <div class="section-title reveal">
+          <h2>Selected Works</h2>
+          <p>A mix of recent watercolor and acrylic paintings</p>
+        </div>
+        <div class="gallery-grid">
+          ${featured.map(cardHTML).join('')}
+        </div>
+      </div>
+    </section>
+
+    <section class="categories">
+      <div class="section-inner">
+        <div class="category-grid">
+          <div class="category-card reveal">
+            <h3>Acrylic</h3>
+            <p>Big paintings — rich color, texture, and depth</p>
+            <a href="#" class="btn btn-outline" onclick="showPage('acrylic')">View Collection</a>
+          </div>
+          <div class="category-card reveal">
+            <h3>Watercolor</h3>
+            <p>Seasonal postcards — soft, light, atmospheric</p>
+            <a href="#" class="btn btn-outline" onclick="showPage('watercolor')">View Collection</a>
           </div>
         </div>
-      </section>
-      <section class="contact" id="contact">
-        <div class="section-inner">
-          <h2 style="margin-bottom:1rem;">Get in Touch</h2>
-          <p>Interested in a painting? I'd love to hear from you.</p>
-          <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
-        </div>
-      </section>`;
-  }
-
-  function renderAbout() {
-    return `
-      <div class="collection-header">
-        <a href="#" class="back-link" onclick="showPage('home')">&larr; Back</a>
-        <h1>About</h1>
       </div>
-      <section style="padding-top:0;">
-        <div class="section-inner about-full reveal">
-          <p>I'm Sveta, and I paint because color and light are my language. There's something about the way a wash of watercolor catches the page, or the way acrylic builds texture and depth, that words can't quite reach.</p>
-          <p>My subjects are often quiet — landscapes, still lifes, moments of calm. I want each painting to bring a sense of warmth and peace to the room it lives in.</p>
-          <p>Every piece here is an original, painted by hand. If something catches your eye, I'd love to hear from you.</p>
-        </div>
-      </section>
-      <section class="contact" id="contact">
-        <div class="section-inner">
-          <h2 style="margin-bottom:1rem;">Get in Touch</h2>
-          <p>Interested in a painting? I'd love to hear from you.</p>
-          <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
-        </div>
-      </section>`;
-  }
+    </section>
 
-  function render() {
-    const app = document.getElementById('app');
-    switch (currentPage) {
-      case 'watercolor': app.innerHTML = renderCollection('watercolor'); break;
-      case 'acrylic':    app.innerHTML = renderCollection('acrylic');    break;
-      case 'about':      app.innerHTML = renderAbout();                   break;
-      default:           app.innerHTML = renderHome();                    break;
-    }
-    requestAnimationFrame(() => {
-      document.querySelectorAll('.reveal').forEach((el, i) => {
-        setTimeout(() => el.classList.add('visible'), i * 80);
-      });
+    <section>
+      <div class="section-inner about-preview reveal">
+        <h2 style="margin-bottom:1.5rem;">About the Artist</h2>
+        <p>I paint to capture the quiet moments — the way light falls on a surface, the mood of a still afternoon. My work lives between watercolor and acrylic, between softness and depth.</p>
+        <p>Each painting is an original, made with care and attention to atmosphere.</p>
+        <a href="#" class="btn-ghost" onclick="showPage('about')">Read more</a>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div class="section-inner">
+        <h2 style="margin-bottom:1rem;">Get in Touch</h2>
+        <p>Interested in a painting? I'd love to hear from you.</p>
+        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
+      </div>
+    </section>`;
+}
+
+function renderCollection(medium) {
+  const items = PAINTINGS.filter(p => p.medium === medium);
+  const title = medium === 'watercolor' ? 'Watercolor' : 'Acrylic';
+  const subtitle = medium === 'watercolor'
+    ? 'Seasonal postcards — soft, light, atmospheric'
+    : 'Big paintings — rich color, texture, and depth';
+  return `
+    <div class="collection-header">
+      <a href="#" class="back-link" onclick="showPage('home')">&larr; Back</a>
+      <h1>${title}</h1>
+      <p>${subtitle}</p>
+    </div>
+    <section style="padding-top:1rem;">
+      <div class="section-inner">
+        <div class="gallery-grid">
+          ${items.length ? items.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-light);">No paintings in this collection yet.</p>'}
+        </div>
+      </div>
+    </section>
+    <section class="contact" id="contact">
+      <div class="section-inner">
+        <h2 style="margin-bottom:1rem;">Get in Touch</h2>
+        <p>Interested in a painting? I'd love to hear from you.</p>
+        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
+      </div>
+    </section>`;
+}
+
+function renderAbout() {
+  return `
+    <div class="collection-header">
+      <a href="#" class="back-link" onclick="showPage('home')">&larr; Back</a>
+      <h1>About</h1>
+    </div>
+    <section style="padding-top:0;">
+      <div class="section-inner about-full reveal">
+        <p>I'm Sveta, and I paint because color and light are my language. There's something about the way a wash of watercolor catches the page, or the way acrylic builds texture and depth, that words can't quite reach.</p>
+        <p>My subjects are often quiet — landscapes, still lifes, moments of calm. I want each painting to bring a sense of warmth and peace to the room it lives in.</p>
+        <p>Every piece here is an original, painted by hand. If something catches your eye, I'd love to hear from you.</p>
+      </div>
+    </section>
+    <section class="contact" id="contact">
+      <div class="section-inner">
+        <h2 style="margin-bottom:1rem;">Get in Touch</h2>
+        <p>Interested in a painting? I'd love to hear from you.</p>
+        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
+      </div>
+    </section>`;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  switch (currentPage) {
+    case 'watercolor': app.innerHTML = renderCollection('watercolor'); break;
+    case 'acrylic':    app.innerHTML = renderCollection('acrylic'); break;
+    case 'about':      app.innerHTML = renderAbout(); break;
+    default:           app.innerHTML = renderHome(); break;
+  }
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), i * 80);
     });
-    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  }
+  });
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+}
 
-  if (SHEET_CSV_URL) { loadFromSheet(); } else { render(); }
+if (SHEET_CSV_URL) { loadFromSheet(); } else { render(); }
 </script>
+
 </body>
 </html>
