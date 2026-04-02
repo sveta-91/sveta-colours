@@ -197,16 +197,20 @@ section { padding: 5rem 2rem; }
   transform: translateY(-4px);
 }
 
+/* FIXED: removed aspect-ratio so landscape paintings aren't cropped */
 .painting-card .card-image {
-  aspect-ratio: 4/5;
+  height: 260px;
   overflow: hidden;
   background: var(--bg-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .painting-card .card-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;   /* show full painting, no cropping */
   transition: transform 0.5s ease;
 }
 
@@ -372,12 +376,15 @@ section { padding: 5rem 2rem; }
 .modal-image {
   background: var(--bg-warm);
   min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;  /* show full painting in modal too */
 }
 
 .modal-details {
@@ -505,6 +512,7 @@ footer {
 
 @media (max-width: 480px) {
   .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .painting-card .card-image { height: 180px; }
   .painting-card .card-info { padding: 0.8rem 1rem; }
   .category-grid { grid-template-columns: 1fr; }
 }
@@ -764,7 +772,7 @@ function paintingImage(p, height) {
 function cardHTML(p) {
   return `
     <div class="painting-card reveal" onclick="openModal(${p.id})">
-      <div class="card-image">${paintingImage(p, '280px')}</div>
+      <div class="card-image">${paintingImage(p, '260px')}</div>
       <div class="card-info">
         <div class="card-title">${p.title}</div>
         ${formatPrice(p)}
