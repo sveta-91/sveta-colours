@@ -6,30 +6,38 @@
 <title>Sveta Colours — Original Paintings</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ========================================================
-   SVETA COLOURS — STYLES
+   SVETA COLOURS — WARM GALLERY DESIGN
    ======================================================== */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #FAF7F2;
-  --bg-warm: #F5F0E8;
-  --text: #3A3632;
-  --text-light: #7A746C;
-  --accent: #C4946A;
-  --accent-hover: #A87B54;
-  --sold: #9E8E82;
-  --white: #FFFFFF;
-  --shadow: 0 2px 20px rgba(58, 54, 50, 0.08);
-  --shadow-hover: 0 8px 36px rgba(58, 54, 50, 0.16);
-  --radius: 4px;
+  /* Warm palette */
+  --bg: #F4EFE6;
+  --surface: #FAF7F2;
+  --surface-alt: #EDE7DC;
+  --border: #DDD5C8;
+  --border-strong: #CEC4B4;
+  --text: #1C1712;
+  --text-secondary: #5A5048;
+  --text-muted: #8A7D72;
+
+  /* Accents */
+  --clay: #B5613D;
+  --terracotta: #C8714F;
+  --rose-dust: #C49A93;
+  --sold-red: #A35A52;
+
+  /* Type */
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Layout */
   --max-w: 1200px;
-  --transition: 0.3s ease;
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'Jost', -apple-system, sans-serif;
+  --transition: 0.28s ease;
 }
 
 html { scroll-behavior: smooth; }
@@ -42,41 +50,29 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: var(--rose-dust);
+  color: var(--text);
+}
+
 img { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button { cursor: pointer; font-family: inherit; }
 
-h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2.8rem, 6vw, 5rem);
-  font-weight: 300;
-  letter-spacing: 0.06em;
-  line-height: 1.1;
-}
-h2 {
-  font-family: var(--font-display);
-  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-  font-weight: 300;
-  letter-spacing: 0.03em;
-}
-h3 {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 400;
-}
-
 /* --- Navigation --- */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(250, 247, 242, 0.94);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(58, 54, 50, 0.07);
+  background: rgba(244, 239, 230, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(206, 196, 180, 0.4);
 }
 
 nav .nav-inner {
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 1.1rem 2.5rem;
+  padding: 0 2rem;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -85,27 +81,29 @@ nav .nav-inner {
 nav .logo {
   font-family: var(--font-display);
   font-size: 1.6rem;
-  font-weight: 400;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--text);
-  font-style: italic;
 }
 
-nav .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+nav .nav-links { display: flex; gap: 2.2rem; list-style: none; align-items: center; }
 
 nav .nav-links a {
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-light);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-secondary);
   transition: color var(--transition);
-  font-weight: 300;
 }
 
-nav .nav-links a:hover,
-nav .nav-links a.active { color: var(--text); }
+nav .nav-links a:hover { color: var(--text); }
+
+nav .nav-contact {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--clay);
+  transition: color var(--transition);
+}
+nav .nav-contact:hover { color: var(--terracotta); }
 
 .hamburger {
   display: none;
@@ -113,216 +111,192 @@ nav .nav-links a.active { color: var(--text); }
   border: none;
   width: 28px;
   height: 20px;
-  position: relative;
   flex-direction: column;
   justify-content: space-between;
 }
 
 .hamburger span {
-  display: block;
-  width: 100%;
-  height: 1px;
+  display: block; width: 100%; height: 1.5px;
   background: var(--text);
   transition: var(--transition);
 }
 
 /* --- Buttons --- */
 .btn {
-  display: inline-block;
-  padding: 0.75rem 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 1.8rem;
   border: none;
-  border-radius: 0;
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 300;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 500;
   transition: all var(--transition);
 }
 
-.btn-primary { background: var(--accent); color: var(--white); }
-.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.btn-primary {
+  background: var(--clay);
+  color: var(--surface);
+}
+.btn-primary:hover { background: var(--terracotta); }
 
 .btn-outline {
   background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
 }
-.btn-outline:hover { background: var(--accent); color: var(--white); }
+.btn-outline:hover { border-color: var(--text-secondary); color: var(--text); }
 
-.btn-ghost {
-  background: transparent;
-  color: var(--accent);
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(196, 148, 106, 0.4);
-  border-radius: 0;
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.btn-text {
+  background: none; border: none; height: auto; padding: 0;
+  color: var(--clay);
+  font-size: 0.88rem;
+  font-weight: 500;
 }
-.btn-ghost:hover { color: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-text:hover { color: var(--terracotta); }
 
 /* --- Sections --- */
-section { padding: 5rem 2.5rem; }
+section { padding: 5.5rem 2rem; }
 
-.section-inner { max-width: var(--max-w); margin: 0 auto; }
+.section-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
 
-.section-title { text-align: center; margin-bottom: 3.5rem; }
+.section-title {
+  margin-bottom: 3rem;
+}
+
+.section-title h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+  line-height: 1.05;
+  color: var(--text);
+}
 
 .section-title p {
-  margin-top: 0.8rem;
-  color: var(--text-light);
-  font-size: 0.92rem;
-  letter-spacing: 0.04em;
+  margin-top: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.93rem;
 }
 
-/* ========================================================
-   HERO — painting background with gradient overlay
-   ======================================================== */
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+/* --- Hero --- */
 .hero {
-  min-height: 90vh;
+  min-height: 88vh;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding-top: 5rem;
-  position: relative;
-  overflow: hidden;
+  padding-top: 72px;
 }
 
-/* The painting background — Google Drive direct URL */
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  background-image: url('https://lh3.googleusercontent.com/d/1HBTm8Jb_GnUuzF3_A0i--YLeiVcb75ip');
-  background-size: cover;
-  background-position: center;
-  z-index: 0;
+.hero .hero-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
 }
 
-/* Left/right fade — painting on edges, transparent center */
-.hero-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(250, 247, 242, 0.72) 0%,
-      rgba(250, 247, 242, 0.0) 25%,
-      rgba(250, 247, 242, 0.0) 75%,
-      rgba(250, 247, 242, 0.72) 100%
-    ),
-    linear-gradient(
-      to right,
-      rgba(250, 247, 242, 0.78) 0%,
-      rgba(250, 247, 242, 0.18) 28%,
-      rgba(250, 247, 242, 0.0) 45%,
-      rgba(250, 247, 242, 0.0) 55%,
-      rgba(250, 247, 242, 0.18) 72%,
-      rgba(250, 247, 242, 0.78) 100%
-    );
-}
-
-/* Soft center veil for text legibility */
-.hero-bg::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 55% 65% at 50% 50%,
-    rgba(250, 247, 242, 0.55) 0%,
-    rgba(250, 247, 242, 0.0) 100%
-  );
-  z-index: 1;
-}
-
-/* Hero content above overlays */
-.hero-content {
-  position: relative;
-  z-index: 2;
-}
-
-.hero h1 { margin-bottom: 1rem; }
-
-.hero .subtitle {
+.hero-text h1 {
   font-family: var(--font-display);
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
-  color: var(--text-light);
-  font-weight: 300;
-  font-style: italic;
-  margin-bottom: 3rem;
-  letter-spacing: 0.02em;
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  font-weight: 500;
+  line-height: 1.05;
+  margin-bottom: 1.2rem;
+  color: var(--text);
 }
 
-.hero .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.hero-text .subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 2.2rem;
+  max-width: 440px;
+}
+
+.hero-text .hero-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+
+.hero-image {
+  aspect-ratio: 4/5;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #E8C4A0, #D4956B);
+}
+
+.hero-image img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
 
 /* --- Gallery Grid --- */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 2rem;
 }
 
 .painting-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: all var(--transition);
   cursor: pointer;
+  transition: transform var(--transition);
 }
 
-.painting-card:hover {
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-4px);
-}
+.painting-card:hover { transform: translateY(-3px); }
 
 .painting-card .card-image {
-  height: 260px;
+  aspect-ratio: 4/5;
   overflow: hidden;
-  background: var(--bg-warm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 12px;
+  background: var(--surface-alt);
+  margin-bottom: 1rem;
 }
 
 .painting-card .card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: transform 0.5s ease;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
 }
 
 .painting-card:hover .card-image img { transform: scale(1.03); }
 
-.painting-card .card-info {
-  padding: 1rem 1.2rem 1.2rem;
-  border-top: 1px solid rgba(58,54,50,0.05);
-}
-
 .painting-card .card-title {
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 400;
-  margin-bottom: 0.2rem;
+  font-size: 1.2rem;
+  font-weight: 500;
   color: var(--text);
+  margin-bottom: 0.2rem;
+}
+
+.painting-card .card-medium {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
 }
 
 .painting-card .card-price {
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
-  color: var(--text-light);
-  font-weight: 300;
+  font-size: 0.93rem;
+  font-weight: 500;
+  color: var(--clay);
 }
 
 .painting-card .card-price.sold {
-  color: var(--sold);
+  color: var(--text-muted);
   font-style: italic;
 }
 
 /* --- Category Split --- */
-.categories { background: var(--bg-warm); }
+.categories { background: var(--surface); }
 
 .category-grid {
   display: grid;
@@ -331,76 +305,99 @@ section { padding: 5rem 2.5rem; }
 }
 
 .category-card {
+  padding: 3rem 2.5rem;
+  background: var(--bg);
+  border-radius: 16px;
+  border: 1px solid var(--border);
   text-align: center;
-  padding: 3.5rem 2rem;
-  background: var(--white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  transition: box-shadow var(--transition);
+  transition: border-color var(--transition);
 }
 
-.category-card:hover { box-shadow: var(--shadow-hover); }
-.category-card h3 { font-size: 1.8rem; font-weight: 300; margin-bottom: 0.6rem; }
-.category-card p { color: var(--text-light); margin-bottom: 2rem; font-size: 0.9rem; }
+.category-card:hover { border-color: var(--border-strong); }
+
+.category-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
+}
+
+.category-card p {
+  color: var(--text-muted);
+  font-size: 0.93rem;
+  margin-bottom: 1.5rem;
+}
 
 /* --- About Preview --- */
-.about-preview { max-width: 640px; margin: 0 auto; text-align: center; }
-
-.about-preview p {
-  color: var(--text-light);
-  font-size: 1rem;
-  line-height: 1.9;
-  margin-bottom: 1rem;
-  font-weight: 300;
+.about-preview {
+  max-width: 640px;
 }
 
-.about-preview .btn-ghost { margin-top: 1.5rem; }
+.about-preview p {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.about-preview .btn-text { margin-top: 0.8rem; }
 
 /* --- Contact --- */
-.contact { background: var(--bg-warm); text-align: center; }
+.contact { background: var(--surface-alt); text-align: center; }
 
-.contact p { color: var(--text-light); margin-bottom: 1.5rem; font-size: 0.95rem; font-weight: 300; }
+.contact p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
 
 .contact .email-link {
   font-family: var(--font-display);
   font-size: 1.3rem;
-  color: var(--accent);
-  display: inline-block;
-  margin-top: 0.5rem;
-  font-style: italic;
+  color: var(--clay);
+  font-weight: 500;
+  transition: color var(--transition);
 }
 
-.contact .email-link:hover { color: var(--accent-hover); }
+.contact .email-link:hover { color: var(--terracotta); }
 
-/* --- Collection View --- */
-.collection-header { text-align: center; padding: 8rem 2.5rem 3rem; }
-.collection-header h1 { margin-bottom: 0.6rem; }
-.collection-header p {
-  color: var(--text-light);
+/* --- Collection Header --- */
+.collection-header {
+  text-align: center;
+  padding: 7rem 2rem 2.5rem;
+}
+
+.collection-header h1 {
   font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-style: italic;
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1.05;
+  margin-bottom: 0.5rem;
+}
+
+.collection-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
 }
 
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--text-light);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 2.5rem;
+  gap: 0.3rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin-bottom: 1.5rem;
   transition: color var(--transition);
 }
 .back-link:hover { color: var(--text); }
 
-/* --- Modal --- */
+/* --- Detail Modal --- */
 .modal-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(40, 36, 32, 0.6);
+  background: rgba(28, 23, 18, 0.45);
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   overflow-y: auto;
   padding: 2rem;
 }
@@ -408,27 +405,27 @@ section { padding: 5rem 2.5rem; }
 .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
 
 .modal {
-  background: var(--white);
-  border-radius: var(--radius);
-  max-width: 900px;
+  background: var(--surface);
+  border-radius: 16px;
+  max-width: 880px;
   width: 100%;
   margin: 3rem auto;
   overflow: hidden;
-  box-shadow: 0 16px 60px rgba(0,0,0,0.2);
-  animation: modalIn 0.35s ease;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.12);
+  animation: modalIn 0.28s ease;
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(24px); }
+  from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .modal-close {
   position: absolute;
-  top: 1.2rem; right: 1.4rem;
+  top: 1rem; right: 1.2rem;
   background: none; border: none;
   font-size: 1.6rem;
-  color: var(--text-light);
+  color: var(--text-muted);
   z-index: 10;
   line-height: 1;
 }
@@ -441,106 +438,134 @@ section { padding: 5rem 2.5rem; }
 }
 
 .modal-image {
-  background: var(--bg-warm);
+  background: var(--surface-alt);
   min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.modal-image img { width: 100%; height: 100%; object-fit: contain; }
+.modal-image img { width: 100%; height: 100%; object-fit: cover; }
 
-.modal-details { padding: 2.8rem; display: flex; flex-direction: column; }
-.modal-details h2 { font-size: 1.9rem; margin-bottom: 1rem; line-height: 1.2; }
+.modal-details {
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-details h2 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 500;
+  margin-bottom: 0.8rem;
+  line-height: 1.1;
+}
 
 .modal-details .description {
-  color: var(--text-light);
-  margin-bottom: 2rem;
-  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
   font-size: 0.95rem;
-  font-weight: 300;
 }
 
-.modal-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.88rem; }
-.modal-meta span { display: flex; gap: 0.8rem; }
+.modal-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.modal-meta span { display: flex; gap: 0.5rem; }
+
 .modal-meta .label {
-  color: var(--text-light);
-  min-width: 70px;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  min-width: 65px;
+  font-size: 0.82rem;
   text-transform: uppercase;
-  padding-top: 0.1rem;
+  letter-spacing: 0.06em;
 }
 
 .modal-status {
   display: inline-block;
-  padding: 0.3rem 0.9rem;
-  border-radius: 2px;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 1.8rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
   width: fit-content;
-  font-weight: 400;
 }
 
-.modal-status.available { background: rgba(196, 148, 106, 0.1); color: var(--accent); }
-.modal-status.sold { background: rgba(158, 142, 130, 0.12); color: var(--sold); }
-.modal-details .btn { margin-top: auto; text-align: center; }
+.modal-status.available { background: #E8F0E8; color: #4A6B4A; }
+.modal-status.sold { background: #F2E6E4; color: var(--sold-red); }
 
-/* --- About Page --- */
-.about-full { max-width: 640px; margin: 0 auto; }
-.about-full p { font-size: 1rem; line-height: 1.9; color: var(--text-light); margin-bottom: 1.4rem; font-weight: 300; }
+.modal-details .btn { margin-top: auto; }
+
+/* --- About Full --- */
+.about-full { max-width: 640px; }
+
+.about-full p {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  margin-bottom: 1.2rem;
+}
 
 /* --- Footer --- */
 footer {
   text-align: center;
-  padding: 2.5rem;
-  color: var(--text-light);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  border-top: 1px solid rgba(58, 54, 50, 0.07);
+  padding: 2rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  border-top: 1px solid var(--border);
 }
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
   .hamburger { display: flex; }
+
   nav .nav-links {
     display: none;
     position: absolute;
     top: 100%; left: 0; right: 0;
-    background: rgba(250, 247, 242, 0.98);
-    backdrop-filter: blur(16px);
+    background: rgba(244, 239, 230, 0.98);
+    backdrop-filter: blur(14px);
     flex-direction: column;
-    padding: 1.5rem 2.5rem;
-    gap: 1.4rem;
-    border-bottom: 1px solid rgba(58, 54, 50, 0.07);
+    padding: 1.5rem 2rem;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
   }
+
   nav .nav-links.open { display: flex; }
+
+  .hero .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
+  .hero-text { order: 2; }
+  .hero-image { order: 1; max-height: 50vh; }
+  .hero { min-height: auto; padding-top: 5rem; }
+
   .modal-content { grid-template-columns: 1fr; }
   .modal-image { min-height: 280px; }
+
   section { padding: 3.5rem 1.5rem; }
-  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
+
+  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
 }
 
 @media (max-width: 480px) {
   .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .painting-card .card-image { height: 180px; }
-  .painting-card .card-info { padding: 0.8rem 1rem; }
+  .painting-card .card-info { padding: 0.6rem 0.8rem; }
   .category-grid { grid-template-columns: 1fr; }
+  .hero-text h1 { font-size: 2.2rem; }
 }
 
-/* --- Scroll reveal --- */
+/* --- Reveal animation --- */
 .reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
 
+<!-- Navigation -->
 <nav>
   <div class="nav-inner">
     <a href="#" class="logo" onclick="showPage('home')">Sveta Colours</a>
@@ -552,24 +577,26 @@ footer {
       <li><a href="#" onclick="showPage('acrylic'); closeMenu()">Acrylic</a></li>
       <li><a href="#" onclick="showPage('watercolor'); closeMenu()">Watercolor</a></li>
       <li><a href="#" onclick="showPage('about'); closeMenu()">About</a></li>
-      <li><a href="#contact" onclick="closeMenu()">Contact</a></li>
+      <li><a href="#contact" onclick="closeMenu()" class="nav-contact">Get in touch</a></li>
     </ul>
   </div>
 </nav>
 
 <div id="app"></div>
 
+<!-- Painting Detail Modal -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <div class="modal-content" id="modalContent"></div>
   </div>
 </div>
 
-<footer>
-  &copy; 2026 Sveta Colours &nbsp;·&nbsp; All rights reserved
-</footer>
+<footer>&copy; 2026 Sveta Colours. All rights reserved.</footer>
 
 <script>
+/* ========================================================
+   FALLBACK DATA
+   ======================================================== */
 let PAINTINGS = [
   {
     id: 1,
@@ -585,9 +612,16 @@ let PAINTINGS = [
   }
 ];
 
+/* ========================================================
+   CONFIGURATION
+   ======================================================== */
 const CONTACT_EMAIL = "sveta.colours@gmail.com";
 const CURRENCY = "$";
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI/pub?output=csv";
+
+/* ========================================================
+   GOOGLE SHEET LOADER
+   ======================================================== */
 
 function parseCSV(text) {
   const rows = [];
@@ -596,17 +630,17 @@ function parseCSV(text) {
     const ch = text[i];
     if (inQuotes) {
       if (ch === '"' && text[i+1] === '"') { current += '"'; i++; }
-      else if (ch === '"') { inQuotes = false; }
-      else { current += ch; }
+      else if (ch === '"') inQuotes = false;
+      else current += ch;
     } else {
-      if (ch === '"') { inQuotes = true; }
+      if (ch === '"') inQuotes = true;
       else if (ch === ',') { row.push(current.trim()); current = ''; }
       else if (ch === '\n' || (ch === '\r' && text[i+1] === '\n')) {
         row.push(current.trim());
         if (row.some(c => c !== '')) rows.push(row);
         row = []; current = '';
         if (ch === '\r') i++;
-      } else { current += ch; }
+      } else current += ch;
     }
   }
   row.push(current.trim());
@@ -626,7 +660,7 @@ function driveImageURL(raw) {
 
 function sheetRowToPainting(row, headers, index) {
   const get = (name) => {
-    const i = headers.findIndex(h => h.toLowerCase().replace(/[^a-z]/g, '') === name);
+    const i = headers.findIndex(h => h.toLowerCase().replace(/[^a-z]/g,'') === name);
     return i >= 0 ? (row[i] || '') : '';
   };
   const priceStr = get('price');
@@ -651,21 +685,27 @@ async function loadFromSheet() {
   try {
     document.getElementById('app').innerHTML = `
       <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
-        <p style="color:var(--text-light);font-size:0.85rem;letter-spacing:0.08em;">Loading…</p>
+        <p style="color:var(--text-muted);font-family:var(--font-display);font-size:1.2rem;">Loading paintings…</p>
       </div>`;
     const response = await fetch(SHEET_CSV_URL);
     if (!response.ok) throw new Error('Could not fetch sheet');
     const text = await response.text();
     const rows = parseCSV(text);
     if (rows.length < 2) throw new Error('Sheet appears empty');
-    const headers = rows[0].map(h => h.toLowerCase().replace(/[^a-z]/g, ''));
-    const paintings = rows.slice(1).map((row, i) => sheetRowToPainting(row, headers, i)).filter(p => p.title);
+    const headers = rows[0].map(h => h.toLowerCase().replace(/[^a-z]/g,''));
+    const paintings = rows.slice(1)
+      .map((row, i) => sheetRowToPainting(row, headers, i))
+      .filter(p => p.title);
     if (paintings.length > 0) PAINTINGS = paintings;
   } catch (err) {
-    console.warn('Could not load from Google Sheet, using fallback data:', err.message);
+    console.warn('Could not load from Google Sheet:', err.message);
   }
   render();
 }
+
+/* ========================================================
+   APP ENGINE
+   ======================================================== */
 
 let currentPage = 'home';
 
@@ -678,29 +718,38 @@ function showPage(page) {
 function toggleMenu() { document.getElementById('navLinks').classList.toggle('open'); }
 function closeMenu() { document.getElementById('navLinks').classList.remove('open'); }
 
-function formatPrice(painting) {
-  if (painting.sold) return '<span class="card-price sold">Sold</span>';
-  return `<span class="card-price">${CURRENCY}${painting.price}</span>`;
+function formatPrice(p) {
+  if (p.sold) return '<span class="card-price sold">Sold</span>';
+  return `<span class="card-price">${CURRENCY}${p.price}</span>`;
 }
 
-function placeholderColor(id) {
-  const colors = ['#D4C5B2','#B8C9D4','#C9D4B8','#D4B8B8','#C5B8D4','#D4CDB8','#B8D4C9','#D4B8C5','#C2C9D4'];
-  return colors[id % colors.length];
+function placeholderGradient(id) {
+  const grads = [
+    'linear-gradient(145deg, #E8C4A0, #D4956B)',
+    'linear-gradient(145deg, #C5CDD8, #A3B1C2)',
+    'linear-gradient(145deg, #D4C9A8, #E8D5B0)',
+    'linear-gradient(145deg, #8DA178, #B5C4A0)',
+    'linear-gradient(145deg, #B8A9C2, #D0C5D8)',
+    'linear-gradient(145deg, #D8C5B0, #E5D8C8)',
+    'linear-gradient(145deg, #7C8FA3, #A3B1C2)',
+    'linear-gradient(145deg, #D0D3CB, #E2E4DC)',
+    'linear-gradient(145deg, #C9A29B, #D8B5AE)',
+  ];
+  return grads[id % grads.length];
 }
 
-function paintingImage(p, fallbackHeight) {
+function paintingImage(p, height) {
   if (p.image) return `<img src="${p.image}" alt="${p.title}" loading="lazy">`;
-  return `<div style="width:100%;height:${fallbackHeight||'260px'};background:${placeholderColor(p.id)};display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,0.15);font-size:0.8rem;letter-spacing:0.05em;">Image</div>`;
+  return `<div style="width:100%;height:100%;min-height:${height||'100%'};background:${placeholderGradient(p.id)};display:flex;align-items:center;justify-content:center;"><span style="font-family:var(--font-display);font-size:1.1rem;color:rgba(28,23,18,0.18);text-align:center;padding:1rem;">${p.title}</span></div>`;
 }
 
 function cardHTML(p) {
   return `
     <div class="painting-card reveal" onclick="openModal(${p.id})">
-      <div class="card-image">${paintingImage(p, '260px')}</div>
-      <div class="card-info">
-        <div class="card-title">${p.title}</div>
-        ${formatPrice(p)}
-      </div>
+      <div class="card-image">${paintingImage(p, '280px')}</div>
+      <div class="card-title">${p.title}</div>
+      <div class="card-medium">${p.medium}</div>
+      ${formatPrice(p)}
     </div>`;
 }
 
@@ -711,7 +760,8 @@ function openModal(id) {
   const statusClass = p.sold ? 'sold' : 'available';
   const statusText = p.sold ? 'Sold' : 'Available';
   const priceText = p.sold ? 'Sold' : `${CURRENCY}${p.price}`;
-  const ctaBtn = p.sold ? '' : `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="btn btn-primary">Inquire about this painting</a>`;
+  const ctaBtn = p.sold ? ''
+    : `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="btn btn-primary">Inquire about this painting</a>`;
 
   document.getElementById('modalContent').innerHTML = `
     <button class="modal-close" onclick="closeModal()">&times;</button>
@@ -739,28 +789,34 @@ function closeModal() {
 document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 
+/* --- Page Renderers --- */
+
 function renderHome() {
-  const featured = PAINTINGS.filter(p => p.featured).slice(0, 9);
+  const featured = PAINTINGS.filter(p => p.featured).slice(0, 8);
   return `
     <section class="hero">
-      <div class="hero-bg"></div>
-      <div class="hero-content">
-        <h1>Sveta Colours</h1>
-        <p class="subtitle">Light, color, and quiet atmosphere</p>
-        <div class="hero-buttons">
-          <a href="#" class="btn btn-primary" onclick="showPage('acrylic')">View Acrylic</a>
-          <a href="#" class="btn btn-outline" onclick="showPage('watercolor')">View Watercolor</a>
+      <div class="hero-inner section-inner" style="padding:0 2rem;">
+        <div class="hero-text">
+          <h1>Original paintings<br>for your&nbsp;home</h1>
+          <p class="subtitle">Light, color, and quiet atmosphere. Each piece is handmade — watercolor postcards and large acrylic works, made to bring warmth to the space they live in.</p>
+          <div class="hero-buttons">
+            <a href="#" class="btn btn-primary" onclick="showPage('acrylic')">View Acrylic</a>
+            <a href="#" class="btn btn-outline" onclick="showPage('watercolor')">View Watercolor</a>
+          </div>
         </div>
+        <div class="hero-image">${featured[0] ? paintingImage(featured[0], '100%') : ''}</div>
       </div>
     </section>
 
-    <section>
+    <section style="background:var(--surface);">
       <div class="section-inner">
-        <div class="section-title reveal">
-          <h2>Selected Works</h2>
-          <p>A mix of recent watercolor and acrylic paintings</p>
+        <div class="section-header">
+          <div class="section-title">
+            <h2>Featured works</h2>
+            <p>A selection of recent available paintings.</p>
+          </div>
         </div>
-        <div class="gallery-grid">
+        <div class="gallery-grid" style="margin-top:2.5rem;">
           ${featured.map(cardHTML).join('')}
         </div>
       </div>
@@ -784,17 +840,19 @@ function renderHome() {
     </section>
 
     <section>
-      <div class="section-inner about-preview reveal">
-        <h2 style="margin-bottom:1.5rem;">About the Artist</h2>
-        <p>I paint to capture the quiet moments — the way light falls on a surface, the mood of a still afternoon. My work lives between watercolor and acrylic, between softness and depth.</p>
-        <p>Each painting is an original, made with care and attention to atmosphere.</p>
-        <a href="#" class="btn-ghost" onclick="showPage('about')">Read more</a>
+      <div class="section-inner">
+        <div class="section-title"><h2>About the artist</h2></div>
+        <div class="about-preview reveal">
+          <p>I paint to capture the quiet moments — the way light falls on a surface, the mood of a still afternoon. My work lives between watercolor and acrylic, between softness and depth.</p>
+          <p>Each painting is an original, made with care and attention to atmosphere.</p>
+          <a href="#" class="btn-text" onclick="showPage('about')">Read more →</a>
+        </div>
       </div>
     </section>
 
     <section class="contact" id="contact">
       <div class="section-inner">
-        <h2 style="margin-bottom:1rem;">Get in Touch</h2>
+        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
         <p>Interested in a painting? I'd love to hear from you.</p>
         <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
       </div>
@@ -807,22 +865,23 @@ function renderCollection(medium) {
   const subtitle = medium === 'watercolor'
     ? 'Seasonal postcards — soft, light, atmospheric'
     : 'Big paintings — rich color, texture, and depth';
+
   return `
     <div class="collection-header">
-      <a href="#" class="back-link" onclick="showPage('home')">&larr; Back</a>
+      <a href="#" class="back-link" onclick="showPage('home')">← Back to Home</a>
       <h1>${title}</h1>
       <p>${subtitle}</p>
     </div>
     <section style="padding-top:1rem;">
       <div class="section-inner">
         <div class="gallery-grid">
-          ${items.length ? items.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-light);">No paintings in this collection yet.</p>'}
+          ${items.length ? items.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);">No paintings in this collection yet.</p>'}
         </div>
       </div>
     </section>
     <section class="contact" id="contact">
       <div class="section-inner">
-        <h2 style="margin-bottom:1rem;">Get in Touch</h2>
+        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
         <p>Interested in a painting? I'd love to hear from you.</p>
         <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
       </div>
@@ -832,7 +891,7 @@ function renderCollection(medium) {
 function renderAbout() {
   return `
     <div class="collection-header">
-      <a href="#" class="back-link" onclick="showPage('home')">&larr; Back</a>
+      <a href="#" class="back-link" onclick="showPage('home')">← Back to Home</a>
       <h1>About</h1>
     </div>
     <section style="padding-top:0;">
@@ -844,7 +903,7 @@ function renderAbout() {
     </section>
     <section class="contact" id="contact">
       <div class="section-inner">
-        <h2 style="margin-bottom:1rem;">Get in Touch</h2>
+        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
         <p>Interested in a painting? I'd love to hear from you.</p>
         <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
       </div>
@@ -861,14 +920,14 @@ function render() {
   }
   requestAnimationFrame(() => {
     document.querySelectorAll('.reveal').forEach((el, i) => {
-      setTimeout(() => el.classList.add('visible'), i * 80);
+      setTimeout(() => el.classList.add('visible'), i * 60);
     });
   });
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
 }
 
-if (SHEET_CSV_URL) { loadFromSheet(); } else { render(); }
+// Boot
+if (SHEET_CSV_URL) loadFromSheet();
+else render();
 </script>
-
 </body>
 </html>
