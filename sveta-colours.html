@@ -608,7 +608,8 @@ let PAINTINGS = [
     image: "",
     description: "A family stands as a point of warmth and color against towering high-rises and the cold air.",
     collections: ["Seasons", "City"],
-    featured: true
+    available: true,
+    sold: false
   }
 ];
 
@@ -665,18 +666,19 @@ function sheetRowToPainting(row, headers, index) {
   };
   const priceStr = get('price');
   const soldStr = get('sold').toLowerCase();
-  const featuredStr = get('featured').toLowerCase();
+  const availableStr = get('featured').toLowerCase();
+  const available = availableStr === '' || availableStr === 'yes' || availableStr === 'true' || availableStr === '1';
   return {
     id: index + 1,
     title: get('title'),
     medium: get('medium').toLowerCase(),
     price: priceStr ? parseFloat(priceStr.replace(/[^0-9.]/g, '')) : null,
-    sold: soldStr === 'yes' || soldStr === 'true' || soldStr === '1' || soldStr === 'sold',
+    sold: !available,
     size: get('size'),
     image: driveImageURL(get('image')),
     description: get('description'),
-    collections: get('longdescription') ? get('longdescription').split(',').map(c => c.trim()).filter(Boolean) : [],
-    featured: featuredStr === '' || featuredStr === 'yes' || featuredStr === 'true' || featuredStr === '1'
+    collections: get('collection') ? get('collection').split(',').map(c => c.trim()).filter(Boolean) : [],
+    available: available
   };
 }
 
@@ -793,7 +795,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
 /* --- Page Renderers --- */
 
 function renderHome() {
-  const featured = PAINTINGS.filter(p => p.featured).slice(0, 8);
+  const featured = PAINTINGS.filter(p => p.available).slice(0, 8);
   return `
     <section class="hero">
       <div class="hero-inner section-inner" style="padding:0 2rem;">
