@@ -574,8 +574,8 @@ footer {
     </button>
     <ul class="nav-links" id="navLinks">
       <li><a href="#" onclick="showPage('home'); closeMenu()">Home</a></li>
-      <li><a href="#" onclick="showPage('acrylic'); closeMenu()">Acrylic</a></li>
-      <li><a href="#" onclick="showPage('watercolor'); closeMenu()">Watercolor</a></li>
+      <li><a href="#" onclick="showPage('paintings'); closeMenu()">Paintings</a></li>
+      <li><a href="#" onclick="showPage('postcards'); closeMenu()">Postcards</a></li>
       <li><a href="#" onclick="showPage('about'); closeMenu()">About</a></li>
       <li><a href="#contact" onclick="closeMenu()" class="nav-contact">Get in touch</a></li>
     </ul>
@@ -607,7 +607,7 @@ let PAINTINGS = [
     size: "16 x 20 in",
     image: "",
     description: "A family stands as a point of warmth and color against towering high-rises and the cold air.",
-    longDescription: "\"Holding On in Winter\" is about contrast and harmony.",
+    collections: ["Seasons", "City"],
     featured: true
   }
 ];
@@ -675,7 +675,7 @@ function sheetRowToPainting(row, headers, index) {
     size: get('size'),
     image: driveImageURL(get('image')),
     description: get('description'),
-    longDescription: get('longdescription'),
+    collections: get('longdescription') ? get('longdescription').split(',').map(c => c.trim()).filter(Boolean) : [],
     featured: featuredStr === '' || featuredStr === 'yes' || featuredStr === 'true' || featuredStr === '1'
   };
 }
@@ -749,7 +749,6 @@ function cardHTML(p) {
       <div class="card-image">${paintingImage(p, '280px')}</div>
       <div class="card-title">${p.title}</div>
       <div class="card-medium">${p.medium}</div>
-      ${formatPrice(p)}
     </div>`;
 }
 
@@ -759,18 +758,20 @@ function openModal(id) {
   const subject = encodeURIComponent(`Inquiry about "${p.title}"`);
   const statusClass = p.sold ? 'sold' : 'available';
   const statusText = p.sold ? 'Sold' : 'Available';
-  const priceText = p.sold ? 'Sold' : `${CURRENCY}${p.price}`;
   const ctaBtn = p.sold ? ''
     : `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="btn btn-primary">Inquire about this painting</a>`;
+  const collectionsHTML = (p.collections || []).length
+    ? `<div style="margin-top:0.75rem;display:flex;flex-wrap:wrap;gap:0.5rem;">${(p.collections || []).map(c => `<span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:999px;font-size:0.8rem;background:var(--surface-alt);color:var(--text-secondary);border:1px solid var(--border-soft);cursor:pointer;" onclick="closeModal();showPage('collection:${c}')">${c}</span>`).join('')}</div>`
+    : '';
 
   document.getElementById('modalContent').innerHTML = `
     <button class="modal-close" onclick="closeModal()">&times;</button>
     <div class="modal-image">${paintingImage(p, '400px')}</div>
     <div class="modal-details">
       <h2>${p.title}</h2>
-      <p class="description">${p.description}${p.longDescription ? '<br><br>' + p.longDescription : ''}</p>
+      <p class="description">${p.description}</p>
+      ${collectionsHTML}
       <div class="modal-meta">
-        <span><span class="label">Price</span> ${priceText}</span>
         <span><span class="label">Size</span> ${p.size}</span>
         <span><span class="label">Medium</span> ${p.medium.charAt(0).toUpperCase() + p.medium.slice(1)}</span>
       </div>
@@ -800,8 +801,8 @@ function renderHome() {
           <h1>Original paintings<br>for your&nbsp;home</h1>
           <p class="subtitle">Light, color, and quiet atmosphere. Each piece is handmade — watercolor postcards and large acrylic works, made to bring warmth to the space they live in.</p>
           <div class="hero-buttons">
-            <a href="#" class="btn btn-primary" onclick="showPage('acrylic')">View Acrylic</a>
-            <a href="#" class="btn btn-outline" onclick="showPage('watercolor')">View Watercolor</a>
+            <a href="#" class="btn btn-primary" onclick="showPage('collections')">Explore Collections</a>
+            <a href="#" class="btn btn-outline" onclick="showPage('paintings')">View Available Works</a>
           </div>
         </div>
         <div class="hero-image">${featured[0] ? paintingImage(featured[0], '100%') : ''}</div>
@@ -824,17 +825,16 @@ function renderHome() {
 
     <section class="categories">
       <div class="section-inner">
-        <div class="category-grid">
-          <div class="category-card reveal">
-            <h3>Acrylic</h3>
-            <p>Big paintings — rich color, texture, and depth</p>
-            <a href="#" class="btn btn-outline" onclick="showPage('acrylic')">View Collection</a>
-          </div>
-          <div class="category-card reveal">
-            <h3>Watercolor</h3>
-            <p>Seasonal postcards — soft, light, atmospheric</p>
-            <a href="#" class="btn btn-outline" onclick="showPage('watercolor')">View Collection</a>
-          </div>
+        <div class="section-title"><h2>Browse by collection</h2></div>
+        <div class="category-grid" style="margin-top:2rem;">
+          ${getAllCollections().map(name => `
+            <div class="category-card reveal" onclick="showPage('collection:${name}')" style="cursor:pointer;">
+              <h3>${name}</h3>
+              <p>${PAINTINGS.filter(p => (p.collections || []).includes(name)).length} paintings</p>
+            </div>`).join('')}
+        </div>
+        <div style="text-align:center;margin-top:1.5rem;">
+          <a href="#" class="btn-text" onclick="showPage('collections')">View all collections →</a>
         </div>
       </div>
     </section>
@@ -859,18 +859,102 @@ function renderHome() {
     </section>`;
 }
 
-function renderCollection(medium) {
-  const items = PAINTINGS.filter(p => p.medium === medium);
-  const title = medium === 'watercolor' ? 'Watercolor' : 'Acrylic';
-  const subtitle = medium === 'watercolor'
-    ? 'Seasonal postcards — soft, light, atmospheric'
-    : 'Big paintings — rich color, texture, and depth';
+function getAllCollections() {
+  const set = new Set();
+  PAINTINGS.forEach(p => (p.collections || []).forEach(c => set.add(c)));
+  return Array.from(set).sort();
+}
 
+function renderPaintings() {
+  const available = PAINTINGS.filter(p => !p.sold);
   return `
     <div class="collection-header">
       <a href="#" class="back-link" onclick="showPage('home')">← Back to Home</a>
-      <h1>${title}</h1>
-      <p>${subtitle}</p>
+      <h1>Paintings</h1>
+      <p>All available original works</p>
+    </div>
+    <section style="padding-top:1rem;">
+      <div class="section-inner">
+        <div class="gallery-grid">
+          ${available.length ? available.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);">No available paintings at the moment.</p>'}
+        </div>
+      </div>
+    </section>
+    <section class="contact" id="contact">
+      <div class="section-inner">
+        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
+        <p>Interested in a painting? I'd love to hear from you.</p>
+        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
+      </div>
+    </section>`;
+}
+
+function renderPostcards() {
+  const postcards = PAINTINGS.filter(p => p.medium === 'watercolor');
+  return `
+    <div class="collection-header">
+      <a href="#" class="back-link" onclick="showPage('home')">← Back to Home</a>
+      <h1>Postcards</h1>
+      <p>Seasonal watercolor postcards — soft, light, atmospheric</p>
+    </div>
+    <section style="padding-top:1rem;">
+      <div class="section-inner">
+        <div class="gallery-grid">
+          ${postcards.length ? postcards.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);">No postcards yet — coming soon!</p>'}
+        </div>
+      </div>
+    </section>
+    <section class="contact" id="contact">
+      <div class="section-inner">
+        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
+        <p>Interested in a painting? I'd love to hear from you.</p>
+        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
+      </div>
+    </section>`;
+}
+
+function renderCollections() {
+  const names = getAllCollections();
+  return `
+    <div class="collection-header">
+      <a href="#" class="back-link" onclick="showPage('home')">← Back to Home</a>
+      <h1>Collections</h1>
+      <p>Browse paintings by mood, light, and atmosphere</p>
+    </div>
+    <section style="padding-top:1rem;">
+      <div class="section-inner">
+        <div class="category-grid">
+          ${names.length ? names.map(name => {
+            const count = PAINTINGS.filter(p => (p.collections || []).includes(name)).length;
+            const sample = PAINTINGS.find(p => (p.collections || []).includes(name));
+            return `
+              <div class="category-card reveal" onclick="showPage('collection:${name}')" style="cursor:pointer;position:relative;overflow:hidden;min-height:180px;">
+                ${sample && sample.image ? `<div style="position:absolute;inset:0;opacity:0.15;">${paintingImage(sample,'100%')}</div>` : ''}
+                <div style="position:relative;z-index:1;">
+                  <h3>${name}</h3>
+                  <p>${count} painting${count !== 1 ? 's' : ''}</p>
+                </div>
+              </div>`;
+          }).join('') : '<p style="text-align:center;color:var(--text-muted);">No collections defined yet.</p>'}
+        </div>
+      </div>
+    </section>
+    <section class="contact" id="contact">
+      <div class="section-inner">
+        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
+        <p>Interested in a painting? I'd love to hear from you.</p>
+        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
+      </div>
+    </section>`;
+}
+
+function renderCollectionDetail(name) {
+  const items = PAINTINGS.filter(p => (p.collections || []).includes(name));
+  return `
+    <div class="collection-header">
+      <a href="#" class="back-link" onclick="showPage('collections')">← Back to Collections</a>
+      <h1>${name}</h1>
+      <p>${items.length} painting${items.length !== 1 ? 's' : ''} in this collection</p>
     </div>
     <section style="padding-top:1rem;">
       <div class="section-inner">
@@ -912,11 +996,14 @@ function renderAbout() {
 
 function render() {
   const app = document.getElementById('app');
-  switch (currentPage) {
-    case 'watercolor': app.innerHTML = renderCollection('watercolor'); break;
-    case 'acrylic':    app.innerHTML = renderCollection('acrylic'); break;
-    case 'about':      app.innerHTML = renderAbout(); break;
-    default:           app.innerHTML = renderHome(); break;
+  if (currentPage.startsWith('collection:')) {
+    app.innerHTML = renderCollectionDetail(currentPage.split(':').slice(1).join(':'));
+  } else switch (currentPage) {
+    case 'paintings':    app.innerHTML = renderPaintings(); break;
+    case 'postcards':    app.innerHTML = renderPostcards(); break;
+    case 'collections':  app.innerHTML = renderCollections(); break;
+    case 'about':        app.innerHTML = renderAbout(); break;
+    default:             app.innerHTML = renderHome(); break;
   }
   requestAnimationFrame(() => {
     document.querySelectorAll('.reveal').forEach((el, i) => {
