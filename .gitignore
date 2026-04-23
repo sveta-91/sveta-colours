@@ -1,0 +1,9 @@
+__pycache__/
+.idea/
+
+# Image pipeline — local-only files
+tools/image_pipeline/config.json
+tools/image_pipeline/service-account-key.json
+tools/image_pipeline/tmp/
+tools/image_pipeline/output/
+tools/image_pipeline/logs/

@@ -1,0 +1,12 @@
+{
+  "google_drive_inbox_folder_id": "PASTE_INBOX_FOLDER_ID_HERE",
+  "google_drive_processed_folder_id": "PASTE_PROCESSED_FOLDER_ID_HERE",
+  "google_drive_needs_review_folder_id": "PASTE_NEEDS_REVIEW_FOLDER_ID_HERE",
+  "google_service_account_key_path": "service-account-key.json",
+  "local_tmp_dir": "tmp",
+  "local_output_dir": "output",
+  "local_logs_dir": "logs",
+  "jpg_quality": 92,
+  "overwrite_existing": false,
+  "dry_run": true
+}
