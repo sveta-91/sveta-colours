@@ -437,8 +437,288 @@ def _needs_crop(img_path: Path) -> tuple[bool, str]:
     return False, "No crop needed"
 
 
+def _order_corners(pts: np.ndarray) -> np.ndarray:
+    """Order 4 points as: top-left, top-right, bottom-right, bottom-left."""
+    rect = np.zeros((4, 2), dtype="float32")
+    s = pts.sum(axis=1)
+    rect[0] = pts[np.argmin(s)]
+    rect[2] = pts[np.argmax(s)]
+    d = np.diff(pts, axis=1)
+    rect[1] = pts[np.argmin(d)]
+    rect[3] = pts[np.argmax(d)]
+    return rect
+
+
+def _perspective_crop(img: np.ndarray, corners: np.ndarray) -> np.ndarray:
+    """Crop and warp a quadrilateral region to a rectangle."""
+    rect = _order_corners(corners)
+    tl, tr, br, bl = rect
+
+    max_w = int(max(np.linalg.norm(tr - tl), np.linalg.norm(br - bl)))
+    max_h = int(max(np.linalg.norm(bl - tl), np.linalg.norm(br - tr)))
+
+    dst = np.array([[0, 0], [max_w - 1, 0], [max_w - 1, max_h - 1], [0, max_h - 1]], dtype="float32")
+    M = cv2.getPerspectiveTransform(rect, dst)
+    return cv2.warpPerspective(img, M, (max_w, max_h))
+
+
+def _find_best_quad(img: np.ndarray) -> np.ndarray | None:
+    """Find the largest 4-sided contour that looks like a canvas/frame."""
+    h, w = img.shape[:2]
+    img_area = h * w
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, 30, 100)
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    edges = cv2.dilate(edges, kernel, iterations=2)
+
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        return None
+
+    best = None
+    best_area = 0
+
+    for cnt in sorted(contours, key=cv2.contourArea, reverse=True)[:10]:
+        peri = cv2.arcLength(cnt, True)
+        approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
+
+        if len(approx) == 4:
+            area = cv2.contourArea(approx)
+            if area > img_area * 0.20 and area > best_area:
+                best = approx
+                best_area = area
+
+    return best
+
+
+def _needs_straightening(img: np.ndarray) -> tuple[bool, np.ndarray | None]:
+    """Detect if the painting is photographed at an angle and find the quad to straighten.
+
+    Looks for the largest 4-point contour (canvas/frame). If its corners
+    deviate significantly from a perfect rectangle, the image needs
+    perspective correction.
+
+    Returns (needs_straightening, quad_or_None).
+    """
+    quad = _find_best_quad(img)
+    if quad is None:
+        return False, None
+
+    h, w = img.shape[:2]
+    img_area = h * w
+    quad_area = cv2.contourArea(quad)
+    coverage = quad_area / img_area
+
+    # Only consider quads between 20-90% coverage. High-coverage quads
+    # are likely painted content (architectural lines), not canvas edges.
+    if coverage < 0.20 or coverage > 0.90:
+        return False, None
+
+    # Check how much the quad deviates from a perfect rectangle.
+    # A perfectly straight-on photo has a quad that's almost a rectangle.
+    # An angled photo has a trapezoid.
+    corners = _order_corners(quad.reshape(4, 2).astype("float32"))
+    tl, tr, br, bl = corners
+
+    top_w = np.linalg.norm(tr - tl)
+    bot_w = np.linalg.norm(br - bl)
+    left_h = np.linalg.norm(bl - tl)
+    right_h = np.linalg.norm(br - tr)
+
+    # Ratio of opposite sides — 1.0 = perfect rectangle
+    w_ratio = min(top_w, bot_w) / max(top_w, bot_w) if max(top_w, bot_w) > 0 else 1.0
+    h_ratio = min(left_h, right_h) / max(left_h, right_h) if max(left_h, right_h) > 0 else 1.0
+
+    # Check corner angles — 90° = perfect rectangle
+    def _angle(a, b, c):
+        ba = a - b
+        bc = c - b
+        cos = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc) + 1e-8)
+        return np.degrees(np.arccos(np.clip(cos, -1, 1)))
+
+    angles = [
+        _angle(bl, tl, tr),
+        _angle(tl, tr, br),
+        _angle(tr, br, bl),
+        _angle(br, bl, tl),
+    ]
+    max_angle_dev = max(abs(a - 90) for a in angles)
+
+    logging.info(
+        "Straighten check: coverage=%.0f%% w_ratio=%.3f h_ratio=%.3f max_angle_dev=%.1f°",
+        coverage * 100, w_ratio, h_ratio, max_angle_dev,
+    )
+
+    # Very skewed quads (ratio < 0.70) are likely bad contours, not real canvases
+    if w_ratio < 0.70 or h_ratio < 0.70:
+        return False, None
+
+    # Needs straightening if sides are unequal or angles deviate from 90°
+    if w_ratio < 0.95 or h_ratio < 0.95 or max_angle_dev > 3.0:
+        return True, quad
+
+    return False, None
+
+
+def _line_intersection(p1, p2, p3, p4):
+    """Find intersection of line (p1-p2) and line (p3-p4)."""
+    x1, y1 = p1
+    x2, y2 = p2
+    x3, y3 = p3
+    x4, y4 = p4
+    denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+    if abs(denom) < 1e-8:
+        return None
+    t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom
+    ix = x1 + t * (x2 - x1)
+    iy = y1 + t * (y2 - y1)
+    return np.array([ix, iy], dtype="float32")
+
+
+def _find_frame_corners_from_hough(img: np.ndarray) -> np.ndarray | None:
+    """Use Hough lines to find precise frame/canvas corners.
+
+    More accurate than contour approximation because Hough gives exact
+    line equations, and intersecting them gives exact corner positions.
+    """
+    h, w = img.shape[:2]
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, 50, 150)
+
+    margin = int(min(h, w) * 0.15)
+    mask = np.ones_like(edges) * 255
+    mask[margin:h - margin, margin:w - margin] = 0
+    border_edges = cv2.bitwise_and(edges, mask)
+
+    lines = cv2.HoughLinesP(
+        border_edges, 1, np.pi / 180, 40,
+        minLineLength=int(min(h, w) * 0.20), maxLineGap=15,
+    )
+    if lines is None:
+        return None
+
+    sides: dict[str, list] = {"top": [], "bottom": [], "left": [], "right": []}
+    for line in lines:
+        x1, y1, x2, y2 = line[0]
+        angle = abs(np.degrees(np.arctan2(y2 - y1, x2 - x1)))
+        length = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+        if angle < 10 or angle > 170:
+            mid_y = (y1 + y2) / 2
+            if mid_y < margin:
+                sides["top"].append((x1, y1, x2, y2, length))
+            elif mid_y > h - margin:
+                sides["bottom"].append((x1, y1, x2, y2, length))
+        elif 80 < angle < 100:
+            mid_x = (x1 + x2) / 2
+            if mid_x < margin:
+                sides["left"].append((x1, y1, x2, y2, length))
+            elif mid_x > w - margin:
+                sides["right"].append((x1, y1, x2, y2, length))
+
+    found = {k: v for k, v in sides.items() if v}
+    if len(found) < 4:
+        return None
+
+    best = {}
+    for name, line_list in found.items():
+        longest = max(line_list, key=lambda l: l[4])
+        best[name] = ((longest[0], longest[1]), (longest[2], longest[3]))
+
+    tl = _line_intersection(*best["top"], *best["left"])
+    tr = _line_intersection(*best["top"], *best["right"])
+    br = _line_intersection(*best["bottom"], *best["right"])
+    bl = _line_intersection(*best["bottom"], *best["left"])
+
+    if any(p is None for p in [tl, tr, br, bl]):
+        return None
+
+    corners = np.array([tl, tr, br, bl], dtype="float32")
+    for pt in corners:
+        if pt[0] < -50 or pt[0] > w + 50 or pt[1] < -50 or pt[1] > h + 50:
+            return None
+
+    # Verify the lines represent real canvas edges (not painted content)
+    # by checking the colour contrast across each edge.
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB).astype("float32")
+    contrasts = []
+    for side_name in ["top", "bottom", "left", "right"]:
+        line = best[side_name]
+        x1, y1 = line[0]
+        x2, y2 = line[1]
+        angle = np.arctan2(y2 - y1, x2 - x1)
+        nx, ny = -np.sin(angle), np.cos(angle)
+        strip = 15
+        dists = []
+        for t_val in np.linspace(0, 1, 15):
+            px = int(x1 + t_val * (x2 - x1))
+            py = int(y1 + t_val * (y2 - y1))
+            ix1 = int(np.clip(px + nx * strip, 0, w - 1))
+            iy1 = int(np.clip(py + ny * strip, 0, h - 1))
+            ix2 = int(np.clip(px - nx * strip, 0, w - 1))
+            iy2 = int(np.clip(py - ny * strip, 0, h - 1))
+            dists.append(float(np.linalg.norm(lab[iy1, ix1] - lab[iy2, ix2])))
+        contrasts.append(np.mean(dists))
+
+    avg_contrast = np.mean(contrasts)
+    logging.info("Hough edge contrast: %s avg=%.1f",
+                 " | ".join(f"{c:.0f}" for c in contrasts), avg_contrast)
+
+    if avg_contrast < 65:
+        logging.info("Low cross-edge contrast — lines are painted content, not canvas edges")
+        return None
+
+    return corners
+
+
+def _straighten_image(img_path: Path, config: PipelineConfig) -> Path | None:
+    """Perspective-correct a tilted painting. Returns path to straightened temp file."""
+    img = cv2.imread(str(img_path))
+
+    # Try Hough-intersection corners first — they're more precise and
+    # work even when the contour-based check can't find a good quad.
+    hough_corners = _find_frame_corners_from_hough(img)
+    if hough_corners is not None:
+        # Verify the Hough quad actually needs straightening
+        rect = _order_corners(hough_corners)
+        tl, tr, br, bl = rect
+        top_w = np.linalg.norm(tr - tl)
+        bot_w = np.linalg.norm(br - bl)
+        left_h = np.linalg.norm(bl - tl)
+        right_h = np.linalg.norm(br - tr)
+        w_ratio = min(top_w, bot_w) / max(top_w, bot_w) if max(top_w, bot_w) > 0 else 1.0
+        h_ratio = min(left_h, right_h) / max(left_h, right_h) if max(left_h, right_h) > 0 else 1.0
+
+        if w_ratio < 0.97 or h_ratio < 0.97:
+            logging.info("Using Hough-intersection corners (w_ratio=%.3f h_ratio=%.3f)", w_ratio, h_ratio)
+            straightened = _perspective_crop(img, hough_corners)
+            sh, sw = straightened.shape[:2]
+            logging.info("Straightened: %dx%d", sw, sh)
+            temp_path = img_path.parent / f"_straightened_{img_path.name}"
+            cv2.imwrite(str(temp_path), straightened, [cv2.IMWRITE_JPEG_QUALITY, config.jpg_quality])
+            return temp_path
+
+    # Fall back to contour-based quad
+    needs_fix, quad = _needs_straightening(img)
+    if not needs_fix or quad is None:
+        logging.info("No straightening needed")
+        return None
+
+    corners = quad.reshape(4, 2).astype("float32")
+    logging.info("Using contour-quad corners")
+    straightened = _perspective_crop(img, corners)
+    sh, sw = straightened.shape[:2]
+    logging.info("Straightened: %dx%d", sw, sh)
+
+    temp_path = img_path.parent / f"_straightened_{img_path.name}"
+    cv2.imwrite(str(temp_path), straightened, [cv2.IMWRITE_JPEG_QUALITY, config.jpg_quality])
+    return temp_path
+
+
 def detect_artwork_and_process(local_jpeg_path: Path, config: PipelineConfig) -> ProcessResult:
-    """Detect orientation and whether crop is needed. Route to correct folder."""
+    """Straighten if needed, detect crop need, detect orientation, route to folder."""
     logging.info("Processing image: %s", local_jpeg_path.name)
 
     if not local_jpeg_path.exists():
@@ -446,24 +726,42 @@ def detect_artwork_and_process(local_jpeg_path: Path, config: PipelineConfig) ->
         placeholder_output = config.needs_review_dir / local_jpeg_path.name
         return ProcessResult(status="processed", output_path=placeholder_output, orientation=None, reason="dry-run")
 
-    orientation = _detect_content_orientation(local_jpeg_path)
-
+    # Step 1: check if crop is needed (also used to gate straightening)
     needs_crop, crop_reason = _needs_crop(local_jpeg_path)
+
+    # Step 2: straighten tilted paintings (only if crop detection found background)
+    straightened_path = None
+    if needs_crop:
+        straightened_path = _straighten_image(local_jpeg_path, config)
+    detect_path = straightened_path if straightened_path else local_jpeg_path
+
+    # Re-check crop on straightened image if applicable
+    if straightened_path:
+        needs_crop, crop_reason = _needs_crop(detect_path)
     logging.info("Crop check: %s", crop_reason)
 
+    # Step 3: detect orientation
+    orientation = _detect_content_orientation(detect_path)
     output_dir = config.portrait_dir if orientation == "portrait" else config.landscape_dir
     output_path = output_dir / local_jpeg_path.name
 
-    img = Image.open(local_jpeg_path)
+    img = Image.open(detect_path)
     w, h = img.size
     img.close()
-    logging.info("Orientation: %s (%dx%d)", orientation, w, h)
+
+    tag = " [straightened]" if straightened_path else ""
+    logging.info("Orientation: %s (%dx%d)%s", orientation, w, h, tag)
+
+    parts = []
+    if straightened_path:
+        parts.append("Straightened")
+    parts.append(crop_reason)
 
     return ProcessResult(
         status="processed",
         output_path=output_path,
         orientation=orientation,
-        reason=crop_reason,
+        reason=" + ".join(parts),
     )
 
 
@@ -476,7 +774,11 @@ def save_processed_output(result: ProcessResult, normalized_path: Path, config: 
         logging.info("[dry-run] Source file not on disk, skipping save")
         return result
 
-    img = Image.open(normalized_path)
+    # Use straightened version if available
+    straightened_path = normalized_path.parent / f"_straightened_{normalized_path.name}"
+    source = straightened_path if straightened_path.exists() else normalized_path
+
+    img = Image.open(source)
     img = img.convert("RGB")
     result.output_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(result.output_path, "JPEG", quality=config.jpg_quality)
@@ -540,7 +842,10 @@ def process_one_file(file_meta: dict, config: PipelineConfig) -> None:
         logging.exception("Failed file %s: %s", file_meta.get("name", "<unknown>"), exc)
 
     finally:
-        cleanup_temp_files([p for p in [local_source_path, normalized_path] if p is not None])
+        temps = [p for p in [local_source_path, normalized_path] if p is not None]
+        if normalized_path is not None:
+            temps.append(normalized_path.parent / f"_straightened_{normalized_path.name}")
+        cleanup_temp_files(temps)
 
 
 def run_pipeline(config: PipelineConfig) -> None:
