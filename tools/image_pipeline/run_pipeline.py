@@ -434,6 +434,11 @@ def _needs_crop(img_path: Path) -> tuple[bool, str]:
     if coverage < 0.85:
         return True, f"Needs crop — content covers only {coverage:.0%} of image"
 
+    # Diagonal-only strict bg corners suggest complex background (e.g. easel)
+    # that can't be auto-cropped — flag for manual review
+    if len(bg_strict) == 2 and set(bg_strict) in [{"TL", "BR"}, {"TR", "BL"}]:
+        return False, "Needs manual review — diagonal background"
+
     return False, "No crop needed"
 
 
@@ -681,7 +686,6 @@ def _straighten_image(img_path: Path, config: PipelineConfig) -> Path | None:
     # work even when the contour-based check can't find a good quad.
     hough_corners = _find_frame_corners_from_hough(img)
     if hough_corners is not None:
-        # Verify the Hough quad actually needs straightening
         rect = _order_corners(hough_corners)
         tl, tr, br, bl = rect
         top_w = np.linalg.norm(tr - tl)
@@ -717,8 +721,136 @@ def _straighten_image(img_path: Path, config: PipelineConfig) -> Path | None:
     return temp_path
 
 
+def _trim_frame_border(img: np.ndarray) -> np.ndarray:
+    """Detect and remove uniform-color frame/border from a cropped image.
+
+    Scans inward from each edge looking for strips of uniform color (wooden frame,
+    black frame, etc.) and trims them to reveal the painting underneath.
+    """
+    h, w = img.shape[:2]
+    if h < 60 or w < 60:
+        return img
+
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB).astype("float32")
+    band = 3  # Fine resolution for precise frame boundary detection
+    max_trim_h = int(h * 0.15)
+    max_trim_w = int(w * 0.15)
+
+    def _scan(get_strip, max_trim):
+        if max_trim < band * 3:
+            return 0
+        ref = get_strip(0, band).reshape(-1, 3)
+        ref_color = np.mean(ref, axis=0)
+        if np.std(ref, axis=0).mean() > 40:
+            return 0  # Edge already has high colour variance — not a frame
+        trim = 0
+        for start in range(0, max_trim - band + 1, band):
+            pixels = get_strip(start, start + band).reshape(-1, 3)
+            mean_c = np.mean(pixels, axis=0)
+            # Frame: stays close to edge reference colour and has low variance.
+            # Higher std tolerance (35) handles wood grain in thin bands.
+            if np.linalg.norm(mean_c - ref_color) < 35 and np.std(pixels, axis=0).mean() < 35:
+                trim = start + band
+            else:
+                break
+        return trim if trim >= band * 3 else 0
+
+    top = _scan(lambda s, e: lab[s:e, :, :], max_trim_h)
+    bottom = _scan(lambda s, e: lab[h - e:h - s, :, :], max_trim_h)
+    left = _scan(lambda s, e: lab[:, s:e, :], max_trim_w)
+    right = _scan(lambda s, e: lab[:, w - e:w - s, :], max_trim_w)
+
+    if top + bottom + left + right == 0:
+        return img
+
+    y1, y2 = top, (h - bottom) if bottom > 0 else h
+    x1, x2 = left, (w - right) if right > 0 else w
+    if y2 - y1 < 50 or x2 - x1 < 50:
+        return img
+
+    logging.info("Frame trim: top=%d bottom=%d left=%d right=%d → %dx%d",
+                 top, bottom, left, right, x2 - x1, y2 - y1)
+    return img[y1:y2, x1:x2]
+
+
+def _crop_image(img_path: Path, config: PipelineConfig) -> Path | None:
+    """Crop background from the image. Returns path to cropped temp file, or None.
+
+    Tries Hough-intersection corners first (precise), then quad contour,
+    then content bounding box as fallback.
+    """
+    img = cv2.imread(str(img_path))
+    h, w = img.shape[:2]
+    img_area = h * w
+    cropped = None
+    method = None
+
+    # Strategy 1: Hough-intersection corners (most precise)
+    hough_corners = _find_frame_corners_from_hough(img)
+    if hough_corners is not None:
+        hough_area = cv2.contourArea(hough_corners)
+        hough_cov = hough_area / img_area
+        if 0.30 < hough_cov < 0.85:
+            cropped = _perspective_crop(img, hough_corners)
+            method = f"Hough crop ({hough_cov:.0%})"
+
+    # Strategy 2: quad contour
+    if cropped is None:
+        quad = _find_best_quad(img)
+        if quad is not None:
+            quad_area = cv2.contourArea(quad)
+            quad_cov = quad_area / img_area
+            if 0.20 < quad_cov < 0.92:
+                corners = quad.reshape(4, 2).astype("float32")
+                cropped = _perspective_crop(img, corners)
+                method = f"Quad crop ({quad_cov:.0%})"
+
+    # Strategy 3: content bounding box
+    if cropped is None:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blurred, 30, 100)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        edges = cv2.dilate(edges, kernel, iterations=3)
+        coords = cv2.findNonZero(edges)
+        if coords is not None:
+            x, y, bw, bh = cv2.boundingRect(coords)
+            m = int(min(h, w) * 0.02)
+            x, y = min(x + m, w - 1), min(y + m, h - 1)
+            bw, bh = max(bw - 2 * m, 1), max(bh - 2 * m, 1)
+            bbox_cov = (bw * bh) / img_area
+            if bbox_cov < 0.95:
+                cropped = img[y:y + bh, x:x + bw]
+                method = f"Bbox crop ({bbox_cov:.0%})"
+
+    if cropped is None:
+        return None
+
+    # Trim any uniform-color frame border from the cropped result
+    cropped = _trim_frame_border(cropped)
+
+    ch, cw = cropped.shape[:2]
+
+    # If crop+trim barely changed the image (>85% of original), the painting
+    # couldn't be separated from the frame/background — return None to trigger
+    # needs-review in the caller.
+    crop_ratio = (ch * cw) / img_area
+    if crop_ratio > 0.85:
+        logging.info("Crop too shallow (%.0f%% retained) — can't isolate painting", crop_ratio * 100)
+        return None
+
+    if ch < 50 or cw < 50:
+        logging.warning("Crop too small (%dx%d) — skipping", cw, ch)
+        return None
+
+    logging.info("%s → %dx%d", method, cw, ch)
+    temp_path = img_path.parent / f"_cropped_{img_path.name}"
+    cv2.imwrite(str(temp_path), cropped, [cv2.IMWRITE_JPEG_QUALITY, config.jpg_quality])
+    return temp_path
+
+
 def detect_artwork_and_process(local_jpeg_path: Path, config: PipelineConfig) -> ProcessResult:
-    """Straighten if needed, detect crop need, detect orientation, route to folder."""
+    """Straighten, crop, detect orientation, route to folder."""
     logging.info("Processing image: %s", local_jpeg_path.name)
 
     if not local_jpeg_path.exists():
@@ -726,21 +858,42 @@ def detect_artwork_and_process(local_jpeg_path: Path, config: PipelineConfig) ->
         placeholder_output = config.needs_review_dir / local_jpeg_path.name
         return ProcessResult(status="processed", output_path=placeholder_output, orientation=None, reason="dry-run")
 
-    # Step 1: check if crop is needed (also used to gate straightening)
+    # Step 1: check if crop is needed (also gates straightening)
     needs_crop, crop_reason = _needs_crop(local_jpeg_path)
 
-    # Step 2: straighten tilted paintings (only if crop detection found background)
+    # Flag for manual review if detection is uncertain (e.g. complex background)
+    if "manual review" in crop_reason.lower():
+        logging.info("Crop check: %s", crop_reason)
+        output_path = config.needs_review_dir / local_jpeg_path.name
+        return ProcessResult(status="needs-review", output_path=output_path, orientation=None, reason=crop_reason)
+
+    # Step 2: straighten tilted paintings
     straightened_path = None
     if needs_crop:
         straightened_path = _straighten_image(local_jpeg_path, config)
-    detect_path = straightened_path if straightened_path else local_jpeg_path
+    work_path = straightened_path if straightened_path else local_jpeg_path
 
-    # Re-check crop on straightened image if applicable
+    # Re-check crop on straightened image
     if straightened_path:
-        needs_crop, crop_reason = _needs_crop(detect_path)
+        needs_crop, crop_reason = _needs_crop(work_path)
     logging.info("Crop check: %s", crop_reason)
 
-    # Step 3: detect orientation
+    # Step 3: crop if needed
+    cropped_path = None
+    if needs_crop:
+        cropped_path = _crop_image(work_path, config)
+        if cropped_path is None:
+            logging.info("Crop failed — sending to needs-review")
+            output_path = config.needs_review_dir / local_jpeg_path.name
+            return ProcessResult(
+                status="needs-review",
+                output_path=output_path,
+                orientation=None,
+                reason=f"{crop_reason} — crop failed",
+            )
+
+    # Step 4: detect orientation from best available image
+    detect_path = cropped_path or work_path
     orientation = _detect_content_orientation(detect_path)
     output_dir = config.portrait_dir if orientation == "portrait" else config.landscape_dir
     output_path = output_dir / local_jpeg_path.name
@@ -749,7 +902,12 @@ def detect_artwork_and_process(local_jpeg_path: Path, config: PipelineConfig) ->
     w, h = img.size
     img.close()
 
-    tag = " [straightened]" if straightened_path else ""
+    tags = []
+    if straightened_path:
+        tags.append("straightened")
+    if cropped_path:
+        tags.append("cropped")
+    tag = f" [{'+'.join(tags)}]" if tags else ""
     logging.info("Orientation: %s (%dx%d)%s", orientation, w, h, tag)
 
     parts = []
@@ -774,9 +932,15 @@ def save_processed_output(result: ProcessResult, normalized_path: Path, config: 
         logging.info("[dry-run] Source file not on disk, skipping save")
         return result
 
-    # Use straightened version if available
+    # Use the most processed version available: cropped > straightened > original
+    cropped_path = normalized_path.parent / f"_cropped_{normalized_path.name}"
     straightened_path = normalized_path.parent / f"_straightened_{normalized_path.name}"
-    source = straightened_path if straightened_path.exists() else normalized_path
+    if cropped_path.exists():
+        source = cropped_path
+    elif straightened_path.exists():
+        source = straightened_path
+    else:
+        source = normalized_path
 
     img = Image.open(source)
     img = img.convert("RGB")
@@ -845,6 +1009,7 @@ def process_one_file(file_meta: dict, config: PipelineConfig) -> None:
         temps = [p for p in [local_source_path, normalized_path] if p is not None]
         if normalized_path is not None:
             temps.append(normalized_path.parent / f"_straightened_{normalized_path.name}")
+            temps.append(normalized_path.parent / f"_cropped_{normalized_path.name}")
         cleanup_temp_files(temps)
 
 
