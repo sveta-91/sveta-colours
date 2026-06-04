@@ -4,7 +4,7 @@ Personal art portfolio site for Sveta. Contains both the static site and a local
 
 ## Project Structure
 
-- `sveta-colours.html` — main site page
+- `index.html` — main site page
 - `tools/image_pipeline/` — Python pipeline that downloads artwork photos from Google Drive, processes them, and re-uploads
 - `docs/roadmap.md` — pipeline implementation roadmap
 
