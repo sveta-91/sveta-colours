@@ -197,7 +197,6 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
         </div>
         <div class="btn-row">
           <button type="button" onclick="downloadImg()">Download</button>
-          <button type="button" class="primary" onclick="saveToDrive()" id="btnDrive">Drive</button>
           <button type="button" class="primary" onclick="saveAll()" id="btnSaveAll">Save to Drive + Sheets</button>
         </div>
         <div class="status" id="saveStatus" aria-live="polite" role="status"></div>
@@ -952,23 +951,26 @@ async function saveAll() {
     btn.disabled = false;
   }
 }
-async function saveToDrive(){
-  const btn=document.getElementById('btnDrive');btn.disabled=true;setStatus('saveStatus','');
-  try{const token=await getAccessToken();if(!token){setStatus('saveStatus','Auth failed','err');btn.disabled=false;return;}await uploadToDrive(token);setStatus('saveStatus','Saved to Drive ✓','ok');}
-  catch(e){setStatus('saveStatus','Error: '+e.message,'err');}
-  btn.disabled=false;
-}
-async function uploadToDrive(token){
-  const name=(document.getElementById('fTitle').value||'photo')+'.'+getExt();
-  const mime=getMime(),q=getQ();
-  // Compose from FULL-RES off-screen canvas — never from the visible preview.
-  const blob=await composeFullBlob(mime,q);
-  const form=new FormData();
-  form.append('metadata',new Blob([JSON.stringify({name,parents:[DRIVE_FOLDER]})],{type:'application/json'}));
-  form.append('file',blob,name);
-  const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',{method:'POST',headers:{Authorization:'Bearer '+token},body:form});
-  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||res.status);}
-  const d=await res.json();return `https://drive.google.com/file/d/${d.id}/view`;
+async function uploadToDrive(token) {
+  const fmt = document.getElementById('exportFormat').value;
+  const mime = fmt === 'png' ? 'image/png' : fmt === 'webp' ? 'image/webp' : 'image/jpeg';
+  const q = +document.getElementById('jpegQuality').value / 100;
+  const blob = await composeFullBlob(mime, q);
+
+  const title = (document.getElementById('fTitle').value.trim() || 'untitled') + '.' + fmt;
+  const meta = { name: title, parents: [DRIVE_FOLDER] };
+
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
+  form.append('file', blob);
+
+  const res = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
+    { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: form }
+  );
+  if (!res.ok) throw new Error('Drive upload failed: ' + res.status);
+  const j = await res.json();
+  return j.webViewLink;
 }
 
 // Sheets RAW already prevents formula execution, but normalize for dedup/display.
