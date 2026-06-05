@@ -13,9 +13,9 @@
 <meta property="og:title" content="Sveta Colours — Original Paintings">
 <meta property="og:description" content="Original acrylic and watercolor paintings — landscapes, light, quiet places. One-of-a-kind works on canvas, shipped worldwide.">
 <meta property="og:type" content="website">
-<!-- TODO: set canonical URL once domain is final -->
-<meta property="og:url" content="https://svetacolours.com/">
+<meta property="og:url" content="https://www.sveta-colours.com/">
 <meta property="og:site_name" content="Sveta Colours">
+<link rel="canonical" href="https://www.sveta-colours.com/">
 <!-- og:image / twitter:image meta tags injected by JS only when SITE_DATA.ogImage is set. -->
 
 <!-- Twitter Card -->
@@ -38,7 +38,7 @@
   "@type": "Person",
   "name": "Sveta",
   "jobTitle": "Painter",
-  "url": "https://svetacolours.com",
+  "url": "https://www.sveta-colours.com",
   "sameAs": []
 }
 </script>
@@ -297,11 +297,15 @@ section { padding: 6rem 2rem; }
   margin-top: 68px;
 }
 
+/* Hero takes the shape of the painting itself.
+   --hero-ratio is set inline from widthIn/heightIn (pre-paint) and refined
+   on image load from natural dimensions. max-height clamps tall portraits;
+   min-height keeps tiny images from collapsing. */
 .hero-image-wrap {
   width: 100%;
-  height: 75vh;
-  min-height: 540px;
-  max-height: 900px;
+  aspect-ratio: var(--hero-ratio, 4/5);
+  max-height: 88vh;
+  min-height: 380px;
   background: var(--surface-alt);
   position: relative;
   overflow: hidden;
@@ -310,8 +314,20 @@ section { padding: 6rem 2rem; }
 .hero-image-wrap img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
+}
+
+/* Hero rendered as an interactive button when a painting is present;
+   strip default button chrome so it visually matches the painting frame. */
+button.hero-image-wrap {
+  display: block;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
 }
 
 .hero-image-wrap .hero-placeholder {
@@ -385,46 +401,44 @@ section { padding: 6rem 2rem; }
 /* --- Gallery Grid: CSS Grid masonry (left-to-right reading order) --- */
 /* Row height is small (8px); each card spans N rows computed in JS from its
    rendered height. This preserves the array order top-to-bottom, left-to-right
-   while still giving a tight masonry look. Falls back to a plain auto-fit grid
-   if JS does not run. */
+   while still giving a tight masonry look. Before JS computes spans, cards
+   flow as a regular auto-flow grid with proper aspect-ratio per card,
+   which avoids the FOUC from a fixed span placeholder. */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  grid-auto-rows: 8px;
-  gap: 0 2.5rem;
-  counter-reset: card;
+  /* Before masonry-ready: cards lay out with auto row height — each one
+     naturally takes the space its --ratio aspect-ratio asks for, so we
+     never get the giant 480px "span 60" placeholder block. Once JS has
+     measured + assigned spans, we switch to a small grid-auto-rows so
+     spans-of-N work cleanly. */
+  grid-auto-rows: auto;
+  gap: 3rem 2.5rem;
   position: relative;
 }
-
-/* Until JS calculates the span, each card sits in a single column flow.
-   This avoids huge gaps on first paint. */
-.gallery-grid:not(.masonry-ready) .painting-card {
-  grid-row: span 60;
-}
+.gallery-grid.masonry-ready { grid-auto-rows: 8px; }
 
 @media (max-width: 1024px) {
-  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 2rem; }
+  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2.5rem 2rem; }
 }
 @media (max-width: 600px)  {
-  .gallery-grid { grid-template-columns: 1fr; gap: 0; }
+  .gallery-grid { grid-template-columns: 1fr; gap: 2.5rem 0; }
 }
 
 .painting-card {
   width: 100%;
-  margin-bottom: 3rem;
   cursor: pointer;
   background: none;
   border: none;
   padding: 0;
   text-align: left;
   position: relative;
-  counter-increment: card;
 }
 
 /* Editorial catalog number — sits above the image, top-left of the card.
-   Consistent at every viewport width. */
-.painting-card::before {
-  content: "№ " counter(card, decimal-leading-zero);
+   Rendered as a real inline element (.card-number) inside the card so
+   numbering is global and stable, not local to each grid via CSS counter. */
+.painting-card .card-number {
   display: block;
   margin-bottom: 0.55rem;
   font-family: var(--font-display);
@@ -453,7 +467,10 @@ section { padding: 6rem 2rem; }
 
 .painting-card .card-image img {
   width: 100%; height: 100%;
-  object-fit: cover; /* dynamic aspect ratio means we can cover safely */
+  /* contain is a failsafe: if --ratio is stale (placeholder, pre-onload),
+     we never crop the artwork. background bone shows around the edges. */
+  object-fit: contain;
+  background: var(--surface-alt);
   transition: transform 0.6s ease;
 }
 
@@ -1139,6 +1156,42 @@ section { padding: 6rem 2rem; }
 }
 .modal-collections .chip:hover { border-color: var(--text); color: var(--text); }
 
+/* Expandable "Details" block under the modal meta table.
+   Holds the secondary fields (framing, ships from, certificate) so the
+   primary meta stays focused: size, medium, year, signed. */
+.modal-extra {
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+  border-top: 1px solid var(--hairline);
+}
+.modal-extra summary {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  padding: 0.9rem 0;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-extra summary::-webkit-details-marker { display: none; }
+.modal-extra summary::after {
+  content: '+';
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+}
+.modal-extra[open] summary::after { content: '\2013'; }
+.modal-extra .modal-meta {
+  margin: 0 0 1rem;
+  padding-top: 0;
+  border-top: none;
+}
+
 /* --- About Full --- */
 .about-full { max-width: var(--max-w-text); margin: 0 auto; }
 
@@ -1267,12 +1320,17 @@ footer {
 
   nav .nav-links.open { display: flex; }
 
-  .hero-image-wrap { height: 60vh; min-height: 380px; }
+  .hero-image-wrap { max-height: 80vh; min-height: 320px; }
   .hero-meta { padding: 1.75rem 1.5rem 3rem; }
   .hero-title { font-size: clamp(2.6rem, 11vw, 4.4rem); }
 
   .modal-content { grid-template-columns: 1fr; }
-  .modal-image { min-height: 280px; max-height: 50vh; }
+  /* Image first, taller — let the painting breathe on phones. */
+  .modal-image {
+    aspect-ratio: var(--ratio, 4/5);
+    min-height: 240px;
+    max-height: 70vh;
+  }
   .modal-details { max-height: none; padding: 1.75rem 1.5rem; }
   .modal-meta .row { grid-template-columns: 100px 1fr; }
 
@@ -1338,7 +1396,10 @@ nav .logo .logo-squiggle {
   border: 0;
 }
 
-/* --- Custom cursor (hover on cards / hero) --- */
+/* --- Custom cursor (hover on cards / hero) ---
+   Positioned via a single inline transform (set per rAF frame from JS).
+   Visibility toggles opacity only — the transform stays in JS-driven
+   land so we get a single style write per frame. */
 .custom-cursor {
   position: fixed;
   top: 0; left: 0;
@@ -1348,9 +1409,8 @@ nav .logo .logo-squiggle {
   background: rgba(247, 245, 239, 0.42);
   backdrop-filter: blur(2px);
   pointer-events: none;
-  transform: translate(-50%, -50%) scale(0.6);
   opacity: 0;
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition: opacity 0.18s ease;
   z-index: 300;
   display: flex;
   align-items: center;
@@ -1361,10 +1421,10 @@ nav .logo .logo-squiggle {
   color: var(--text);
   letter-spacing: 0.02em;
   user-select: none;
+  will-change: transform;
 }
 .custom-cursor.visible {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
 }
 @media (hover: none), (prefers-reduced-motion: reduce) {
   .custom-cursor { display: none !important; }
@@ -1392,6 +1452,48 @@ body.cursor-hide * { cursor: none !important; }
   .btn, a, .modal, .custom-cursor { transition: none !important; animation: none !important; }
   .reveal { opacity: 1; transform: none; }
   html { scroll-behavior: auto; }
+}
+
+/* Sticky mobile CTA bar — only appears on small screens once the user
+   has scrolled past the hero. Renders as a mailto link, ≤56px tall. */
+.mobile-cta {
+  display: none;
+}
+@media (max-width: 768px) {
+  .mobile-cta {
+    display: flex;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 90;
+    align-items: center;
+    justify-content: center;
+    height: 56px;
+    padding: 0 1.5rem;
+    background: rgba(20, 19, 15, 0.96);
+    color: var(--paper);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    transform: translateY(100%);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .mobile-cta.visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .mobile-cta::after {
+    content: ' \2192';
+    margin-left: 0.4rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-cta { transition: none; }
 }
 
 /* Skip link */
@@ -1442,6 +1544,11 @@ body.cursor-hide * { cursor: none !important; }
 
 <!-- Editorial footer (content injected by JS so it can react to SITE_DATA) -->
 <footer id="footer" aria-label="Site footer"></footer>
+
+<!-- Sticky mobile CTA: visible only ≤768px once scrolled past the hero.
+     Hidden on /faq /about-only pages would be possible but we keep it
+     site-wide for the simple mailto. -->
+<a id="mobileCTA" class="mobile-cta" aria-label="Write to studio">Write to studio</a>
 
 <!-- Painting JSON-LD slot (filled by JS) -->
 <script type="application/ld+json" id="paintings-ld">{}</script>
@@ -1653,6 +1760,8 @@ async function loadFromSheet() {
   } catch (err) {
     console.warn('Could not load from Google Sheet:', err.message);
   }
+  // Assign stable global catalog numbers (used in cards + hero + cursor).
+  assignCatalogNumbers();
   injectPaintingsLD();
   render();
 }
@@ -1718,6 +1827,26 @@ function formatDimensions(p) {
 
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
+/* Hard-cap a description to keep the modal scannable.
+   Returns the FIRST 2 sentences OR a 240-char prefix — whichever is
+   shorter — with a trailing ellipsis when truncation occurred. */
+function truncateDescription(text) {
+  if (!text) return '';
+  const clean = String(text).trim();
+  if (!clean) return '';
+  // Split into sentences (keep terminator). Quick, language-agnostic-ish.
+  const sentences = clean.match(/[^.!?]+[.!?]+(\s+|$)|[^.!?]+$/g) || [clean];
+  const twoSent = sentences.slice(0, 2).join('').trim();
+  const byChars = clean.length > 240 ? clean.slice(0, 240).trim() + '…' : clean;
+  // Whichever is shorter wins.
+  const chosen = twoSent.length <= byChars.length ? twoSent : byChars;
+  // Append ellipsis if we actually trimmed and didn't already.
+  if (chosen.length < clean.length && !/[…]$/.test(chosen)) {
+    return chosen.replace(/[.!?]?\s*$/, '') + '…';
+  }
+  return chosen;
+}
+
 function paintingMeta(p) {
   // Build editorial meta string: "Acrylic on canvas. 2024. 16 × 20 in / 40.6 × 50.8 cm."
   const parts = [];
@@ -1728,7 +1857,8 @@ function paintingMeta(p) {
   if (p.year) parts.push(p.year);
   const dims = formatDimensions(p);
   if (dims) parts.push(dims);
-  return parts.length ? parts.join('. ') + '.' : '';
+  // No trailing period — dimensions already end the meta string cleanly.
+  return parts.length ? parts.join(' · ') : '';
 }
 
 function aspectRatioFor(p) {
@@ -1770,9 +1900,18 @@ function paintingImage(p, opts) {
   if (p.image) {
     const loadAttr = opts.isHero ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"';
     const crossOrigin = opts.crossOrigin ? 'crossorigin="anonymous"' : '';
-    // onload: derive the real aspect ratio from the loaded image so landscape
-    // paintings don't get center-cropped by a portrait-default container.
-    const onLoad = `onload="var c=this.closest('.card-image-inner');if(c&&this.naturalWidth&&this.naturalHeight)c.style.setProperty('--ratio',this.naturalWidth+'/'+this.naturalHeight);"`;
+    // onload: refine the real aspect ratio from natural dims, but only when
+    // it differs from the pre-paint ratio by more than 5%. This avoids a
+    // visible layout shift (CLS) in the common case where widthIn/heightIn
+    // in the Sheet already match the photo.
+    const ratioVar = opts.heroRatioVar ? '--hero-ratio' : '--ratio';
+    const closestSel = opts.heroRatioVar ? '.hero-image-wrap' : '.card-image-inner';
+    // Compare to the container's actual rendered aspect ratio (W/H of its
+    // bounding rect, which is what aspect-ratio currently produces). Only
+    // write a new --ratio when the natural ratio differs by >5%. For a
+    // Sheet row with accurate widthIn/heightIn, the rendered W/H already
+    // matches the photo and the onload becomes a no-op (no CLS).
+    const onLoad = `onload="var c=this.closest('${closestSel}');if(!c||!this.naturalWidth||!this.naturalHeight)return;var rect=c.getBoundingClientRect();if(!rect.width||!rect.height)return;var nr=this.naturalWidth/this.naturalHeight;var cur=rect.width/rect.height;if(Math.abs(nr-cur)/cur<0.05)return;c.style.setProperty('${ratioVar}',this.naturalWidth+'/'+this.naturalHeight);"`;
     return `<img src="${p.image}" alt="${alt}" ${loadAttr} ${crossOrigin} ${onLoad}>`;
   }
   return `<div style="width:100%;height:100%;min-height:240px;background:${placeholderGradient(p.id)};display:flex;align-items:center;justify-content:center;" role="img" aria-label="${alt}"><span style="font-family:var(--font-display);font-style:italic;font-size:1.1rem;color:rgba(20,19,15,0.22);text-align:center;padding:1rem;">${p.title}</span></div>`;
@@ -1780,13 +1919,22 @@ function paintingImage(p, opts) {
 
 function cardHTML(p) {
   const ratio = aspectRatioFor(p);
+  // Sold cards: no price in the card (art-critic note — sold prices read
+  // as commerce, not curation). Just an italic "Sold" tag next to title.
+  // The struck-through price is kept for the modal where it informs.
   const priceHTML = p.sold
-    ? `<span class="card-price sold">${p.price ? CURRENCY + p.price.toLocaleString() : 'Sold'}${SOLD_STROKE_SVG}</span>`
+    ? ''
     : (p.price ? `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}</span>` : '');
   const soldTag = p.sold ? `<span class="card-sold-tag">Sold</span>` : '';
   const meta = paintingMeta(p);
+  // Global catalog number assigned once when PAINTINGS is loaded; same
+  // painting always shows the same № across pages.
+  const num = p.catalogNumber != null
+    ? `<span class="card-number" aria-hidden="true">&#8470; ${String(p.catalogNumber).padStart(2,'0')}</span>`
+    : '';
   return `
     <button class="painting-card reveal" type="button" data-card-id="${p.id}" onclick="openModal(${p.id})" aria-label="Open details for ${p.title}">
+      ${num}
       <div class="card-image">
         <div class="card-image-inner" style="--ratio: ${ratio};">${paintingImage(p)}</div>
       </div>
@@ -1813,35 +1961,50 @@ function openModal(id) {
 
   const subject = encodeURIComponent(`Inquiry about "${p.title}"`);
 
-  // Build meta rows — only render fields that have data
-  const metaRows = [];
+  // Primary meta — what every collector wants up-front.
+  const primaryRows = [];
   const dims = formatDimensions(p);
-  if (dims) metaRows.push(['Size', dims]);
-  if (p.medium) metaRows.push(['Medium', capitalize(p.medium) + (p.surface ? ` on ${p.surface.toLowerCase()}` : '')]);
-  if (p.year) metaRows.push(['Year', p.year]);
-  if (p.signed) metaRows.push(['Signed', p.signed]);
-  if (p.framed) metaRows.push(['Framing', p.framed]);
-  if (p.shippingFrom) metaRows.push(['Ships from', p.shippingFrom]);
-  if (p.certificate) metaRows.push(['Authenticity', p.certificate]);
+  if (dims) primaryRows.push(['Size', dims]);
+  if (p.medium) primaryRows.push(['Medium', capitalize(p.medium) + (p.surface ? ` on ${p.surface.toLowerCase()}` : '')]);
+  if (p.year) primaryRows.push(['Year', p.year]);
+  if (p.signed) primaryRows.push(['Signed', p.signed]);
 
-  const metaHTML = metaRows.length
-    ? `<div class="modal-meta">${metaRows.map(([l, v]) =>
-        `<div class="row"><span class="label">${l}</span><span class="value">${v}</span></div>`
-      ).join('')}</div>`
+  // Secondary meta — practical but lower priority. Tucked into a <details>
+  // block so the primary table stays tight.
+  const extraRows = [];
+  if (p.framed) extraRows.push(['Framing', p.framed]);
+  if (p.shippingFrom) extraRows.push(['Ships from', p.shippingFrom]);
+  if (p.certificate) extraRows.push(['Authenticity', p.certificate]);
+
+  const rowsToHTML = (rows) => rows.map(([l, v]) =>
+    `<div class="row"><span class="label">${l}</span><span class="value">${v}</span></div>`
+  ).join('');
+
+  const metaHTML = primaryRows.length
+    ? `<div class="modal-meta">${rowsToHTML(primaryRows)}</div>`
+    : '';
+
+  const extraHTML = extraRows.length
+    ? `<details class="modal-extra"><summary>Details</summary><div class="modal-meta">${rowsToHTML(extraRows)}</div></details>`
     : '';
 
   const priceHTML = p.sold
     ? `<div class="modal-price sold">${p.price ? `${CURRENCY}${p.price.toLocaleString()}` : 'Sold'}${SOLD_STROKE_SVG}</div>`
     : (p.price ? `<div class="modal-price">${CURRENCY}${p.price.toLocaleString()}</div>` : '');
 
+  // Trim long descriptions to keep the modal scannable: hard-cap at the
+  // first 2 sentences OR 240 chars, whichever is shorter. Ellipsis on
+  // truncate.
+  const truncatedDesc = truncateDescription(p.description);
+
   const ctaHTML = p.sold
     ? `<div class="modal-cta">
-         <div class="cta-note"><span class="italic">This piece has found a home.</span> Write to commission something similar, or to be notified about new work.</div>
+         <div class="cta-note"><span class="italic">Sold.</span> Write if you'd like a similar commission.</div>
          <a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">Write to studio &rarr;</a>
        </div>`
     : `<div class="modal-cta">
          <a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">Write to studio &rarr;</a>
-         <div class="cta-note">Typical reply within 24 hours &middot; Worldwide shipping with insurance &middot; 14-day returns</div>
+         <div class="cta-note">Replies within a day or two. Shipped from Canada, insured.</div>
        </div>`;
 
   const collectionsHTML = (p.collections || []).length
@@ -1851,18 +2014,20 @@ function openModal(id) {
     : '';
 
   const subMeta = paintingMeta(p);
+  const modalRatio = aspectRatioFor(p);
 
   // Modal image needs crossorigin for canvas sampling. Will silently fall back
   // if CORS blocks (Google Drive sometimes does).
   document.getElementById('modalContent').innerHTML = `
     <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
-    <div class="modal-image">${paintingImage(p, { crossOrigin: true })}</div>
+    <div class="modal-image" style="--ratio: ${modalRatio};">${paintingImage(p, { crossOrigin: true })}</div>
     <div class="modal-details">
       <h2 id="modalTitle">${p.title}</h2>
       ${subMeta ? `<div class="modal-sub">${subMeta}</div>` : ''}
-      ${p.description ? `<p class="description">${p.description}</p>` : ''}
+      ${truncatedDesc ? `<p class="description">${truncatedDesc}</p>` : ''}
       ${priceHTML}
       ${metaHTML}
+      ${extraHTML}
       ${ctaHTML}
       ${collectionsHTML}
     </div>`;
@@ -1993,6 +2158,90 @@ function injectPaintingsLD() {
 }
 
 /* ========================================================
+   CURATION HELPERS
+   ========================================================
+   selectFeatured — picks the home-page "Recent paintings" set.
+
+   Algorithm:
+     1) Pinned: take up to 4 paintings flagged featured===true,
+        excluding the hero piece, excluding sold.
+     2) Fill: from remaining available && image && !sold, in
+        original Sheet order, until we reach `count`.
+     3) Fallback: if still short, fill from any remaining
+        available paintings (no-image included as last resort).
+     4) De-cluster orientation: split the chosen set into
+        landscape (ratio>1) and portrait (ratio<=1) buckets,
+        then "zip" them so we don't get 3 portraits or 3
+        landscapes in a row visually. We start with whichever
+        bucket is larger to avoid leaving a trailing run.
+
+   The function never returns sold pieces — the home grid is
+   for what's available. Sold is moved to the dedicated
+   /past page. */
+function selectFeatured(paintings, count, excludeHeroId) {
+  count = count || 8;
+  const isShowable = p => p.available && !p.sold && p.image;
+  const not = id => p => p.id !== id;
+
+  const pool = paintings.filter(not(excludeHeroId));
+  const pinned = pool.filter(p => p.featured && isShowable(p)).slice(0, 4);
+  const pinnedIds = new Set(pinned.map(p => p.id));
+
+  const filler = pool
+    .filter(p => isShowable(p) && !pinnedIds.has(p.id));
+
+  let chosen = pinned.concat(filler).slice(0, count);
+
+  // Last-resort: if we still have headroom (e.g. small studio, no images),
+  // pad from remaining available paintings without strict !sold filter.
+  if (chosen.length < count) {
+    const chosenIds = new Set(chosen.map(p => p.id));
+    const extras = pool.filter(p => p.available && !chosenIds.has(p.id));
+    chosen = chosen.concat(extras).slice(0, count);
+  }
+
+  // De-cluster by orientation. ratio > 1 = landscape, else portrait/square.
+  const ratioOf = (p) => {
+    if (p.widthIn && p.heightIn && p.heightIn > 0) return p.widthIn / p.heightIn;
+    if (p.size) {
+      const m = p.size.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/i);
+      if (m) {
+        const w = parseFloat(m[1]), h = parseFloat(m[2]);
+        if (h > 0) return w / h;
+      }
+    }
+    return 4 / 5; // portrait default
+  };
+  const landscape = chosen.filter(p => ratioOf(p) > 1);
+  const portrait  = chosen.filter(p => ratioOf(p) <= 1);
+  const out = [];
+  // Start with the larger bucket so trailing runs are minimised.
+  let a = landscape.length >= portrait.length ? landscape : portrait;
+  let b = landscape.length >= portrait.length ? portrait : landscape;
+  while (a.length || b.length) {
+    if (a.length) out.push(a.shift());
+    if (b.length) out.push(b.shift());
+  }
+  return out;
+}
+
+/* Assigns a stable global catalog number to every painting (1-indexed in
+   Sheet order). Same painting shows the same № wherever it appears. */
+function assignCatalogNumbers() {
+  PAINTINGS.forEach((p, i) => { p.catalogNumber = i + 1; });
+}
+
+function getHeroPiece() {
+  // Sold pieces are NEVER the hero — never put a "Sold" piece front-and-centre.
+  return (
+    PAINTINGS.find(p => p.featured && p.available && !p.sold && p.image) ||
+    PAINTINGS.find(p => p.available && !p.sold && p.image) ||
+    PAINTINGS.find(p => p.available && !p.sold) ||
+    PAINTINGS[0]
+  );
+}
+
+/* ========================================================
    PAGE RENDERERS
    ======================================================== */
 
@@ -2003,25 +2252,48 @@ function getAllCollections() {
 }
 
 function renderHero() {
-  // Hero pickup priority: featured → first available → first painting overall
-  const heroPiece =
-    PAINTINGS.find(p => p.featured) ||
-    PAINTINGS.find(p => p.available) ||
-    PAINTINGS[0];
-  const credit = heroPiece ? [
+  const heroPiece = getHeroPiece();
+
+  // Build credit line + sold-count social proof. Sold count is only shown
+  // when it's meaningful (>=3) so a brand-new studio doesn't read empty.
+  const soldCount = PAINTINGS.filter(p => p.sold).length;
+  const creditParts = heroPiece ? [
     heroPiece.title,
     heroPiece.medium ? capitalize(heroPiece.medium) : '',
     heroPiece.year || ''
-  ].filter(Boolean).join(' <span class="sep">&middot;</span> ') : '';
+  ].filter(Boolean) : [];
+  if (soldCount >= 3) {
+    creditParts.push(`${soldCount} paintings in private collections`);
+  }
+  const credit = creditParts.join(' <span class="sep">&middot;</span> ');
+
+  const heroNum = heroPiece && heroPiece.catalogNumber != null
+    ? String(heroPiece.catalogNumber).padStart(2, '0')
+    : '01';
+
+  // Pre-paint hero aspect ratio: prefer Sheet dims so the box is the right
+  // shape on first render (no CLS). Falls back to a portrait default.
+  const heroRatio = heroPiece ? aspectRatioFor(heroPiece) : '4/5';
+
+  // Hero image is interactive only when there's a painting to open.
+  // Rendered as a <button> for keyboard accessibility (Enter/Space free);
+  // when there's no piece, render a plain non-interactive div.
+  const heroImageHTML = heroPiece
+    ? paintingImage(heroPiece, { isHero: true, heroRatioVar: true })
+    : '<div class="hero-placeholder"></div>';
+
+  const heroBox = heroPiece
+    ? `<button type="button" class="hero-image-wrap" style="--hero-ratio: ${heroRatio};"
+         onclick="openModal(${heroPiece.id})"
+         aria-label="Open details for ${heroPiece.title}">${heroImageHTML}</button>`
+    : `<div class="hero-image-wrap" style="--hero-ratio: ${heroRatio};">${heroImageHTML}</div>`;
 
   return `
     <section class="hero" aria-label="Featured painting">
-      <div class="hero-image-wrap" onclick="${heroPiece ? `openModal(${heroPiece.id})` : ''}" style="cursor: ${heroPiece ? 'pointer' : 'default'};">
-        ${heroPiece ? paintingImage(heroPiece, { isHero: true }) : '<div class="hero-placeholder"></div>'}
-      </div>
+      ${heroBox}
       <div class="hero-meta">
-        <span class="hero-number">&#8470; 01</span>
-        <h1 class="hero-title">Sveta<br><span class="italic">Colours</span></h1>
+        <span class="hero-number">&#8470; ${heroNum}</span>
+        <h1 class="hero-title">Sveta <span class="italic">Colours</span></h1>
         <div class="hero-side">
           ${credit ? `<div class="hero-credit">${credit}</div>` : ''}
           <p class="hero-tagline">Paintings of light, weather, and quiet places &mdash; acrylic and watercolor, made slowly.</p>
@@ -2034,7 +2306,10 @@ function renderHero() {
 }
 
 function renderHome() {
-  const featured = PAINTINGS.slice(0, 9); // show all, sold included
+  // Curated featured grid — see selectFeatured() for the algorithm.
+  // Hero piece is excluded so we never repeat it as the first card.
+  const heroPiece = getHeroPiece();
+  const featured = selectFeatured(PAINTINGS, 8, heroPiece && heroPiece.id);
   const collections = getAllCollections();
 
   return `
@@ -2085,6 +2360,9 @@ function renderHome() {
         <div class="section-title">
           <span class="eyebrow">About</span>
           <h2>From the studio</h2>
+          <!-- Section titles dedup: kept this as "From the studio" (single
+               "studio" mention on the home page). Process section retitled
+               to "On painting"; Testimonials is "From collectors". -->
         </div>
         <div class="about-preview reveal">
           ${renderAboutPreview()}
@@ -2148,7 +2426,7 @@ function renderProcessSection() {
       <div class="section-inner">
         <div class="section-title">
           <span class="eyebrow">Process</span>
-          <h2>The studio</h2>
+          <h2>On painting</h2>
         </div>
         <!-- TODO (source-only): add real studio photo via SITE_DATA.artist.studioPhotoUrl -->
         <div class="process-grid" style="${photo ? '' : 'grid-template-columns: 1fr;'}">
@@ -2218,13 +2496,21 @@ function renderContactSection() {
 }
 
 function renderPaintings() {
-  // Show ALL paintings (sold included) — sold acts as social proof
-  const works = PAINTINGS.slice();
+  // /works shows ONLY available paintings. Sold pieces live on /past.
+  // The card here never carries a sold-tag (it can't — these are all
+  // available by construction) which keeps the page focused on what
+  // visitors can actually buy or commission similar to.
+  const works = PAINTINGS.filter(p => !p.sold);
+  const soldCount = PAINTINGS.filter(p => p.sold).length;
+  const pastLink = soldCount > 0
+    ? `<p style="margin-top:0.4rem;"><a href="#past" class="link link-arrow" onclick="event.preventDefault(); showPage('past');">See past work (${soldCount})</a></p>`
+    : '';
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
       <h1>Works</h1>
-      <p>Every painting one-of-a-kind. Sold pieces shown for reference &mdash; commission requests welcome.</p>
+      <p>Every painting one-of-a-kind. Available now &mdash; commission requests welcome.</p>
+      ${pastLink}
     </div>
     <section style="padding-top: 1rem;">
       <div class="section-inner">
@@ -2411,7 +2697,18 @@ function renderFAQ() {
 }
 
 function renderPastWork() {
-  const sold = PAINTINGS.filter(p => p.sold);
+  // Sold pieces sorted by year descending (most recent first); pieces
+  // without a year fall to the end but keep their relative Sheet order.
+  const sold = PAINTINGS.filter(p => p.sold).slice().sort((a, b) => {
+    const ya = parseInt(a.year, 10);
+    const yb = parseInt(b.year, 10);
+    const aOk = !isNaN(ya);
+    const bOk = !isNaN(yb);
+    if (aOk && bOk) return yb - ya;
+    if (aOk) return -1;
+    if (bOk) return 1;
+    return 0;
+  });
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
@@ -2594,10 +2891,21 @@ function initCustomCursor() {
   cursorEl.setAttribute('aria-hidden', 'true');
   document.body.appendChild(cursorEl);
 
+  // Throttle cursor updates through requestAnimationFrame to avoid
+  // hundreds of style writes per second on a fast mouse.
+  let cursorRAF = null;
+  let lastX = 0, lastY = 0;
   document.addEventListener('mousemove', (e) => {
+    lastX = e.clientX;
+    lastY = e.clientY;
     if (!cursorEl) return;
-    cursorEl.style.left = e.clientX + 'px';
-    cursorEl.style.top = e.clientY + 'px';
+    if (cursorRAF) return;
+    cursorRAF = requestAnimationFrame(() => {
+      cursorRAF = null;
+      if (!cursorEl) return;
+      // Single transform write per frame; cheaper than left/top.
+      cursorEl.style.transform = `translate(${lastX}px, ${lastY}px) translate(-50%, -50%) scale(${cursorEl.classList.contains('visible') ? 1 : 0.6})`;
+    });
   }, { passive: true });
 }
 
@@ -2608,18 +2916,23 @@ function wireCustomCursor() {
     if (t._cursorWired) return;
     t._cursorWired = true;
     t.addEventListener('mouseenter', () => {
-      // Compute card number from order in its grid
+      // Label uses the global catalog number from the painting object,
+      // not local grid order — same painting reads the same wherever it
+      // appears. Falls back to "View" if we can't resolve.
       let label = 'View';
       const card = t.closest('.painting-card') || (t.classList.contains('painting-card') ? t : null);
       if (card) {
-        const grid = card.parentElement;
-        if (grid) {
-          const cards = Array.from(grid.querySelectorAll('.painting-card'));
-          const idx = cards.indexOf(card) + 1;
-          if (idx > 0) label = `View №${String(idx).padStart(2,'0')}`;
+        const idAttr = card.getAttribute('data-card-id');
+        const id = idAttr ? parseInt(idAttr, 10) : NaN;
+        const painting = !isNaN(id) ? PAINTINGS.find(p => p.id === id) : null;
+        if (painting && painting.catalogNumber != null) {
+          label = `View №${String(painting.catalogNumber).padStart(2,'0')}`;
         }
       } else if (t.classList.contains('hero-image-wrap')) {
-        label = 'View №01';
+        const hero = getHeroPiece();
+        if (hero && hero.catalogNumber != null) {
+          label = `View №${String(hero.catalogNumber).padStart(2,'0')}`;
+        }
       }
       cursorEl.textContent = label;
       cursorEl.classList.add('visible');
@@ -2632,10 +2945,38 @@ function wireCustomCursor() {
   });
 }
 
+/* ========================================================
+   STICKY MOBILE CTA — appears once scrolled past hero.
+   Only meaningful at ≤768px (CSS gates visibility).
+   ======================================================== */
+function initMobileCTA() {
+  const cta = document.getElementById('mobileCTA');
+  if (!cta) return;
+  // mailto: with subject — same wiring as the modal CTA.
+  cta.setAttribute('href', `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Hello from sveta-colours.com')}`);
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      // Trigger after we've scrolled most of the way past the hero.
+      // Threshold roughly = hero-image-wrap bottom; we approximate via
+      // 60% of viewport height which suits the typical 4/5 hero on phones.
+      const trigger = window.innerHeight * 0.6;
+      if (window.scrollY > trigger) cta.classList.add('visible');
+      else cta.classList.remove('visible');
+    });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+}
+
 // Boot
 initCustomCursor();
+initMobileCTA();
 if (SHEET_CSV_URL) loadFromSheet();
-else { injectPaintingsLD(); render(); }
+else { assignCatalogNumbers(); injectPaintingsLD(); render(); }
 </script>
 
 <!--
@@ -2881,6 +3222,132 @@ C4. FAQ shipping answer uses SITE_DATA.shipping.fromCountry
     (renders generic "Origin depends on…" copy when null). FAQ
     framing + payment-plan answers rewritten without dollar
     placeholders.
+
+================================================================
+ROUND 6 — LAYOUT, ACCESSIBILITY, CURATION, COPY
+================================================================
+
+LAYOUT / VISUAL
+L1. Hero takes the shape of the painting itself. Fixed 75vh +
+    object-fit:contain (which left huge empty bands above and
+    below landscape works) replaced with aspect-ratio:
+    var(--hero-ratio). --hero-ratio is set pre-paint from
+    widthIn/heightIn in the Sheet (correct on first render),
+    refined post-onload only if natural dims diverge by >5%
+    (avoids CLS for the common case). object-fit reverted to
+    cover. max-height: 88vh clamps tall portraits; min-height:
+    380px keeps tiny images from collapsing.
+L2. Gallery card images switched from object-fit:cover to
+    contain. The aspect ratio already matches the painting, but
+    contain is the safer failsafe: if --ratio hasn't been set
+    yet (placeholder, pre-onload), the painting still shows
+    fully — no edge crop. Bone-coloured background fills any
+    surrounding strip.
+L3. Vertical gap restored to the gallery grid. Was gap:0
+    horizontal + per-card margin-bottom:3rem, which got
+    swallowed by the masonry span rounding and caused rows to
+    drift apart. Now: gap: 3rem 2.5rem (vertical 3rem,
+    horizontal 2.5rem), no per-card margin.
+L4. Removed the "grid-row: span 60" pre-masonry fallback (gave
+    every card a fat 480px placeholder before JS ran). Until
+    masonry-ready, grid-auto-rows is `auto` so cards naturally
+    take the height their --ratio asks for. masonry-ready then
+    switches to 8px rows so span-of-N maths work.
+L5. CLS minimised: --ratio (cards) and --hero-ratio (hero) are
+    set inline from widthIn/heightIn at render time. The img
+    onload only writes the ratio when natural dims differ from
+    the current container ratio by more than 5%. For Sheet rows
+    with accurate dimensions, the onload is a no-op.
+
+TECH / ACCESSIBILITY BUG FIXES
+B1. Hero is now a real <button> when there's a painting to
+    open. The old `onclick="${...||''}"` rendered an empty
+    onclick attribute when heroPiece was null, was not
+    keyboard-accessible, and had no role/aria-label. New
+    button.hero-image-wrap CSS strips default button chrome;
+    when no painting, we render a plain non-interactive div.
+B2. Custom-cursor mousemove handler throttled through
+    requestAnimationFrame. Single transform write per frame;
+    .visible toggles opacity only. CSS lost its transform on
+    .visible and the JS now owns position+scale entirely.
+B3. CSS counter for catalog numbers removed (it polluted
+    screen-reader output via ::before). Replaced with a real
+    <span class="card-number" aria-hidden="true"> inside each
+    card. SR users hear the title, not "Number 01 ...".
+B4. og:url corrected to https://www.sveta-colours.com/ (was
+    svetacolours.com without the hyphen). Added matching
+    <link rel="canonical">. Person JSON-LD url updated too.
+B5. Global catalog number per painting. assignCatalogNumbers()
+    stamps each painting's `catalogNumber` once on load (Sheet
+    index +1). The hero, the card-number span, and the custom
+    cursor "View №NN" all read from p.catalogNumber, so the
+    same painting reads the same № on /home, /works, /past,
+    and inside the cursor.
+
+CURATION
+C1. Featured grid algorithm: selectFeatured(paintings, count=8,
+    excludeHeroId). (1) Pin up to 4 paintings flagged featured,
+    excluding hero, excluding sold. (2) Fill from
+    available/!sold/has-image in Sheet order. (3) Last-resort
+    fill from any remaining available pieces. (4) Anti-cluster:
+    split by orientation (ratio>1 = landscape, ≤1 = portrait),
+    zip-merge starting with the larger bucket so we never get
+    three portraits or three landscapes in a row.
+C2. /works is now available-only — sold pieces moved to /past
+    (which sorts by year desc, then by Sheet order for years-
+    missing). /works adds a "See past work (N)" link when
+    there's any. Sold tag stays out of /works cards.
+C3. Hero pickup never picks a sold piece. New priority:
+    featured && available && !sold && image → available &&
+    !sold && image → available && !sold → first.
+C4. Sold cards drop the price entirely (art-critic note: a
+    struck-through "$500 Sold" reads as Shopify). Cards now
+    show "Sold" italic tag next to the title and no price.
+    The struck-through price is retained inside the modal,
+    where it informs.
+
+MODAL
+M1. Description hard-capped to first 2 sentences OR 240 chars
+    (whichever is shorter) via truncateDescription(). Ellipsis
+    when trimmed.
+M2. Meta table split: primary fields (Size, Medium, Year,
+    Signed) always visible; secondary fields (Framing, Ships
+    from, Authenticity) collapsed into a <details>Details</>
+    block. Keeps the primary scan tight.
+M3. Mobile modal image: replaced fixed min-height: 280px /
+    max-height: 50vh with aspect-ratio: var(--ratio) +
+    min-height: 240px / max-height: 70vh. Paintings get real
+    height on phones.
+M4. paintingMeta() no longer appends a trailing dot. Switched
+    separator from ". " to " · " for an editorial credit-line
+    feel ("Acrylic on canvas · 2024 · 16 × 20 in / 40.6 × 50.8
+    cm").
+
+COPY
+T1. Modal CTA note: "Typical reply within 24 hours · Worldwide
+    shipping with insurance · 14-day returns" → "Replies
+    within a day or two. Shipped from Canada, insured."
+T2. Sold message in modal: "This piece has found a home. Write
+    to commission something similar..." → "Sold. Write if
+    you'd like a similar commission."
+T3. Hero h1 dropped the <br>: "Sveta<br><span class=italic>
+    Colours</span>" → "Sveta <span class=italic>Colours</span>"
+    on one line, which reads cleaner at every viewport (the
+    clamp on font-size still keeps it on one line on phones).
+T4. Section-title "studio" dedup: process section retitled
+    from "The studio" to "On painting". "From the studio"
+    (About preview eyebrow) and "From collectors" (testimonials)
+    keep their meanings without colliding with Process.
+
+NICE TO HAVE
+N1. Hero credit line gains "${soldCount} paintings in private
+    collections" when soldCount ≥ 3. Quiet social proof.
+N2. Sticky mobile CTA bar (≤768px only) — fixed bottom, 56px
+    tall, "Write to studio →" mailto. Appears after scrolling
+    past ~60% of the viewport (i.e. past the hero); slides
+    in/out with a transform transition (disabled under
+    prefers-reduced-motion). Anchored as <a id="mobileCTA">
+    outside main so it never gets inerted by the modal.
 
 ================================================================
 SVETA: TO MAKE THIS SITE PRODUCTION-READY
