@@ -243,8 +243,8 @@ const DRIVE_FOLDER='1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX';
 const SHEET_ID='170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI';
 const SHEET_GID='1031748871';
 const CLIENT_ID='754552250731-hdl67ujna2lk1lataah35mnl69emi8qt.apps.googleusercontent.com';
-const SHEET_TAB='Sheet1';
-const COLS=['Date','Title','Description','Medium','Size','Year','Tags','Status','Price','Notes','Dimensions','Format','Drive link'];
+const SHEET_TAB='Paintings';
+const COLS=['title','medium','price','sold','size','image','date','year','description','tags','notes'];
 
 const state = {
   origImg: null,                                  // EXIF-corrected source canvas
@@ -1129,8 +1129,8 @@ async function saveAll() {
   setStatus('saveStatus', 'Saving…');
   try {
     const token = await getAccessToken();
-    const driveLink = await uploadToDrive(token);  // composes full-res blob inside
-    await upsertSheetRow(token, driveLink);
+    const driveFileId = await uploadToDrive(token);  // composes full-res blob inside, returns file ID
+    await upsertSheetRow(token, driveFileId);
     setStatus('saveStatus', 'Saved.', 'ok');
   } catch (e) {
     setStatus('saveStatus', 'Save failed: ' + e.message, 'err');
@@ -1158,7 +1158,7 @@ async function uploadToDrive(token) {
   );
   if (!res.ok) throw new Error('Drive upload failed: ' + res.status);
   const j = await res.json();
-  return j.webViewLink;
+  return j.id;
 }
 
 // Sheets RAW already prevents formula execution, but normalize for dedup/display.
@@ -1171,17 +1171,18 @@ function normalizeTitle(s) {
   return sanitizeCell(s).toLowerCase().replace(/\s+/g, ' ');
 }
 
-async function upsertSheetRow(token, driveLink) {
-  // 1) Read existing A:B (Date + Title) to find dedup target
+async function upsertSheetRow(token, driveFileId) {
+  // 1) Read existing column A (title) to find dedup target
   const readRes = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:B`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:A`,
     { headers: { Authorization: 'Bearer ' + token } }
   );
   if (!readRes.ok) throw new Error('Sheets read failed: ' + readRes.status);
   const rows = (await readRes.json()).values || [];
 
-  // 2) Ensure header row exists FIRST and is committed before any further write
-  if (rows.length === 0 || normalizeTitle(rows[0][1] || '') !== 'title') {
+  // 2) Header row only initialized if sheet is completely empty.
+  // We do NOT overwrite an existing header — the user owns the schema and we extend it on append.
+  if (rows.length === 0) {
     const headRes = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1?valueInputOption=RAW`,
       { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -1193,12 +1194,12 @@ async function upsertSheetRow(token, driveLink) {
   // 3) Compose row from form fields
   const title = document.getElementById('fTitle').value;
   const normTitle = normalizeTitle(title);
-  const row = COLS.map(col => sanitizeCell(getCellForCol(col, driveLink)));
+  const row = COLS.map(col => sanitizeCell(getCellForCol(col, driveFileId)));
 
-  // 4) Find existing row by normalized title (skip header)
+  // 4) Find existing row by normalized title in column A (skip header)
   let foundIdx = -1;
   for (let i = 1; i < rows.length; i++) {
-    if (rows[i] && normalizeTitle(rows[i][1] || '') === normTitle) { foundIdx = i; break; }
+    if (rows[i] && normalizeTitle(rows[i][0] || '') === normTitle) { foundIdx = i; break; }
   }
 
   if (foundIdx >= 0) {
@@ -1220,21 +1221,20 @@ async function upsertSheetRow(token, driveLink) {
   }
 }
 
-function getCellForCol(col, driveLink) {
+function getCellForCol(col, driveFileId) {
+  const status = (document.getElementById('fStatus').value || '').toLowerCase();
   const m = {
-    'Date': new Date().toISOString().slice(0, 10),
-    'Title': document.getElementById('fTitle').value,
-    'Description': document.getElementById('fDesc').value,
-    'Medium': document.getElementById('fMedium').value,
-    'Size': document.getElementById('fSize').value,
-    'Year': document.getElementById('fYear').value,
-    'Tags': document.getElementById('fTags').value,
-    'Status': document.getElementById('fStatus').value,
-    'Price': document.getElementById('fPrice').value,
-    'Notes': document.getElementById('fNotes').value,
-    'Dimensions': `${state.fullCanvas.width}×${state.fullCanvas.height}`,
-    'Format': document.getElementById('exportFormat').value,
-    'Drive link': driveLink,
+    'title': document.getElementById('fTitle').value,
+    'medium': document.getElementById('fMedium').value,
+    'price': document.getElementById('fPrice').value,
+    'sold': status === 'sold' ? 'yes' : 'no',
+    'size': document.getElementById('fSize').value,
+    'image': driveFileId,
+    'date': new Date().toISOString().slice(0, 10),
+    'year': document.getElementById('fYear').value,
+    'description': document.getElementById('fDesc').value,
+    'tags': document.getElementById('fTags').value,
+    'notes': document.getElementById('fNotes').value,
   };
   return m[col] || '';
 }
