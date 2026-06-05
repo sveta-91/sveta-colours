@@ -744,6 +744,47 @@ function renderAiBox(d) {
   box.append(desc, meta, tags);
 }
 
+// Manual-paste fallback: when Gemini is unavailable (no key / quota / network),
+// hand the photo off to ChatGPT.com manually and paste the JSON reply back.
+document.getElementById('btnManualPaste').addEventListener('click', async () => {
+  if (!state.fullCanvas.width) {
+    setStatus('saveStatus', 'Upload an image first', 'err');
+    return;
+  }
+  const blob = await composeFullBlob('image/jpeg', 0.85);
+  const { blob: small } = await downscaleToMaxEdge(blob, 2048);
+  // Download the downscaled image so Sveta can drag it into ChatGPT.com
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(small);
+  a.download = 'for-chatgpt.jpg';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+
+  // Copy the prompt to clipboard (requires a secure context; http://localhost is fine).
+  const promptText = AI_PROMPT + '\n\nReturn the JSON only, no surrounding text.';
+  try {
+    await navigator.clipboard.writeText(promptText);
+  } catch (e) {
+    // Clipboard API unavailable (file://, denied permission, etc.) — show the text so
+    // Sveta can copy it manually.
+    window.prompt('Copy this prompt manually (clipboard write failed):', promptText);
+  }
+
+  const json = window.prompt(
+    'Image downloaded as for-chatgpt.jpg and prompt copied to clipboard.\n' +
+    'In ChatGPT, drop the image, paste the prompt, copy the JSON reply, paste it here:'
+  );
+  if (!json) return;
+  try {
+    const parsed = JSON.parse(json);
+    state.aiData = sanitizeAiData(parsed);
+    state.aiDataDims = { w: state.fullCanvas.width, h: state.fullCanvas.height };
+    renderAiBox(state.aiData);
+  } catch (e) {
+    setStatus('saveStatus', 'Could not parse JSON from ChatGPT', 'err');
+  }
+});
+
 // ── PERSPECTIVE ──
 async function runAutoPersp(){
   if(!state.aiData?.perspective_corners)return;
