@@ -1130,7 +1130,12 @@ async function saveAll() {
   try {
     const token = await getAccessToken();
     const driveFileId = await uploadToDrive(token);  // composes full-res blob inside, returns file ID
-    await upsertSheetRow(token, driveFileId);
+    const oldFileId = await upsertSheetRow(token, driveFileId);
+    // Clean up the previous Drive file for this title — only after the new row write succeeded,
+    // so a failure here can't strand the Sheets row pointing at a deleted file.
+    if (oldFileId && oldFileId !== driveFileId) {
+      deleteDriveFile(token, oldFileId).catch(e => console.warn('orphan cleanup:', e));
+    }
     setStatus('saveStatus', 'Saved.', 'ok');
   } catch (e) {
     setStatus('saveStatus', 'Save failed: ' + e.message, 'err');
@@ -1172,9 +1177,9 @@ function normalizeTitle(s) {
 }
 
 async function upsertSheetRow(token, driveFileId) {
-  // 1) Read existing column A (title) to find dedup target
+  // 1) Read existing A:F so we know both the dedup target (col A) and any prior file ID (col F).
   const readRes = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:A`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:F`,
     { headers: { Authorization: 'Bearer ' + token } }
   );
   if (!readRes.ok) throw new Error('Sheets read failed: ' + readRes.status);
@@ -1196,10 +1201,15 @@ async function upsertSheetRow(token, driveFileId) {
   const normTitle = normalizeTitle(title);
   const row = COLS.map(col => sanitizeCell(getCellForCol(col, driveFileId)));
 
-  // 4) Find existing row by normalized title in column A (skip header)
+  // 4) Find existing row by normalized title in column A; capture old Drive file ID from column F.
   let foundIdx = -1;
+  let oldFileId = '';
   for (let i = 1; i < rows.length; i++) {
-    if (rows[i] && normalizeTitle(rows[i][0] || '') === normTitle) { foundIdx = i; break; }
+    if (rows[i] && normalizeTitle(rows[i][0] || '') === normTitle) {
+      foundIdx = i;
+      oldFileId = (rows[i][5] || '').trim();  // column F = image (Drive file ID)
+      break;
+    }
   }
 
   if (foundIdx >= 0) {
@@ -1218,6 +1228,22 @@ async function upsertSheetRow(token, driveFileId) {
         body: JSON.stringify({ values: [row] }) }
     );
     if (!res.ok) throw new Error('Sheets append failed: ' + res.status);
+  }
+
+  return oldFileId;  // empty string if no prior row; caller may delete the orphan
+}
+
+// Best-effort delete of a Drive file. 404 (already gone) is treated as success;
+// 403 (drive.file scope can't touch files we didn't create) is treated as success too —
+// we don't want orphan cleanup to break a save.
+async function deleteDriveFile(token, fileId) {
+  if (!fileId) return;
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`,
+    { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } }
+  );
+  if (!res.ok && res.status !== 404 && res.status !== 403) {
+    throw new Error('Drive delete failed: ' + res.status);
   }
 }
 
