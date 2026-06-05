@@ -619,23 +619,28 @@ crop: x,y=top-left as fraction of image, w,h=size as fraction. Suggest crop to r
 // ── PERSPECTIVE ──
 async function runAutoPersp(){
   if(!state.aiData?.perspective_corners)return;
-  const j=state.aiData.perspective_corners,W=perspOv.width,H=perspOv.height;
-  const pts=[{x:j.tl.x*W,y:j.tl.y*H},{x:j.tr.x*W,y:j.tr.y*H},{x:j.br.x*W,y:j.br.y*H},{x:j.bl.x*W,y:j.bl.y*H}];
+  const j=state.aiData.perspective_corners;
   const sW=state.fullCanvas.width,sH=state.fullCanvas.height;
-  const srcPts=pts.map(p=>({x:p.x/W*sW,y:p.y/H*sH}));
+  const srcPts=[
+    {x:j.tl.x*sW,y:j.tl.y*sH},
+    {x:j.tr.x*sW,y:j.tr.y*sH},
+    {x:j.br.x*sW,y:j.br.y*sH},
+    {x:j.bl.x*sW,y:j.bl.y*sH},
+  ];
   const [tl,tr,br,bl]=srcPts;
   const dstW=Math.round(Math.max(Math.hypot(tr.x-tl.x,tr.y-tl.y),Math.hypot(br.x-bl.x,br.y-bl.y)));
   const dstH=Math.round(Math.max(Math.hypot(bl.x-tl.x,bl.y-tl.y),Math.hypot(br.x-tr.x,br.y-tr.y)));
-  const result=perspWarpWebGL(state.fullCanvas,srcPts,dstW,dstH);
-  if(!result)return;
-  await new Promise(res=>{const img=new Image();img.onload=()=>{setupCanvasFromCanvas(imgToCanvas(img));document.getElementById('resizeW').value=dstW;document.getElementById('resizeH').value=dstH;res();};img.src=result;});
-}
-
-function imgToCanvas(img){
-  const c=document.createElement('canvas');
-  c.width=img.width;c.height=img.height;
-  c.getContext('2d').drawImage(img,0,0);
-  return c;
+  if(dstW<2||dstH<2)return;
+  const dstPts=[{x:0,y:0},{x:dstW,y:0},{x:dstW,y:dstH},{x:0,y:dstH}];
+  try{
+    const Hinv=computeHomography(dstPts,srcPts);
+    const warped=applyHomographyToCanvas(state.fullCanvas,Hinv,dstW,dstH);
+    setupCanvasFromCanvas(warped);
+    document.getElementById('resizeW').value=dstW;
+    document.getElementById('resizeH').value=dstH;
+  }catch(e){
+    console.warn('Auto-perspective failed:',e);
+  }
 }
 
 async function runAutoCrop(c){
@@ -677,44 +682,130 @@ async function autoPersp(){
   if(state.aiData?.perspective_corners){const j=state.aiData.perspective_corners,W=perspOv.width,H=perspOv.height;state.perspPoints=[{x:j.tl.x*W,y:j.tl.y*H},{x:j.tr.x*W,y:j.tr.y*H},{x:j.br.x*W,y:j.br.y*H},{x:j.bl.x*W,y:j.bl.y*H}];drawPerspOv();}
   document.getElementById('btnAutoPersp').disabled=false;document.getElementById('btnAutoPersp').innerHTML='<i class="ti ti-sparkles" aria-hidden="true"></i> Auto-detect';
 }
-function applyPersp(){
-  if(state.perspPoints.length!==4)return;
-  const sW=state.fullCanvas.width,sH=state.fullCanvas.height,cW=canvas.width,cH=canvas.height;
-  const pts=state.perspPoints.map(p=>({x:p.x/cW*sW,y:p.y/cH*sH}));
-  const [tl,tr,br,bl]=pts;
-  const dstW=Math.round(Math.max(Math.hypot(tr.x-tl.x,tr.y-tl.y),Math.hypot(br.x-bl.x,br.y-bl.y)));
-  const dstH=Math.round(Math.max(Math.hypot(bl.x-tl.x,bl.y-tl.y),Math.hypot(br.x-tr.x,br.y-tr.y)));
-  const result=perspWarpWebGL(state.fullCanvas,pts,dstW,dstH);if(!result)return;
-  const img=new Image();
-  img.onload=()=>{
-    setupCanvasFromCanvas(imgToCanvas(img));
-    document.getElementById('resizeW').value=dstW;
-    document.getElementById('resizeH').value=dstH;
-    cancelPersp();
-  };
-  img.src=result;
+// ── HOMOGRAPHY (CPU) ──
+// Direct Linear Transform. Returns row-major 3x3 mapping s -> d.
+function computeHomography(s, d){
+  const A=[];
+  for(let i=0;i<4;i++){
+    const {x:X,y:Y}=s[i];
+    const {x:u,y:v}=d[i];
+    A.push([-X,-Y,-1, 0, 0, 0, X*u, Y*u, u]);
+    A.push([0, 0, 0,-X,-Y,-1, X*v, Y*v, v]);
+  }
+  // Solve A * h = 0 with h[8] = 1: move last column to RHS, solve 8x8 system.
+  const M=A.map(r=>r.slice(0,8));
+  const b=A.map(r=>-r[8]);
+  const h=solveLinear(M,b); // length 8
+  return [...h,1];
 }
-function perspWarpWebGL(srcImg,srcPts,dstW,dstH){
-  const gc=document.createElement('canvas');gc.width=dstW;gc.height=dstH;
-  const gl=gc.getContext('webgl');if(!gl)return null;
-  const vs=gl.createShader(gl.VERTEX_SHADER);gl.shaderSource(vs,'attribute vec2 a_pos;attribute vec2 a_uv;varying vec2 v_uv;void main(){gl_Position=vec4(a_pos,0,1);v_uv=a_uv;}');gl.compileShader(vs);
-  const fs=gl.createShader(gl.FRAGMENT_SHADER);gl.shaderSource(fs,'precision mediump float;uniform sampler2D u_tex;varying vec2 v_uv;void main(){gl_FragColor=texture2D(u_tex,v_uv);}');gl.compileShader(fs);
-  const prog=gl.createProgram();gl.attachShader(prog,vs);gl.attachShader(prog,fs);gl.linkProgram(prog);gl.useProgram(prog);
-  const [tl,tr,br,bl]=srcPts;const sW=srcImg.width,sH=srcImg.height;
-  const ndcX=x=>(x/dstW)*2-1,ndcY=y=>1-(y/dstH)*2,uvX=x=>x/sW,uvY=y=>y/sH;
-  const verts=new Float32Array([ndcX(0),ndcY(0),uvX(tl.x),uvY(tl.y),ndcX(dstW),ndcY(0),uvX(tr.x),uvY(tr.y),ndcX(dstW),ndcY(dstH),uvX(br.x),uvY(br.y),ndcX(0),ndcY(dstH),uvX(bl.x),uvY(bl.y)]);
-  const idx=new Uint16Array([0,1,2,0,2,3]);
-  const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,verts,gl.STATIC_DRAW);
-  const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,idx,gl.STATIC_DRAW);
-  const aPos=gl.getAttribLocation(prog,'a_pos');gl.enableVertexAttribArray(aPos);gl.vertexAttribPointer(aPos,2,gl.FLOAT,false,16,0);
-  const aUV=gl.getAttribLocation(prog,'a_uv');gl.enableVertexAttribArray(aUV);gl.vertexAttribPointer(aUV,2,gl.FLOAT,false,16,8);
-  const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
-  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcImg);
-  gl.uniform1i(gl.getUniformLocation(prog,'u_tex'),0);
-  gl.viewport(0,0,dstW,dstH);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawElements(gl.TRIANGLES,6,gl.UNSIGNED_SHORT,0);
-  return gc.toDataURL('image/png');
+
+// Gaussian elimination with partial pivoting on an n x n system. M is n x n, b is n.
+function solveLinear(M, b){
+  const n=M.length;
+  const A=M.map((r,i)=>[...r,b[i]]);
+  for(let c=0;c<n;c++){
+    let pivot=c;
+    for(let r=c+1;r<n;r++) if(Math.abs(A[r][c])>Math.abs(A[pivot][c])) pivot=r;
+    [A[c],A[pivot]]=[A[pivot],A[c]];
+    const piv=A[c][c];
+    if(Math.abs(piv)<1e-12) throw new Error('Degenerate homography');
+    for(let r=0;r<n;r++){
+      if(r===c) continue;
+      const f=A[r][c]/piv;
+      for(let k=c;k<=n;k++) A[r][k]-=f*A[c][k];
+    }
+  }
+  return A.map((row,i)=>row[n]/row[i]);
+}
+
+// Per-output-pixel bilinear sampling. Hinv maps output (x,y) -> source (sx,sy).
+function applyHomographyToCanvas(src, Hinv, outW, outH){
+  const srcCtx=src.getContext('2d');
+  const srcData=srcCtx.getImageData(0,0,src.width,src.height).data;
+  const out=document.createElement('canvas');
+  out.width=outW; out.height=outH;
+  const outCtx=out.getContext('2d');
+  const outData=outCtx.createImageData(outW,outH);
+  const od=outData.data;
+  const [a,b,c,d,e,f,g,h,i]=Hinv;
+  const sW=src.width, sH=src.height;
+
+  for(let y=0;y<outH;y++){
+    for(let x=0;x<outW;x++){
+      const w=g*x+h*y+i;
+      const sx=(a*x+b*y+c)/w;
+      const sy=(d*x+e*y+f)/w;
+      const idx=(y*outW+x)*4;
+      if(sx<0||sy<0||sx>=sW-1||sy>=sH-1){
+        od[idx]=od[idx+1]=od[idx+2]=0; od[idx+3]=0; continue;
+      }
+      const x0=sx|0, y0=sy|0, dx=sx-x0, dy=sy-y0;
+      const i00=(y0*sW+x0)*4;
+      const i10=i00+4;
+      const i01=i00+sW*4;
+      const i11=i01+4;
+      const wa=(1-dx)*(1-dy), wb=dx*(1-dy), wc2=(1-dx)*dy, wd=dx*dy;
+      od[idx]   = srcData[i00]   *wa + srcData[i10]   *wb + srcData[i01]   *wc2 + srcData[i11]   *wd;
+      od[idx+1] = srcData[i00+1] *wa + srcData[i10+1] *wb + srcData[i01+1] *wc2 + srcData[i11+1] *wd;
+      od[idx+2] = srcData[i00+2] *wa + srcData[i10+2] *wb + srcData[i01+2] *wc2 + srcData[i11+2] *wd;
+      od[idx+3] = 255;
+    }
+  }
+  outCtx.putImageData(outData,0,0);
+  return out;
+}
+
+function applyPersp(){
+  if(state.perspPoints.length!==4)return cancelPersp();
+  const btn=document.getElementById('btnApplyPersp');
+  const prevLabel=btn.innerHTML;
+  btn.disabled=true; btn.textContent='Applying…';
+  // Yield to the browser so the button update paints before the long synchronous warp.
+  setTimeout(()=>{
+    try{
+      // Points are in preview-canvas coords; scale to full-res coords.
+      const sxScale=state.fullCanvas.width/canvas.width;
+      const syScale=state.fullCanvas.height/canvas.height;
+      const srcPts=state.perspPoints.map(p=>({x:p.x*sxScale,y:p.y*syScale}));
+
+      // Output rectangle: bounding box of the source quad (preserves overall scale).
+      const minX=Math.min(...srcPts.map(p=>p.x));
+      const maxX=Math.max(...srcPts.map(p=>p.x));
+      const minY=Math.min(...srcPts.map(p=>p.y));
+      const maxY=Math.max(...srcPts.map(p=>p.y));
+      const outW=Math.round(maxX-minX);
+      const outH=Math.round(maxY-minY);
+      if(outW<2||outH<2) throw new Error('Output rectangle too small');
+
+      // dst corners ordered tl,tr,br,bl — must match state.perspPoints order
+      // (resetPerspPoints sets that order; AI seeding via autoPersp matches; corner-handle
+      // dragging by the user preserves the slot index, so order is stable).
+      const dstPts=[{x:0,y:0},{x:outW,y:0},{x:outW,y:outH},{x:0,y:outH}];
+
+      // Inverse mapping output -> source: swap args (DLT solver is symmetric).
+      const Hinv=computeHomography(dstPts,srcPts);
+      const warped=applyHomographyToCanvas(state.fullCanvas,Hinv,outW,outH);
+
+      state.fullCanvas.width=warped.width;
+      state.fullCanvas.height=warped.height;
+      fullCtx.drawImage(warped,0,0);
+
+      state.perspMode=false; state.perspPoints=[]; state.dragIdx=-1;
+      clearPerspOv();
+      togglePerspUI(false);
+      fitPreviewToFull();
+      syncOverlayCanvases();
+      updateDimInfo();
+      document.getElementById('resizeW').value=state.fullCanvas.width;
+      document.getElementById('resizeH').value=state.fullCanvas.height;
+    }catch(err){
+      console.warn('Perspective failed:',err);
+      setStatus('saveStatus','Perspective failed: pick 4 non-collinear points','err');
+    }finally{
+      btn.disabled=false;
+      btn.innerHTML=prevLabel;
+    }
+  },0);
 }
 
 // ── CROP ──
@@ -898,6 +989,19 @@ async function upsertSheetRow(token,driveLink){
   }
 }
 function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Read failed'));r.readAsDataURL(file);});}
+
+// ── SELF-TESTS (?test=1) ──
+if(new URLSearchParams(location.search).get('test')==='1'){
+  // Sanity: identity homography — unit square -> unit square
+  const H=computeHomography(
+    [{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}],
+    [{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]
+  );
+  console.assert(Math.abs(H[0]-1)<1e-9,'identity[0]');
+  console.assert(Math.abs(H[4]-1)<1e-9,'identity[4]');
+  console.assert(Math.abs(H[8]-1)<1e-9,'identity[8]');
+  console.log('Homography self-test OK');
+}
 </script>
 </body>
 </html>
