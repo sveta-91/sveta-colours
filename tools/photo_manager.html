@@ -258,6 +258,7 @@ const state = {
   saveInFlight: false,
   geminiKey: localStorage.getItem('pm_gemini_key') || null,
   titleFilled: false,
+  aiApplied: { crop: false, persp: false, adjust: false },
 };
 const fullCtx = state.fullCanvas.getContext('2d', { willReadFrequently: false });
 
@@ -384,6 +385,7 @@ function handleFile(file){
     return;
   }
   state.titleFilled=false;state.aiData=null;state.aiDataDims=null;
+  state.aiApplied={crop:false,persp:false,adjust:false};
 
   const reader=new FileReader();
   reader.onload=async e=>{
@@ -457,8 +459,8 @@ function syncOverlayCanvases(){
 }
 
 function updateDimInfo(){
-  document.getElementById('dimInfo').textContent =
-    `${state.fullCanvas.width} × ${state.fullCanvas.height} px (preview ${canvas.width}×${canvas.height})`;
+  setStatus('dimInfo',
+    `${state.fullCanvas.width} × ${state.fullCanvas.height} px (preview ${canvas.width}×${canvas.height})`);
 }
 
 function drawPreview(){
@@ -512,9 +514,17 @@ async function composeFullBlob(format = 'image/jpeg', quality = 0.9){
 // ── AUTO-CORRECT: Perspective → Crop → Adjustments ──
 async function autoCorrectAll(){
   const btn=document.getElementById('btnAutoCorrect');
-  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Working…';
   const steps=document.getElementById('autoSteps');
   steps.style.display='block';
+
+  // Idempotent guard: if every branch has already been applied since the last
+  // upload/reset, surface a hint and bail without spinning the button.
+  if (state.aiApplied.persp && state.aiApplied.crop && state.aiApplied.adjust) {
+    setStatus('autoSteps', 'Already applied — Reset first', 'err');
+    return;
+  }
+
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Working…';
 
   const order=['persp','crop','adjust'];
   const labels={persp:'Perspective',crop:'Crop',adjust:'Adjustments'};
@@ -530,23 +540,32 @@ async function autoCorrectAll(){
 
   if(!state.aiData){await analyzeWithAI();}
 
-  // 1. Perspective
+  // 1. Perspective — skip if already applied
   S('persp','active');
-  if(state.aiData?.needs_perspective_correction){await runAutoPersp();}
+  if(!state.aiApplied.persp){
+    if(state.aiData?.needs_perspective_correction){await runAutoPersp();}
+    state.aiApplied.persp=true;
+  }
   S('persp','done');
 
-  // 2. Crop
+  // 2. Crop — skip if already applied
   S('crop','active');
-  if(state.aiData?.needs_crop&&state.aiData?.crop){await autoApplyCrop(state.aiData.crop);}
+  if(!state.aiApplied.crop){
+    if(state.aiData?.needs_crop&&state.aiData?.crop){await autoApplyCrop(state.aiData.crop);}
+    state.aiApplied.crop=true;
+  }
   S('crop','done');
 
-  // 3. Adjustments
+  // 3. Adjustments — skip if already applied
   S('adjust','active');
-  if(state.aiData){
-    setSlider('brightness',state.aiData.brightness_adjust||0);
-    setSlider('contrast',state.aiData.contrast_adjust||0);
-    setSlider('saturation',state.aiData.saturation_adjust||0);
-    applyAll();
+  if(!state.aiApplied.adjust){
+    if(state.aiData){
+      setSlider('brightness',state.aiData.brightness_adjust||0);
+      setSlider('contrast',state.aiData.contrast_adjust||0);
+      setSlider('saturation',state.aiData.saturation_adjust||0);
+      applyAll();
+    }
+    state.aiApplied.adjust=true;
   }
   await sleep(150);
 
@@ -559,10 +578,17 @@ function setSlider(id,val){
   document.getElementById(id).value=val;document.getElementById(map[id]).textContent=val;
 }
 function fillFields(d){
-  if(d.description)document.getElementById('fDesc').value=d.description;
-  if(d.medium)document.getElementById('fMedium').value=d.medium;
-  if(d.tags?.length)document.getElementById('fTags').value=d.tags.join(', ');
-  if(d.style){const n=document.getElementById('fNotes');n.value=n.value?n.value+'; '+d.style:d.style;}
+  // Only fill fields the user has left empty — never clobber typed input.
+  const fields = [
+    ['fDesc',   d.description],
+    ['fMedium', d.medium],
+    ['fTags',   d.tags?.length ? d.tags.join(', ') : ''],
+    ['fNotes',  d.style ? d.style : ''],
+  ];
+  for (const [id, val] of fields) {
+    const el = document.getElementById(id);
+    if (!el.value.trim() && val) el.value = val;
+  }
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
@@ -586,7 +612,7 @@ async function analyzeWithAI(file) {
   const box = document.getElementById('aiBox');
   const key = ensureGeminiKey();
   if (!key) {
-    box.textContent = 'No Gemini key — use "Use ChatGPT manually" below.';
+    setStatus('aiBox', 'No Gemini key — use "Use ChatGPT manually" below.', 'err');
     document.getElementById('btnManualPaste').hidden = false;
     return;
   }
@@ -635,7 +661,7 @@ async function analyzeWithAI(file) {
     if (!text) throw new Error('Gemini returned no content');
     json = JSON.parse(text);  // responseMimeType=application/json guarantees parseable
   } catch (e) {
-    box.textContent = 'AI: ' + e.message;
+    setStatus('aiBox', 'AI: ' + e.message, 'err');
     document.getElementById('btnManualPaste').hidden = false;
     return;
   }
@@ -1054,6 +1080,8 @@ function resetToOriginal(){
   document.getElementById('resizeH').value=state.origImg.height;
   cancelCrop();cancelPersp();
   document.getElementById('autoSteps').style.display='none';
+  // Reset Auto-correct idempotency so it runs again on the restored image.
+  state.aiApplied={crop:false,persp:false,adjust:false};
 }
 
 // ── EXPORT ──
