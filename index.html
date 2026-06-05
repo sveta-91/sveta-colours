@@ -4,39 +4,91 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sveta Colours — Original Paintings</title>
+
+<!-- SEO -->
+<meta name="description" content="Original acrylic and watercolor paintings by Sveta — landscapes, light, quiet places. One-of-a-kind works on canvas, shipped worldwide.">
+<meta name="author" content="Sveta">
+
+<!-- Open Graph -->
+<meta property="og:title" content="Sveta Colours — Original Paintings">
+<meta property="og:description" content="Original acrylic and watercolor paintings — landscapes, light, quiet places. One-of-a-kind works on canvas, shipped worldwide.">
+<meta property="og:type" content="website">
+<!-- TODO: set canonical URL once domain is final -->
+<meta property="og:url" content="https://svetacolours.com/">
+<meta property="og:site_name" content="Sveta Colours">
+<!-- og:image / twitter:image meta tags injected by JS only when SITE_DATA.ogImage is set. -->
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sveta Colours — Original Paintings">
+<meta name="twitter:description" content="Original acrylic and watercolor paintings — landscapes, light, quiet places.">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='10' cy='16' r='7' fill='%231A2640' opacity='0.9'/><circle cx='20' cy='12' r='6' fill='%23C49A93' opacity='0.6'/><circle cx='22' cy='20' r='5' fill='%23D4956B' opacity='0.5'/></svg>">
+
+<!-- Fonts: Fraunces (variable, optical sizing) + Inter -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- JSON-LD: injected per painting by JS; this is a fallback for the site itself -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Sveta",
+  "jobTitle": "Painter",
+  "url": "https://svetacolours.com",
+  "sameAs": []
+}
+</script>
+
 <style>
 /* ========================================================
-   SVETA COLOURS — WARM GALLERY DESIGN
+   SVETA COLOURS — V2 EDITORIAL GALLERY DESIGN
+   ========================================================
+   Palette: bone/oat with a single deep ink-blue accent.
+   Rationale: rose-dust + clay + terracotta together read
+   too "warm-craft / Etsy". Bone (#EAE6DE) is a classic
+   gallery wall tone; ink-blue (#1A2640) gives a single,
+   restrained editorial accent — used only for links and
+   the rare CTA. Sold and Available no longer have
+   competing colors; "Sold" is just italic strikethrough.
    ======================================================== */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Warm palette */
-  --bg: #F4EFE6;
-  --surface: #FAF7F2;
-  --surface-alt: #EDE7DC;
-  --border: #DDD5C8;
-  --border-strong: #CEC4B4;
-  --text: #1C1712;
-  --text-secondary: #5A5048;
-  --text-muted: #8A7D72;
+  /* Editorial bone/oat palette */
+  --bg: #EAE6DE;
+  --surface: #F2EFE8;
+  --surface-alt: #E0DBD1;
+  --paper: #F7F5EF;
+  --border: #D6CFC1;
+  --border-strong: #BFB6A4;
+  --hairline: rgba(20, 19, 15, 0.12);
 
-  /* Accents */
-  --clay: #B5613D;
-  --terracotta: #C8714F;
-  --rose-dust: #C49A93;
-  --sold-red: #A35A52;
+  --text: #14130F;
+  --text-secondary: #3B362D;
+  --text-muted: #6B6357;
+  /* Darkened from #8C8478 to pass WCAG AA on bone (#EAE6DE) — 4.6:1 contrast */
+  --text-faint: #6B6258;
+
+  /* Single accent: deep ink-blue */
+  --accent: #1A2640;
+  --accent-hover: #2A3A5C;
+
+  /* Dynamic accent tint applied by JS from dominant painting color.
+     Falls back to accent. */
+  --accent-tint: #1A2640;
 
   /* Type */
-  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 
   /* Layout */
-  --max-w: 1200px;
+  --max-w: 1280px;
+  --max-w-text: 680px;
   --transition: 0.28s ease;
 }
 
@@ -48,31 +100,38 @@ body {
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "ss02";
 }
 
-::selection {
-  background: var(--rose-dust);
-  color: var(--text);
-}
+::selection { background: var(--accent); color: var(--paper); }
 
 img { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button { cursor: pointer; font-family: inherit; }
 
+/* Focus states */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
 /* --- Navigation --- */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(244, 239, 230, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(206, 196, 180, 0.4);
+  background: rgba(234, 230, 222, 0.86);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border-bottom: 1px solid var(--hairline);
 }
 
 nav .nav-inner {
   max-width: var(--max-w);
   margin: 0 auto;
   padding: 0 2rem;
-  height: 72px;
+  height: 68px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -80,84 +139,111 @@ nav .nav-inner {
 
 nav .logo {
   font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-style: italic;
+  font-size: 1.4rem;
+  font-weight: 400;
+  letter-spacing: -0.005em;
   color: var(--text);
+  font-optical-sizing: auto;
 }
 
 nav .nav-links { display: flex; gap: 2.2rem; list-style: none; align-items: center; }
 
 nav .nav-links a {
-  font-size: 0.88rem;
-  font-weight: 500;
+  font-size: 0.84rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   color: var(--text-secondary);
   transition: color var(--transition);
+  position: relative;
 }
 
 nav .nav-links a:hover { color: var(--text); }
 
-nav .nav-contact {
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: var(--clay);
-  transition: color var(--transition);
+nav .nav-links a.active::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -6px;
+  height: 1px;
+  background: var(--text);
 }
-nav .nav-contact:hover { color: var(--terracotta); }
 
 .hamburger {
   display: none;
   background: none;
   border: none;
-  width: 28px;
-  height: 20px;
+  width: 26px;
+  height: 18px;
   flex-direction: column;
   justify-content: space-between;
+  padding: 0;
 }
 
 .hamburger span {
-  display: block; width: 100%; height: 1.5px;
+  display: block; width: 100%; height: 1px;
   background: var(--text);
   transition: var(--transition);
 }
 
-/* --- Buttons --- */
+/* --- Buttons / Links --- */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 48px;
-  padding: 0 1.8rem;
+  height: 44px;
+  padding: 0 1.4rem;
   border: none;
-  border-radius: 100px;
-  font-size: 0.9rem;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 0.86rem;
   font-weight: 500;
+  letter-spacing: 0.02em;
   transition: all var(--transition);
 }
 
 .btn-primary {
-  background: var(--clay);
-  color: var(--surface);
+  background: var(--accent);
+  color: var(--paper);
 }
-.btn-primary:hover { background: var(--terracotta); }
+.btn-primary:hover { background: var(--accent-hover); }
 
 .btn-outline {
   background: transparent;
   border: 1px solid var(--border-strong);
-  color: var(--text-secondary);
+  color: var(--text);
 }
-.btn-outline:hover { border-color: var(--text-secondary); color: var(--text); }
+.btn-outline:hover { border-color: var(--text); }
 
-.btn-text {
-  background: none; border: none; height: auto; padding: 0;
-  color: var(--clay);
-  font-size: 0.88rem;
-  font-weight: 500;
+/* Editorial text link: underline with offset */
+.link {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--text-muted);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--transition), color var(--transition);
+  font-size: 0.92rem;
 }
-.btn-text:hover { color: var(--terracotta); }
+.link:hover { text-decoration-color: var(--text); }
+
+.link-accent {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+.link-accent:hover { color: var(--accent-hover); text-decoration-color: var(--accent-hover); }
+
+.link-arrow::after {
+  content: ' \2192';
+  display: inline-block;
+  transition: transform var(--transition);
+}
+.link-arrow:hover::after { transform: translateX(3px); }
 
 /* --- Sections --- */
-section { padding: 5.5rem 2rem; }
+section { padding: 6rem 2rem; }
 
 .section-inner {
   max-width: var(--max-w);
@@ -166,220 +252,697 @@ section { padding: 5.5rem 2rem; }
 
 .section-title {
   margin-bottom: 3rem;
+  border-top: 1px solid var(--hairline);
+  padding-top: 2rem;
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.section-title .eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .section-title h2 {
   font-family: var(--font-display);
+  font-optical-sizing: auto;
   font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 500;
-  line-height: 1.05;
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
   color: var(--text);
+  flex: 1;
+  min-width: 0;
 }
 
-.section-title p {
-  margin-top: 0.6rem;
+.section-title .section-meta {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.95rem;
   color: var(--text-muted);
-  font-size: 0.93rem;
+  flex-shrink: 0;
 }
 
-.section-header {
+/* --- Hero (editorial full-bleed) --- */
+.hero {
+  padding: 0;
+  position: relative;
+  margin-top: 68px;
+}
+
+.hero-image-wrap {
+  width: 100%;
+  height: 75vh;
+  min-height: 540px;
+  max-height: 900px;
+  background: var(--surface-alt);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero-image-wrap .hero-placeholder {
+  width: 100%;
+  height: 100%;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #d6cfc1, #bfb6a4);
+}
+
+.hero-meta {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4.5rem;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 3rem;
+  align-items: end;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: "opsz" 144;
+  font-size: clamp(3.4rem, 9vw, 8rem);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  color: var(--text);
+  margin: 0;
+}
+
+.hero-title em,
+.hero-title .italic {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.hero-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.hero-credit {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.hero-credit .sep { margin: 0 0.5rem; color: var(--text-faint); }
+
+.hero-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  max-width: 36ch;
+}
+
+.hero-cta-row {
+  margin-top: 0.5rem;
+}
+
+/* --- Gallery Grid: CSS Grid masonry (left-to-right reading order) --- */
+/* Row height is small (8px); each card spans N rows computed in JS from its
+   rendered height. This preserves the array order top-to-bottom, left-to-right
+   while still giving a tight masonry look. Falls back to a plain auto-fit grid
+   if JS does not run. */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-auto-rows: 8px;
+  gap: 0 2.5rem;
+  counter-reset: card;
+  position: relative;
+}
+
+/* Until JS calculates the span, each card sits in a single column flow.
+   This avoids huge gaps on first paint. */
+.gallery-grid:not(.masonry-ready) .painting-card {
+  grid-row: span 60;
+}
+
+@media (max-width: 1024px) {
+  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 2rem; }
+}
+@media (max-width: 600px)  {
+  .gallery-grid { grid-template-columns: 1fr; gap: 0; }
+}
+
+.painting-card {
+  width: 100%;
+  margin-bottom: 3rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  position: relative;
+  counter-increment: card;
+}
+
+/* Editorial catalog number in the left margin (desktop only).
+   Hidden on narrow screens and inside cards as a small badge instead. */
+.painting-card::before {
+  content: "№ " counter(card, decimal-leading-zero);
+  position: absolute;
+  left: -3rem;
+  top: 0.1rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  color: var(--text-faint);
+  line-height: 1;
+  pointer-events: none;
+}
+
+@media (max-width: 1200px) {
+  .painting-card::before {
+    left: auto;
+    right: 0.6rem;
+    top: 0.6rem;
+    background: rgba(247, 245, 239, 0.86);
+    backdrop-filter: blur(4px);
+    padding: 0.2rem 0.45rem;
+    z-index: 1;
+  }
+}
+
+.painting-card .card-image {
+  width: 100%;
+  background: transparent;
+  overflow: hidden;
+  /* no border-radius — gallery editorial */
+}
+
+.painting-card .card-image-inner {
+  width: 100%;
+  aspect-ratio: var(--ratio, 4/5);
+  background: var(--surface-alt);
+  overflow: hidden;
+  position: relative;
+}
+
+.painting-card .card-image img {
+  width: 100%; height: 100%;
+  object-fit: cover; /* dynamic aspect ratio means we can cover safely */
+  transition: transform 0.6s ease;
+}
+
+.painting-card:hover .card-image img { transform: scale(1.02); }
+
+.painting-card .card-info {
+  padding: 1.1rem 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.painting-card .card-text { flex: 1; min-width: 0; }
+
+.painting-card .card-title {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.painting-card .card-meta {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.painting-card .card-price {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+}
+
+/* Hand-drawn SVG strikethrough replaces text-decoration on Sold price.
+   The .sold-stroke SVG is inserted next to the price text inside the
+   .card-price span; we keep the price text color muted but readable. */
+.painting-card .card-price {
+  position: relative;
+}
+.painting-card .card-price.sold {
+  color: var(--text-faint);
+}
+.painting-card .card-price .sold-stroke,
+.modal-price .sold-stroke {
+  position: absolute;
+  inset: 50% 0 auto 0;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 0.6em;
+  color: var(--text-secondary);
+  pointer-events: none;
+  display: none;
+}
+.painting-card .card-price.sold .sold-stroke,
+.modal-price.sold .sold-stroke {
+  display: block;
+}
+
+.painting-card .card-sold-tag {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  margin-left: 0.4rem;
+}
+
+/* --- Category cards --- */
+.categories { background: var(--surface); }
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.category-card {
+  padding: 2.5rem 2rem;
+  background: transparent;
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  cursor: pointer;
+  transition: background var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 200px;
   justify-content: space-between;
 }
 
-/* --- Hero --- */
-.hero {
-  min-height: 88vh;
-  display: flex;
-  align-items: center;
-  padding-top: 72px;
+.category-card:hover { background: var(--paper); }
+
+.category-card h3 {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.8rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
 }
 
-.hero .hero-inner {
-  max-width: var(--max-w);
-  margin: 0 auto;
-  width: 100%;
+.category-card .cat-count {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
+.category-card .cat-arrow {
+  margin-top: 1.5rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* --- About preview --- */
+.about-preview {
+  max-width: var(--max-w-text);
+}
+
+.about-preview p {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 1rem;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+}
+
+.about-preview p + p {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  line-height: 1.7;
+}
+
+/* --- Testimonials --- */
+.testimonials { background: var(--paper); }
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4rem;
+  margin-top: 2rem;
+}
+
+.testimonial blockquote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--text);
+  letter-spacing: -0.005em;
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+.testimonial blockquote::before {
+  content: '\201C';
+  position: absolute;
+  left: -0.8rem;
+  top: -0.4rem;
+  font-size: 2rem;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.testimonial cite {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .testimonials-grid { grid-template-columns: 1fr; gap: 3rem; }
+}
+
+/* --- Process / Studio --- */
+.process-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: center;
 }
 
-.hero-text h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2.6rem, 5vw, 4rem);
-  font-weight: 500;
-  line-height: 1.05;
-  margin-bottom: 1.2rem;
-  color: var(--text);
-}
-
-.hero-text .subtitle {
-  font-size: 1.05rem;
-  color: var(--text-secondary);
-  line-height: 1.7;
-  margin-bottom: 2.2rem;
-  max-width: 440px;
-}
-
-.hero-text .hero-buttons { display: flex; gap: 0.8rem; flex-wrap: wrap; }
-
-.hero-image {
+.process-image {
   aspect-ratio: 4/5;
-  border-radius: 20px;
-  overflow: hidden;
+  background: var(--surface-alt);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-faint);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 2rem;
 }
 
-.hero-image img {
-  width: 100%; height: 100%;
-  object-fit: contain;
-}
-
-/* --- Gallery Grid --- */
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 2rem;
-}
-
-.painting-card {
-  cursor: pointer;
-  transition: transform var(--transition);
-}
-
-.painting-card:hover { transform: translateY(-3px); }
-
-.painting-card .card-image {
-  aspect-ratio: 4/5;
-  overflow: hidden;
-  border-radius: 12px;
-  background: var(--surface-alt);
+.process-text p {
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
 }
 
-.painting-card .card-image img {
-  width: 100%; height: 100%;
-  object-fit: contain;
-  transition: transform 0.4s ease;
-}
-
-.painting-card:hover .card-image img { transform: scale(1.03); }
-
-.painting-card .card-title {
+.process-text p:first-child {
   font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 0.2rem;
-}
-
-.painting-card .card-medium {
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin-bottom: 0.3rem;
-}
-
-.painting-card .card-price {
-  font-size: 0.93rem;
-  font-weight: 500;
-  color: var(--clay);
-}
-
-.painting-card .card-price.sold {
-  color: var(--text-muted);
+  font-size: 1.25rem;
   font-style: italic;
+  color: var(--text);
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
 }
 
-/* --- Category Split --- */
-.categories { background: var(--surface); }
+@media (max-width: 900px) {
+  .process-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .process-image { aspect-ratio: 3/2; }
+}
 
-.category-grid {
+/* --- FAQ (details/summary) --- */
+.faq-list {
+  max-width: var(--max-w-text);
+  margin: 0 auto;
+}
+
+.faq-list details {
+  border-bottom: 1px solid var(--hairline);
+  padding: 1.4rem 0;
+}
+
+.faq-list details:first-child { border-top: 1px solid var(--hairline); }
+
+.faq-list summary {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.2rem;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.faq-list summary::-webkit-details-marker { display: none; }
+
+.faq-list summary::after {
+  content: '+';
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+  flex-shrink: 0;
+}
+
+.faq-list details[open] summary::after { content: '\2013'; }
+
+.faq-list .faq-answer {
+  padding-top: 1rem;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 60ch;
+}
+
+/* --- Exhibitions --- */
+.exhibitions-list {
+  border-top: 1px solid var(--hairline);
+  max-width: 800px;
+}
+
+.exhibitions-list .exh-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: 80px 1fr auto;
   gap: 2rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--hairline);
+  align-items: baseline;
 }
 
-.category-card {
-  padding: 3rem 2.5rem;
-  background: var(--bg);
-  border-radius: 16px;
-  border: 1px solid var(--border);
+.exhibitions-list .exh-year {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.exhibitions-list .exh-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.exhibitions-list .exh-location {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.exhibitions-empty {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--text-muted);
+  padding: 2rem 0;
+}
+
+/* --- Newsletter --- */
+.newsletter { background: var(--surface); }
+
+.newsletter-inner {
+  max-width: var(--max-w-text);
+  margin: 0 auto;
   text-align: center;
+}
+
+.newsletter h2 {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  margin-bottom: 0.75rem;
+}
+
+.newsletter p {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+
+.newsletter form {
+  display: flex;
+  gap: 1.5rem;
+  max-width: 480px;
+  margin: 0 auto;
+  align-items: flex-end;
+}
+
+.newsletter .field {
+  flex: 1;
+  position: relative;
+}
+
+.newsletter label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.newsletter input[type="email"] {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-strong);
+  padding: 0.5rem 0;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--text);
   transition: border-color var(--transition);
 }
 
-.category-card:hover { border-color: var(--border-strong); }
+.newsletter input[type="email"]:focus {
+  outline: none;
+  border-bottom-color: var(--text);
+}
 
-.category-card h3 {
+.newsletter button {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--text);
+  padding: 0.5rem 0;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.newsletter button:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+@media (max-width: 600px) {
+  .newsletter form { flex-direction: column; align-items: stretch; }
+  .newsletter button { width: fit-content; margin: 0 auto; }
+}
+
+/* --- Contact (single section) --- */
+.contact { background: var(--bg); padding-top: 5rem; padding-bottom: 5rem; }
+
+.contact-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: end;
+}
+
+.contact h2 {
   font-family: var(--font-display);
-  font-size: 1.8rem;
-  font-weight: 500;
-  margin-bottom: 0.6rem;
+  font-optical-sizing: auto;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
 }
 
-.category-card p {
-  color: var(--text-muted);
-  font-size: 0.93rem;
-  margin-bottom: 1.5rem;
-}
+.contact h2 em, .contact h2 .italic { font-style: italic; }
 
-/* --- About Preview --- */
-.about-preview {
-  max-width: 640px;
-}
-
-.about-preview p {
-  color: var(--text-secondary);
+.contact-meta {
+  font-family: var(--font-display);
+  font-style: italic;
   font-size: 1.05rem;
-  line-height: 1.75;
-  margin-bottom: 1rem;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
-.about-preview .btn-text { margin-top: 0.8rem; }
+.contact-meta a { color: var(--text); text-decoration: underline; text-underline-offset: 4px; }
+.contact-meta a:hover { color: var(--accent); }
 
-/* --- Contact --- */
-.contact { background: var(--surface-alt); text-align: center; }
-
-.contact p {
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
-  font-size: 1rem;
+@media (max-width: 768px) {
+  .contact-inner { grid-template-columns: 1fr; gap: 1.5rem; }
 }
-
-.contact .email-link {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  color: var(--clay);
-  font-weight: 500;
-  transition: color var(--transition);
-}
-
-.contact .email-link:hover { color: var(--terracotta); }
 
 /* --- Collection Header --- */
 .collection-header {
-  text-align: center;
-  padding: 7rem 2rem 2.5rem;
+  padding: 9rem 2rem 3rem;
+  max-width: var(--max-w);
+  margin: 0 auto;
 }
 
 .collection-header h1 {
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 5vw, 3.4rem);
-  font-weight: 500;
-  line-height: 1.05;
-  margin-bottom: 0.5rem;
+  font-optical-sizing: auto;
+  font-variation-settings: "opsz" 144;
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+  margin-bottom: 0.6rem;
 }
 
 .collection-header p {
+  font-family: var(--font-display);
+  font-style: italic;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
+  max-width: 52ch;
 }
 
 .back-link {
@@ -387,8 +950,9 @@ section { padding: 5.5rem 2rem; }
   align-items: center;
   gap: 0.3rem;
   color: var(--text-muted);
-  font-size: 0.88rem;
-  margin-bottom: 1.5rem;
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 1.75rem;
   transition: color var(--transition);
 }
 .back-link:hover { color: var(--text); }
@@ -397,9 +961,9 @@ section { padding: 5.5rem 2rem; }
 .modal-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(28, 23, 18, 0.45);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(20, 19, 15, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   overflow-y: auto;
   padding: 2rem;
 }
@@ -407,119 +971,298 @@ section { padding: 5.5rem 2rem; }
 .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
 
 .modal {
-  background: var(--surface);
-  border-radius: 16px;
-  max-width: 880px;
+  background: var(--paper);
+  border-radius: 0;
+  max-width: 1080px;
   width: 100%;
   margin: 3rem auto;
   overflow: hidden;
-  box-shadow: 0 12px 48px rgba(0,0,0,0.12);
-  animation: modalIn 0.28s ease;
+  box-shadow: 0 18px 64px rgba(0,0,0,0.18);
+  animation: modalIn 0.32s ease;
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .modal-close {
   position: absolute;
-  top: 1rem; right: 1.2rem;
-  background: none; border: none;
-  font-size: 1.6rem;
+  top: 0.6rem; right: 0.6rem;
+  background: rgba(247, 245, 239, 0.92);
+  border: 1px solid var(--hairline);
+  font-size: 1.4rem;
   color: var(--text-muted);
   z-index: 10;
   line-height: 1;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color var(--transition), background var(--transition);
+  border-radius: 999px;
 }
-.modal-close:hover { color: var(--text); }
+.modal-close:hover { color: var(--text); background: var(--paper); }
 
 .modal-content {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 380px);
 }
 
 .modal-image {
   background: var(--surface-alt);
-  min-height: 400px;
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.modal-image img { width: 100%; height: 100%; object-fit: contain; }
+.modal-image img {
+  width: 100%;
+  height: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+}
 
 .modal-details {
-  padding: 2.5rem;
+  padding: 2.5rem 2.25rem;
   display: flex;
   flex-direction: column;
+  gap: 0.4rem;
+  overflow-y: auto;
+  max-height: 80vh;
 }
 
 .modal-details h2 {
   font-family: var(--font-display);
-  font-size: 1.8rem;
-  font-weight: 500;
-  margin-bottom: 0.8rem;
-  line-height: 1.1;
+  font-optical-sizing: auto;
+  font-size: 1.9rem;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  margin-bottom: 0.3rem;
+}
+
+.modal-details .modal-sub {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
 }
 
 .modal-details .description {
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
   line-height: 1.7;
-  font-size: 0.95rem;
+  font-size: 0.96rem;
 }
 
 .modal-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.55rem;
   margin-bottom: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--hairline);
   font-size: 0.9rem;
 }
 
-.modal-meta span { display: flex; gap: 0.5rem; }
+.modal-meta .row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 1rem;
+  align-items: baseline;
+}
 
 .modal-meta .label {
   color: var(--text-muted);
-  min-width: 65px;
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
 }
 
-.modal-status {
+.modal-meta .value {
+  color: var(--text);
+  font-size: 0.94rem;
+}
+
+.modal-price {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-style: italic;
+  color: var(--text);
+  margin-bottom: 1rem;
+  position: relative;
   display: inline-block;
-  padding: 0.25rem 0.7rem;
-  border-radius: 20px;
-  font-size: 0.82rem;
-  font-weight: 500;
-  margin-bottom: 1.5rem;
-  width: fit-content;
 }
 
-.modal-status.available { background: #E8F0E8; color: #4A6B4A; }
-.modal-status.sold { background: #F2E6E4; color: var(--sold-red); }
+.modal-price.sold {
+  color: var(--text-muted);
+}
 
-.modal-details .btn { margin-top: auto; }
+/* Modal overlay accent border + tinted bg when JS samples a dominant color */
+.modal {
+  border-top: 2px solid var(--accent-tint);
+  transition: border-color 0.4s ease;
+}
+
+.modal-cta {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.modal-cta .cta-link {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  transition: color var(--transition);
+}
+.modal-cta .cta-link:hover { color: var(--accent-hover); }
+
+.modal-cta .cta-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+
+.modal-collections {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.modal-collections .chip {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.modal-collections .chip:hover { border-color: var(--text); color: var(--text); }
 
 /* --- About Full --- */
-.about-full { max-width: 640px; }
+.about-full { max-width: var(--max-w-text); margin: 0 auto; }
+
+.about-full .lede {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.6rem;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 2rem;
+}
 
 .about-full p {
+  font-family: var(--font-body);
   font-size: 1.05rem;
-  line-height: 1.75;
+  line-height: 1.8;
   color: var(--text-secondary);
   margin-bottom: 1.2rem;
 }
 
-/* --- Footer --- */
+/* --- Footer (editorial multi-column) --- */
 footer {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  border-top: 1px solid var(--border);
+  background: var(--bg);
+  border-top: 1px solid var(--hairline);
+  padding: 4rem 2rem 1.75rem;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
 }
 
-/* --- Responsive --- */
+.footer-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.footer-grid {
+  display: grid;
+  /* Asymmetric column ratios — brand widest, browse/studio narrow, newsletter wide */
+  grid-template-columns: 3fr 1fr 1fr 2fr;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+
+/* If newsletter is hidden we want the brand col to take the slack */
+.footer-grid.no-newsletter {
+  grid-template-columns: 3fr 1fr 1fr;
+}
+
+.footer-col h4 {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.footer-col .footer-mark {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.footer-col .footer-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+
+.footer-col ul a {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  transition: color var(--transition);
+}
+
+.footer-col ul a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
+.footer-bottom {
+  border-top: 1px solid var(--hairline);
+  padding-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 900px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+}
+
+@media (max-width: 540px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+/* --- Responsive (mobile-first refinements) --- */
+@media (max-width: 1024px) {
+  .hero-meta { grid-template-columns: 1fr; gap: 1.5rem; padding-bottom: 3.5rem; }
+  .hero-side { align-items: flex-start; }
+}
+
 @media (max-width: 768px) {
   .hamburger { display: flex; }
 
@@ -527,75 +1270,225 @@ footer {
     display: none;
     position: absolute;
     top: 100%; left: 0; right: 0;
-    background: rgba(244, 239, 230, 0.98);
+    background: rgba(234, 230, 222, 0.98);
     backdrop-filter: blur(14px);
     flex-direction: column;
     padding: 1.5rem 2rem;
-    gap: 1rem;
-    border-bottom: 1px solid var(--border);
+    gap: 1.1rem;
+    border-bottom: 1px solid var(--hairline);
   }
 
   nav .nav-links.open { display: flex; }
 
-  .hero .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
-  .hero-text { order: 2; }
-  .hero-image { order: 1; max-height: 50vh; }
-  .hero { min-height: auto; padding-top: 5rem; }
+  .hero-image-wrap { height: 60vh; min-height: 380px; }
+  .hero-meta { padding: 1.75rem 1.5rem 3rem; }
+  .hero-title { font-size: clamp(2.6rem, 11vw, 4.4rem); }
 
   .modal-content { grid-template-columns: 1fr; }
-  .modal-image { min-height: 280px; }
+  .modal-image { min-height: 280px; max-height: 50vh; }
+  .modal-details { max-height: none; padding: 1.75rem 1.5rem; }
+  .modal-meta .row { grid-template-columns: 100px 1fr; }
 
-  section { padding: 3.5rem 1.5rem; }
+  section { padding: 4rem 1.5rem; }
+  .collection-header { padding: 7rem 1.5rem 2.5rem; }
 
-  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
+  .section-title { flex-direction: column; gap: 0.5rem; }
 }
 
 @media (max-width: 480px) {
-  .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .painting-card .card-info { padding: 0.6rem 0.8rem; }
   .category-grid { grid-template-columns: 1fr; }
-  .hero-text h1 { font-size: 2.2rem; }
+  .hero-title { font-size: 2.4rem; letter-spacing: -0.02em; }
+  .testimonial blockquote { font-size: 1.08rem; }
+  .modal-overlay { padding: 0; }
+  .modal { margin: 0; }
+}
+
+/* --- Semantic italic (replaces <em> visual abuse) --- */
+.italic { font-style: italic; }
+
+/* --- Logo squiggle (subtle SVG flourish under nav logo) --- */
+nav .logo {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1;
+}
+nav .logo .logo-squiggle {
+  display: block;
+  width: 36px;
+  height: 6px;
+  margin-top: 4px;
+  color: var(--accent);
+  opacity: 0.55;
+}
+
+/* --- Hero №01 in the left margin --- */
+.hero-meta {
+  position: relative;
+}
+.hero-number {
+  position: absolute;
+  left: 2rem;
+  top: 2.5rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+@media (max-width: 1024px) {
+  .hero-number { position: static; margin-bottom: 0.5rem; }
+}
+
+/* --- Visually hidden (for labels) --- */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Custom cursor (hover on cards / hero) --- */
+.custom-cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 64px; height: 64px;
+  border: 1px solid var(--text);
+  border-radius: 999px;
+  background: rgba(247, 245, 239, 0.42);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+.custom-cursor.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .custom-cursor { display: none !important; }
+}
+body.cursor-hide,
+body.cursor-hide * { cursor: none !important; }
+
+/* --- Testimonials asymmetric layout (only renders when data exists) --- */
+.testimonials-grid {
+  grid-template-columns: 5fr 4fr 6fr;
+}
+@media (max-width: 900px) {
+  .testimonials-grid { grid-template-columns: 1fr; }
 }
 
 /* --- Reveal animation --- */
 .reveal {
-  opacity: 0; transform: translateY(16px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  opacity: 0; transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 .reveal.visible { opacity: 1; transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .painting-card, .painting-card .card-image img,
+  .btn, a, .modal, .custom-cursor { transition: none !important; animation: none !important; }
+  .reveal { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--text);
+  color: var(--paper);
+  padding: 0.5rem 1rem;
+  z-index: 200;
+  font-size: 0.85rem;
+}
+.skip-link:focus { top: 0; }
 </style>
 </head>
 <body>
 
+<a href="#main" class="skip-link">Skip to content</a>
+
 <!-- Navigation -->
-<nav>
+<nav aria-label="Primary">
   <div class="nav-inner">
-    <a href="#" class="logo" onclick="showPage('home')">Sveta Colours</a>
-    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <a href="#home" class="logo" onclick="event.preventDefault(); showPage('home');" aria-label="Sveta Colours — home">
+      <span>Sveta Colours</span>
+      <svg class="logo-squiggle" viewBox="0 0 40 6" aria-hidden="true" focusable="false"><path d="M2 4 Q 10 1, 20 3 T 38 4" stroke="currentColor" stroke-width="0.7" fill="none" stroke-linecap="round"/></svg>
+    </a>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="navLinks">
-      <li><a href="#" onclick="showPage('home'); closeMenu()">Home</a></li>
-      <li><a href="#" onclick="showPage('paintings'); closeMenu()">Paintings</a></li>
-      <li><a href="#" onclick="showPage('postcards'); closeMenu()">Postcards</a></li>
-      <li><a href="#" onclick="showPage('about'); closeMenu()">About</a></li>
-      <li><a href="#contact" onclick="closeMenu()" class="nav-contact">Get in touch</a></li>
+      <li><a href="#works" data-page="works" onclick="event.preventDefault(); showPage('paintings'); closeMenu();">Works</a></li>
+      <li><a href="#postcards" data-page="postcards" onclick="event.preventDefault(); showPage('postcards'); closeMenu();">Postcards</a></li>
+      <li><a href="#about" data-page="about" onclick="event.preventDefault(); showPage('about'); closeMenu();">About</a></li>
+      <li><a href="#faq" data-page="faq" onclick="event.preventDefault(); showPage('faq'); closeMenu();">FAQ</a></li>
     </ul>
   </div>
 </nav>
 
-<div id="app"></div>
+<main id="app"></main>
 
 <!-- Painting Detail Modal -->
-<div class="modal-overlay" id="modal">
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
     <div class="modal-content" id="modalContent"></div>
   </div>
 </div>
 
-<footer>&copy; 2026 Sveta Colours. All rights reserved.</footer>
+<!-- Editorial footer (content injected by JS so it can react to SITE_DATA) -->
+<footer id="footer" aria-label="Site footer"></footer>
+
+<!-- Painting JSON-LD slot (filled by JS) -->
+<script type="application/ld+json" id="paintings-ld">{}</script>
 
 <script>
+/* ========================================================
+   SITE_DATA — single source of truth for studio/copy info.
+   Sveta: fill these in when ready. Empty / null values trigger
+   graceful degradation — sections, sentences, links simply
+   don't render. There are NEVER visible [TODO] markers
+   to the visitor.
+   ======================================================== */
+const SITE_DATA = {
+  artist: {
+    name: "Sveta",
+    location: "Thornhill, Ontario, Canada",        // e.g. "Toronto, Canada" — appears in About preview + Footer
+    yearsPracticing: 8, // e.g. 8                  — appears in About preview
+    schooling: "self-taught",       // e.g. "self-taught"      — appears in About full
+    influences: null,      // e.g. "Lois Dodd, Vuillard, Peter Doig" — About full
+    exhibitions: [],       // [{year:2024, title:"Group show", venue:"Gallery X", city:"Berlin"}]
+    instagram: null,       // e.g. "https://instagram.com/sveta.colours"
+    studioPhotoUrl: "https://drive.google.com/file/d/1zgwCypofyOuySa-O4QKiIck-3AXysKw9/view?usp=drive_link"   // e.g. "/studio.jpg" — used by Process section
+  },
+  testimonials: [],        // [{quote, name, city, year}] — start EMPTY, no fake data.
+  newsletter: {
+    serviceUrl: null       // e.g. Buttondown / Mailchimp form action URL.
+                           // If null → form is hidden everywhere (no alert).
+  },
+  shipping: {
+    fromCountry: "Canada"      // e.g. "Canada" — appears in FAQ shipping answer
+  },
+  ogImage: null            // e.g. "/og-image.jpg" — when null, og/twitter image meta is omitted
+};
+
 /* ========================================================
    FALLBACK DATA
    ======================================================== */
@@ -611,9 +1504,54 @@ let PAINTINGS = [
     description: "A family stands as a point of warmth and color against towering high-rises and the cold air.",
     collections: ["Seasons", "City"],
     available: true,
-    sold: false
+    featured: true,
+    year: "",
+    surface: "",
+    signed: "",
+    framed: "",
+    shippingFrom: "",
+    certificate: "",
+    widthIn: null,
+    heightIn: null,
+    dominantColor: ""
+  },
+  {
+    id: 2,
+    title: "Small Rain",
+    medium: "watercolor",
+    price: 120,
+    sold: false,
+    size: "5 x 7 in",
+    image: "",
+    description: "A small watercolor — drizzle on a windowpane, late afternoon light.",
+    collections: ["Postcards"],
+    available: true,
+    featured: false,
+    year: "",
+    surface: "paper",
+    signed: "",
+    framed: "",
+    shippingFrom: "",
+    certificate: "",
+    widthIn: null,
+    heightIn: null,
+    dominantColor: ""
   }
 ];
+
+/* Render og:image / twitter:image meta tags only if data exists.
+   Done early so crawlers see them in the DOM after JS execution. */
+(function injectOGImage(){
+  if (!SITE_DATA.ogImage) return;
+  const m1 = document.createElement('meta');
+  m1.setAttribute('property', 'og:image');
+  m1.setAttribute('content', SITE_DATA.ogImage);
+  document.head.appendChild(m1);
+  const m2 = document.createElement('meta');
+  m2.setAttribute('name', 'twitter:image');
+  m2.setAttribute('content', SITE_DATA.ogImage);
+  document.head.appendChild(m2);
+})();
 
 /* ========================================================
    CONFIGURATION
@@ -666,21 +1604,45 @@ function sheetRowToPainting(row, headers, index) {
     const i = headers.findIndex(h => h.toLowerCase().replace(/[^a-z]/g,'') === name);
     return i >= 0 ? (row[i] || '') : '';
   };
+  const yes = (s) => {
+    const v = (s || '').toLowerCase().trim();
+    return v === 'yes' || v === 'true' || v === '1' || v === 'y';
+  };
+
   const priceStr = get('price');
-  const soldStr = get('sold').toLowerCase();
-  const availableStr = get('featured').toLowerCase();
-  const available = availableStr === '' || availableStr === 'yes' || availableStr === 'true' || availableStr === '1';
+  // Sold determined ONLY by 'sold' column. Featured is a separate flag
+  // (used for hero pickup / "recent" highlights), not for availability.
+  const sold = yes(get('sold'));
+  const featured = yes(get('featured'));
+
+  // Optional dimensions for aspect ratio
+  const widthInStr = get('widthin');
+  const heightInStr = get('heightin');
+  const widthIn = widthInStr ? parseFloat(widthInStr) : null;
+  const heightIn = heightInStr ? parseFloat(heightInStr) : null;
+
   return {
     id: index + 1,
     title: get('title'),
     medium: get('medium').toLowerCase(),
     price: priceStr ? parseFloat(priceStr.replace(/[^0-9.]/g, '')) : null,
-    sold: !available,
+    sold: sold,
     size: get('size'),
     image: driveImageURL(get('image')),
     description: get('description'),
     collections: get('collection') ? get('collection').split(',').map(c => c.trim()).filter(Boolean) : [],
-    available: available
+    available: !sold,
+    featured: featured,
+    // New optional fields — render only if present
+    year: get('year'),
+    surface: get('surface'),
+    signed: get('signed'),
+    framed: get('framed'),
+    shippingFrom: get('shippingfrom'),
+    certificate: get('certificate'),
+    widthIn: (widthIn && !isNaN(widthIn)) ? widthIn : null,
+    heightIn: (heightIn && !isNaN(heightIn)) ? heightIn : null,
+    dominantColor: get('dominantcolor') || get('color') || ''
   };
 }
 
@@ -689,7 +1651,7 @@ async function loadFromSheet() {
   try {
     document.getElementById('app').innerHTML = `
       <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
-        <p style="color:var(--text-muted);font-family:var(--font-display);font-size:1.2rem;">Loading paintings…</p>
+        <p style="color:var(--text-muted);font-family:var(--font-display);font-style:italic;font-size:1.2rem;">Loading paintings&hellip;</p>
       </div>`;
     const response = await fetch(SHEET_CSV_URL);
     if (!response.ok) throw new Error('Could not fetch sheet');
@@ -704,11 +1666,12 @@ async function loadFromSheet() {
   } catch (err) {
     console.warn('Could not load from Google Sheet:', err.message);
   }
+  injectPaintingsLD();
   render();
 }
 
 /* ========================================================
-   APP ENGINE
+   HELPERS
    ======================================================== */
 
 let currentPage = 'home';
@@ -719,149 +1682,329 @@ function showPage(page) {
   render();
 }
 
-function toggleMenu() { document.getElementById('navLinks').classList.toggle('open'); }
-function closeMenu() { document.getElementById('navLinks').classList.remove('open'); }
+function toggleMenu() {
+  const links = document.getElementById('navLinks');
+  const btn = document.querySelector('.hamburger');
+  const willOpen = !links.classList.contains('open');
+  links.classList.toggle('open');
+  if (btn) btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+}
+function closeMenu() {
+  document.getElementById('navLinks').classList.remove('open');
+  const btn = document.querySelector('.hamburger');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+function formatPriceText(p) {
+  if (p.sold) return 'Sold';
+  if (p.price == null || isNaN(p.price)) return '';
+  return `${CURRENCY}${p.price.toLocaleString()}`;
+}
 
 function formatPrice(p) {
-  if (p.sold) return '<span class="card-price sold">Sold</span>';
-  return `<span class="card-price">${CURRENCY}${p.price}</span>`;
+  if (p.sold) return `<span class="card-price sold">Sold</span>`;
+  if (p.price == null || isNaN(p.price)) return '';
+  return `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}</span>`;
+}
+
+// Convert "16 x 20 in" or numeric inches to "16 × 20 in / 40.6 × 50.8 cm"
+function formatDimensions(p) {
+  if (p.widthIn && p.heightIn) {
+    const wIn = p.widthIn, hIn = p.heightIn;
+    const wCm = (wIn * 2.54).toFixed(1).replace(/\.0$/, '');
+    const hCm = (hIn * 2.54).toFixed(1).replace(/\.0$/, '');
+    return `${wIn} × ${hIn} in / ${wCm} × ${hCm} cm`;
+  }
+  if (p.size) {
+    // Try to parse "16 x 20 in" or "16x20"
+    const m = p.size.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/i);
+    if (m) {
+      const wIn = parseFloat(m[1]), hIn = parseFloat(m[2]);
+      const wCm = (wIn * 2.54).toFixed(1).replace(/\.0$/, '');
+      const hCm = (hIn * 2.54).toFixed(1).replace(/\.0$/, '');
+      return `${wIn} × ${hIn} in / ${wCm} × ${hCm} cm`;
+    }
+    return p.size;
+  }
+  return '';
+}
+
+function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+function paintingMeta(p) {
+  // Build editorial meta string: "Acrylic on canvas. 2024. 16 × 20 in / 40.6 × 50.8 cm."
+  const parts = [];
+  const medium = p.medium ? capitalize(p.medium) : '';
+  const surface = p.surface ? p.surface.toLowerCase() : '';
+  if (medium && surface) parts.push(`${medium} on ${surface}`);
+  else if (medium) parts.push(medium);
+  if (p.year) parts.push(p.year);
+  const dims = formatDimensions(p);
+  if (dims) parts.push(dims);
+  return parts.length ? parts.join('. ') + '.' : '';
+}
+
+function aspectRatioFor(p) {
+  if (p.widthIn && p.heightIn && p.widthIn > 0 && p.heightIn > 0) {
+    return `${p.widthIn}/${p.heightIn}`;
+  }
+  // Try to parse from size string
+  if (p.size) {
+    const m = p.size.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/i);
+    if (m) {
+      const w = parseFloat(m[1]), h = parseFloat(m[2]);
+      if (w > 0 && h > 0) return `${w}/${h}`;
+    }
+  }
+  return '4/5';
 }
 
 function placeholderGradient(id) {
   const grads = [
-    'linear-gradient(145deg, #E8C4A0, #D4956B)',
-    'linear-gradient(145deg, #C5CDD8, #A3B1C2)',
-    'linear-gradient(145deg, #D4C9A8, #E8D5B0)',
-    'linear-gradient(145deg, #8DA178, #B5C4A0)',
-    'linear-gradient(145deg, #B8A9C2, #D0C5D8)',
-    'linear-gradient(145deg, #D8C5B0, #E5D8C8)',
-    'linear-gradient(145deg, #7C8FA3, #A3B1C2)',
-    'linear-gradient(145deg, #D0D3CB, #E2E4DC)',
-    'linear-gradient(145deg, #C9A29B, #D8B5AE)',
+    'linear-gradient(160deg, #d6cfc1, #bfb6a4)',
+    'linear-gradient(160deg, #c8c2b3, #aea796)',
+    'linear-gradient(160deg, #ddd5c5, #c5bda9)',
+    'linear-gradient(160deg, #b8b0a0, #9c9384)',
+    'linear-gradient(160deg, #cec7b8, #b3aa97)',
+    'linear-gradient(160deg, #d4ccbd, #b8b09e)',
+    'linear-gradient(160deg, #b0a895, #918876)',
+    'linear-gradient(160deg, #c4bcab, #a89f8c)',
+    'linear-gradient(160deg, #d8d1c2, #c0b9a6)',
   ];
   return grads[id % grads.length];
 }
 
-function paintingImage(p, height) {
-  if (p.image) return `<img src="${p.image}" alt="${p.title}" loading="lazy">`;
-  return `<div style="width:100%;height:100%;min-height:${height||'100%'};background:${placeholderGradient(p.id)};display:flex;align-items:center;justify-content:center;"><span style="font-family:var(--font-display);font-size:1.1rem;color:rgba(28,23,18,0.18);text-align:center;padding:1rem;">${p.title}</span></div>`;
+// Inline hand-drawn SVG strikethrough for sold prices
+const SOLD_STROKE_SVG = `<svg class="sold-stroke" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M2 6 Q 30 3, 55 7 T 98 6" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`;
+
+function paintingImage(p, opts) {
+  opts = opts || {};
+  const alt = `${p.title} — original ${p.medium || 'painting'} painting by Sveta`;
+  if (p.image) {
+    const loadAttr = opts.isHero ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"';
+    const crossOrigin = opts.crossOrigin ? 'crossorigin="anonymous"' : '';
+    return `<img src="${p.image}" alt="${alt}" ${loadAttr} ${crossOrigin}>`;
+  }
+  return `<div style="width:100%;height:100%;min-height:240px;background:${placeholderGradient(p.id)};display:flex;align-items:center;justify-content:center;" role="img" aria-label="${alt}"><span style="font-family:var(--font-display);font-style:italic;font-size:1.1rem;color:rgba(20,19,15,0.22);text-align:center;padding:1rem;">${p.title}</span></div>`;
 }
 
 function cardHTML(p) {
+  const ratio = aspectRatioFor(p);
+  const priceHTML = p.sold
+    ? `<span class="card-price sold">${p.price ? CURRENCY + p.price.toLocaleString() : 'Sold'}${SOLD_STROKE_SVG}</span>`
+    : (p.price ? `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}</span>` : '');
+  const soldTag = p.sold ? `<span class="card-sold-tag">Sold</span>` : '';
+  const meta = paintingMeta(p);
   return `
-    <div class="painting-card reveal" onclick="openModal(${p.id})">
-      <div class="card-image">${paintingImage(p, '280px')}</div>
-      <div class="card-title">${p.title}</div>
-      <div class="card-medium">${p.medium}</div>
-    </div>`;
+    <button class="painting-card reveal" type="button" data-card-id="${p.id}" onclick="openModal(${p.id})" aria-label="Open details for ${p.title}">
+      <div class="card-image">
+        <div class="card-image-inner" style="--ratio: ${ratio};">${paintingImage(p)}</div>
+      </div>
+      <div class="card-info">
+        <div class="card-text">
+          <div class="card-title">${p.title}${soldTag}</div>
+          ${meta ? `<div class="card-meta">${meta}</div>` : ''}
+        </div>
+        ${priceHTML}
+      </div>
+    </button>`;
 }
+
+/* ========================================================
+   MODAL
+   ======================================================== */
+
+let lastFocusedElement = null;
 
 function openModal(id) {
   const p = PAINTINGS.find(x => x.id === id);
   if (!p) return;
+  lastFocusedElement = document.activeElement;
+
   const subject = encodeURIComponent(`Inquiry about "${p.title}"`);
-  const statusClass = p.sold ? 'sold' : 'available';
-  const statusText = p.sold ? 'Sold' : 'Available';
-  const ctaBtn = p.sold ? ''
-    : `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="btn btn-primary">Inquire about this painting</a>`;
-  const collectionsHTML = (p.collections || []).length
-    ? `<div style="margin-top:0.75rem;display:flex;flex-wrap:wrap;gap:0.5rem;">${(p.collections || []).map(c => `<span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:999px;font-size:0.8rem;background:var(--surface-alt);color:var(--text-secondary);border:1px solid var(--border-soft);cursor:pointer;" onclick="closeModal();showPage('collection:${c}')">${c}</span>`).join('')}</div>`
+
+  // Build meta rows — only render fields that have data
+  const metaRows = [];
+  const dims = formatDimensions(p);
+  if (dims) metaRows.push(['Size', dims]);
+  if (p.medium) metaRows.push(['Medium', capitalize(p.medium) + (p.surface ? ` on ${p.surface.toLowerCase()}` : '')]);
+  if (p.year) metaRows.push(['Year', p.year]);
+  if (p.signed) metaRows.push(['Signed', p.signed]);
+  if (p.framed) metaRows.push(['Framing', p.framed]);
+  if (p.shippingFrom) metaRows.push(['Ships from', p.shippingFrom]);
+  if (p.certificate) metaRows.push(['Authenticity', p.certificate]);
+
+  const metaHTML = metaRows.length
+    ? `<div class="modal-meta">${metaRows.map(([l, v]) =>
+        `<div class="row"><span class="label">${l}</span><span class="value">${v}</span></div>`
+      ).join('')}</div>`
     : '';
 
+  const priceHTML = p.sold
+    ? `<div class="modal-price sold">${p.price ? `${CURRENCY}${p.price.toLocaleString()}` : 'Sold'}${SOLD_STROKE_SVG}</div>`
+    : (p.price ? `<div class="modal-price">${CURRENCY}${p.price.toLocaleString()}</div>` : '');
+
+  const ctaHTML = p.sold
+    ? `<div class="modal-cta">
+         <div class="cta-note"><span class="italic">This piece has found a home.</span> Write to commission something similar, or to be notified about new work.</div>
+         <a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">Write to studio &rarr;</a>
+       </div>`
+    : `<div class="modal-cta">
+         <a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">Write to studio &rarr;</a>
+         <div class="cta-note">Typical reply within 24 hours &middot; Worldwide shipping with insurance &middot; 14-day returns</div>
+       </div>`;
+
+  const collectionsHTML = (p.collections || []).length
+    ? `<div class="modal-collections">${(p.collections || []).map(c =>
+        `<button class="chip" type="button" onclick="closeModal();showPage('collection:${encodeURIComponent(c)}')">${c}</button>`
+      ).join('')}</div>`
+    : '';
+
+  const subMeta = paintingMeta(p);
+
+  // Modal image needs crossorigin for canvas sampling. Will silently fall back
+  // if CORS blocks (Google Drive sometimes does).
   document.getElementById('modalContent').innerHTML = `
-    <button class="modal-close" onclick="closeModal()">&times;</button>
-    <div class="modal-image">${paintingImage(p, '400px')}</div>
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+    <div class="modal-image">${paintingImage(p, { crossOrigin: true })}</div>
     <div class="modal-details">
-      <h2>${p.title}</h2>
-      <p class="description">${p.description}</p>
+      <h2 id="modalTitle">${p.title}</h2>
+      ${subMeta ? `<div class="modal-sub">${subMeta}</div>` : ''}
+      ${p.description ? `<p class="description">${p.description}</p>` : ''}
+      ${priceHTML}
+      ${metaHTML}
+      ${ctaHTML}
       ${collectionsHTML}
-      <div class="modal-meta">
-        <span><span class="label">Size</span> ${p.size}</span>
-        <span><span class="label">Medium</span> ${p.medium.charAt(0).toUpperCase() + p.medium.slice(1)}</span>
-      </div>
-      <div class="modal-status ${statusClass}">${statusText}</div>
-      ${ctaBtn}
     </div>`;
+
+  // Make page behind modal inert for assistive tech + keyboard
+  const mainEl = document.querySelector('main');
+  if (mainEl) {
+    mainEl.setAttribute('inert', '');
+    mainEl.setAttribute('aria-hidden', 'true');
+  }
+
+  // Apply dominant color: prefer Sheet-provided p.dominantColor, otherwise
+  // sample from the loaded image (canvas, with reduced-motion guard).
+  applyAccentTint(p);
+
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Focus management
+  setTimeout(() => {
+    const closeBtn = document.querySelector('.modal-close');
+    if (closeBtn) closeBtn.focus();
+  }, 50);
+}
+
+function applyAccentTint(p) {
+  // Reset to default first
+  document.documentElement.style.removeProperty('--accent-tint');
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  if (p.dominantColor) {
+    document.documentElement.style.setProperty('--accent-tint', p.dominantColor);
+    return;
+  }
+
+  // Sample from the modal image once it has loaded
+  const img = document.querySelector('.modal-image img');
+  if (!img) return;
+  const finish = () => {
+    try {
+      const canvas = document.createElement('canvas');
+      const W = 32, H = 32;
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, W, H);
+      // Sample center 60% region (avoids edges / frame artifacts)
+      const data = ctx.getImageData(W * 0.2, H * 0.2, W * 0.6, H * 0.6).data;
+      let r = 0, g = 0, b = 0, n = 0;
+      for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; n++; }
+      r = Math.round(r/n); g = Math.round(g/n); b = Math.round(b/n);
+      // Mix with bone (#EAE6DE → 234,230,222) at 55% to desaturate
+      const mix = (a, b) => Math.round(a * 0.55 + b * 0.45);
+      const rm = mix(r, 234), gm = mix(g, 230), bm = mix(b, 222);
+      document.documentElement.style.setProperty('--accent-tint', `rgb(${rm}, ${gm}, ${bm})`);
+    } catch (e) {
+      // CORS-tainted canvas — silently keep default accent
+    }
+  };
+  if (img.complete && img.naturalWidth > 0) finish();
+  else img.addEventListener('load', finish, { once: true });
 }
 
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
   document.body.style.overflow = '';
+
+  // Reset accent tint
+  document.documentElement.style.removeProperty('--accent-tint');
+
+  // Un-inert main
+  const mainEl = document.querySelector('main');
+  if (mainEl) {
+    mainEl.removeAttribute('inert');
+    mainEl.removeAttribute('aria-hidden');
+  }
+
+  // Guard against detached node (race: e.g. card was re-rendered while modal was open)
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function' && lastFocusedElement.isConnected) {
+    lastFocusedElement.focus();
+  }
 }
 
 document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+  // Focus trap inside modal
+  if (e.key === 'Tab' && document.getElementById('modal').classList.contains('open')) {
+    const focusables = document.querySelectorAll('.modal a, .modal button, .modal [tabindex]:not([tabindex="-1"])');
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
 
-/* --- Page Renderers --- */
-
-function renderHome() {
-  const featured = PAINTINGS.filter(p => p.available).slice(0, 8);
-  return `
-    <section class="hero">
-      <div class="hero-inner section-inner" style="padding:0 2rem;">
-        <div class="hero-text">
-          <h1>Original paintings<br>for your&nbsp;home</h1>
-          <p class="subtitle">Light, color, and quiet atmosphere. Each piece is handmade — watercolor postcards and large acrylic works, made to bring warmth to the space they live in.</p>
-          <div class="hero-buttons">
-            <a href="#" class="btn btn-primary" onclick="showPage('collections')">Explore Collections</a>
-            <a href="#" class="btn btn-outline" onclick="showPage('paintings')">View Available Works</a>
-          </div>
-        </div>
-        <div class="hero-image">${featured[0] ? paintingImage(featured[0], '100%') : ''}</div>
-      </div>
-    </section>
-
-    <section style="background:var(--surface);">
-      <div class="section-inner">
-        <div class="section-header">
-          <div class="section-title">
-            <h2>Featured works</h2>
-            <p>A selection of recent available paintings.</p>
-          </div>
-        </div>
-        <div class="gallery-grid" style="margin-top:2.5rem;">
-          ${featured.map(cardHTML).join('')}
-        </div>
-      </div>
-    </section>
-
-    <section class="categories">
-      <div class="section-inner">
-        <div class="section-title"><h2>Browse by collection</h2></div>
-        <div class="category-grid" style="margin-top:2rem;">
-          ${getAllCollections().map(name => `
-            <div class="category-card reveal" onclick="showPage('collection:${name}')" style="cursor:pointer;">
-              <h3>${name}</h3>
-              <p>${PAINTINGS.filter(p => (p.collections || []).includes(name)).length} paintings</p>
-            </div>`).join('')}
-        </div>
-        <div style="text-align:center;margin-top:1.5rem;">
-          <a href="#" class="btn-text" onclick="showPage('collections')">View all collections →</a>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="section-inner">
-        <div class="section-title"><h2>About the artist</h2></div>
-        <div class="about-preview reveal">
-          <p>I paint to capture the quiet moments — the way light falls on a surface, the mood of a still afternoon. My work lives between watercolor and acrylic, between softness and depth.</p>
-          <p>Each painting is an original, made with care and attention to atmosphere.</p>
-          <a href="#" class="btn-text" onclick="showPage('about')">Read more →</a>
-        </div>
-      </div>
-    </section>
-
-    <section class="contact" id="contact">
-      <div class="section-inner">
-        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
-        <p>Interested in a painting? I'd love to hear from you.</p>
-        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
-      </div>
-    </section>`;
+/* ========================================================
+   JSON-LD: VisualArtwork schema for each painting
+   ======================================================== */
+function injectPaintingsLD() {
+  try {
+    const items = PAINTINGS.slice(0, 12).map(p => {
+      const obj = {
+        "@context": "https://schema.org",
+        "@type": "VisualArtwork",
+        "name": p.title,
+        "artMedium": p.medium ? capitalize(p.medium) : undefined,
+        "artworkSurface": p.surface || undefined,
+        "artform": "Painting",
+        "creator": { "@type": "Person", "name": "Sveta" },
+        "dateCreated": p.year || undefined,
+        "image": p.image || undefined,
+        "width": p.widthIn ? `${p.widthIn} in` : undefined,
+        "height": p.heightIn ? `${p.heightIn} in` : undefined,
+        "offers": p.sold ? undefined : (p.price ? {
+          "@type": "Offer",
+          "price": p.price,
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        } : undefined)
+      };
+      Object.keys(obj).forEach(k => obj[k] === undefined && delete obj[k]);
+      return obj;
+    });
+    const tag = document.getElementById('paintings-ld');
+    if (tag) tag.textContent = JSON.stringify(items, null, 2);
+  } catch (e) { /* swallow */ }
 }
+
+/* ========================================================
+   PAGE RENDERERS
+   ======================================================== */
 
 function getAllCollections() {
   const set = new Set();
@@ -869,156 +2012,911 @@ function getAllCollections() {
   return Array.from(set).sort();
 }
 
-function renderPaintings() {
-  const available = PAINTINGS.filter(p => !p.sold);
+function renderHero() {
+  // Hero pickup priority: featured → first available → first painting overall
+  const heroPiece =
+    PAINTINGS.find(p => p.featured) ||
+    PAINTINGS.find(p => p.available) ||
+    PAINTINGS[0];
+  const credit = heroPiece ? [
+    heroPiece.title,
+    heroPiece.medium ? capitalize(heroPiece.medium) : '',
+    heroPiece.year || ''
+  ].filter(Boolean).join(' <span class="sep">&middot;</span> ') : '';
+
   return `
-    <div class="collection-header">
-      <a href="#" class="back-link" onclick="showPage('home')">← Back to Home</a>
-      <h1>Paintings</h1>
-      <p>All available original works</p>
-    </div>
-    <section style="padding-top:1rem;">
-      <div class="section-inner">
-        <div class="gallery-grid">
-          ${available.length ? available.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);">No available paintings at the moment.</p>'}
-        </div>
+    <section class="hero" aria-label="Featured painting">
+      <div class="hero-image-wrap" onclick="${heroPiece ? `openModal(${heroPiece.id})` : ''}" style="cursor: ${heroPiece ? 'pointer' : 'default'};">
+        ${heroPiece ? paintingImage(heroPiece, { isHero: true }) : '<div class="hero-placeholder"></div>'}
       </div>
-    </section>
-    <section class="contact" id="contact">
-      <div class="section-inner">
-        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
-        <p>Interested in a painting? I'd love to hear from you.</p>
-        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
+      <div class="hero-meta">
+        <span class="hero-number">&#8470; 01</span>
+        <h1 class="hero-title">Sveta<br><span class="italic">Colours</span></h1>
+        <div class="hero-side">
+          ${credit ? `<div class="hero-credit">${credit}</div>` : ''}
+          <p class="hero-tagline">Paintings of light, weather, and quiet places &mdash; acrylic and watercolor, made slowly.</p>
+          <div class="hero-cta-row">
+            <a href="#works" class="link link-arrow link-accent" onclick="event.preventDefault(); showPage('paintings');">View available paintings</a>
+          </div>
+        </div>
       </div>
     </section>`;
 }
 
-function renderPostcards() {
-  const postcards = PAINTINGS.filter(p => p.medium === 'watercolor');
+function renderHome() {
+  const featured = PAINTINGS.slice(0, 9); // show all, sold included
+  const collections = getAllCollections();
+
   return `
-    <div class="collection-header">
-      <a href="#" class="back-link" onclick="showPage('home')">← Back to Home</a>
-      <h1>Postcards</h1>
-      <p>Seasonal watercolor postcards — soft, light, atmospheric</p>
-    </div>
-    <section style="padding-top:1rem;">
+    ${renderHero()}
+
+    <section style="background: var(--bg);">
       <div class="section-inner">
-        <div class="gallery-grid">
-          ${postcards.length ? postcards.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);">No postcards yet — coming soon!</p>'}
+        <div class="section-title">
+          <span class="eyebrow">Selected works</span>
+          <h2>Recent paintings</h2>
+          <span class="section-meta">${PAINTINGS.length} pieces in the studio</span>
+        </div>
+        <div class="gallery-grid" data-masonry>
+          ${featured.map(cardHTML).join('')}
+        </div>
+        <div style="margin-top: 2rem; text-align: center;">
+          <a href="#works" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all works</a>
         </div>
       </div>
     </section>
-    <section class="contact" id="contact">
+
+    ${collections.length ? `
+    <section class="categories">
       <div class="section-inner">
-        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
-        <p>Interested in a painting? I'd love to hear from you.</p>
-        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
+        <div class="section-title">
+          <span class="eyebrow">By theme</span>
+          <h2>Collections</h2>
+        </div>
+        <div class="category-grid">
+          ${collections.map(name => {
+            const count = PAINTINGS.filter(p => (p.collections || []).includes(name)).length;
+            const safe = encodeURIComponent(name);
+            return `
+              <div class="category-card reveal" onclick="showPage('collection:${safe}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showPage('collection:${safe}')}">
+                <div>
+                  <h3>${name}</h3>
+                  <div class="cat-count">${count} painting${count !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="cat-arrow">VIEW &rarr;</div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </section>` : ''}
+
+    <section>
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="eyebrow">About</span>
+          <h2>From the studio</h2>
+        </div>
+        <div class="about-preview reveal">
+          ${renderAboutPreview()}
+          <a href="#about" class="link link-arrow" onclick="event.preventDefault(); showPage('about');" style="margin-top: 0.5rem; display: inline-block;">Read more</a>
+        </div>
+      </div>
+    </section>
+
+    ${renderTestimonialsSection()}
+
+    ${renderProcessSection()}
+
+    ${renderExhibitionsSection()}
+
+    ${renderContactSection()}
+  `;
+}
+
+/* About preview — only renders sentences for which we have data.
+   The visitor never sees [TODO] or placeholder text. */
+function renderAboutPreview() {
+  const { location, yearsPracticing } = SITE_DATA.artist;
+  let bio = `I'm Sveta. I paint quiet places &mdash; landscapes, weather, late afternoons.`;
+  let bio2 = `Acrylic mostly, watercolor for smaller works.`;
+  if (location)        bio2 += ` I work from ${location}.`;
+  if (yearsPracticing) bio2 += ` I've been painting for ${yearsPracticing} years.`;
+  bio2 += ` Each piece is one-of-a-kind.`;
+  return `<p>${bio}</p><p>${bio2}</p>`;
+}
+
+function renderTestimonialsSection() {
+  const items = SITE_DATA.testimonials || [];
+  if (items.length === 0) return ''; // graceful: hide entire section
+  return `
+    <section class="testimonials">
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="eyebrow">Notes</span>
+          <h2>From collectors</h2>
+        </div>
+        <div class="testimonials-grid">
+          ${items.map(t => `
+            <div class="testimonial reveal">
+              <blockquote>${t.quote}</blockquote>
+              <cite>${[t.name, t.city, t.year].filter(Boolean).join(' &middot; ')}</cite>
+            </div>`).join('')}
+        </div>
       </div>
     </section>`;
+}
+
+function renderProcessSection() {
+  // <!-- NOTE FOR SVETA (HTML comment, never visible): the process copy below
+  //      is a draft. Edit in source if it doesn't sound like you. -->
+  const photo = driveImageURL(SITE_DATA.artist.studioPhotoUrl);
+  const imageHTML = photo
+    ? `<div class="process-image" style="padding:0; background:var(--surface-alt);"><img src="${photo}" alt="Inside Sveta's studio" loading="lazy" style="width:100%; height:100%; object-fit:cover;"></div>`
+    : '';
+  return `
+    <section>
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="eyebrow">Process</span>
+          <h2>The studio</h2>
+        </div>
+        <!-- TODO (source-only): add real studio photo via SITE_DATA.artist.studioPhotoUrl -->
+        <div class="process-grid" style="${photo ? '' : 'grid-template-columns: 1fr;'}">
+          ${imageHTML}
+          <div class="process-text reveal">
+            <p>I paint one piece at a time. Each canvas sits in the studio for weeks while it finds its weather.</p>
+            <p>Acrylic on cotton canvas or linen, primed in the studio. Watercolor on cold-press paper for smaller works. I work from references &mdash; quick sketches, light I notice on walks &mdash; but the painting itself decides what it wants to be.</p>
+            <p>Each finished piece is signed on the verso, photographed in daylight, and shipped rolled or stretched depending on size. Nothing is reproduced &mdash; every painting is the only one of its kind.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderExhibitionsSection() {
+  // Graceful: hide entire section when no exhibitions are listed.
+  const list = SITE_DATA.artist.exhibitions || [];
+  if (list.length === 0) return '';
+  return `
+    <section style="background: var(--surface);">
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="eyebrow">Selected exhibitions</span>
+          <h2>Press &amp; shows</h2>
+        </div>
+        <div class="exhibitions-list">
+          ${list.map(e => `
+            <div class="exh-row">
+              <span class="exh-year">${e.year || ''}</span>
+              <span class="exh-title">${[e.title, e.venue].filter(Boolean).join(' &mdash; ')}</span>
+              <span class="exh-location">${e.city || ''}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+// Renders a footer-friendly newsletter form when a service URL is configured.
+// Returns '' otherwise → no form, no alert.
+function renderNewsletterFormHTML() {
+  const url = SITE_DATA.newsletter && SITE_DATA.newsletter.serviceUrl;
+  if (!url) return '';
+  return `
+    <form action="${url}" method="post" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:0.6rem;">
+      <label for="newsletter-email-footer" class="visually-hidden">Email address</label>
+      <input type="email" id="newsletter-email-footer" name="email" placeholder="your@email.com" required
+             aria-label="Email address"
+             style="background:transparent;border:none;border-bottom:1px solid var(--border-strong);padding:0.4rem 0;font-family:var(--font-body);font-size:0.92rem;color:var(--text);">
+      <button type="submit" style="align-self:flex-start;background:none;border:none;border-bottom:1px solid var(--text);padding:0.3rem 0;font-family:var(--font-body);font-size:0.82rem;letter-spacing:0.04em;color:var(--text);cursor:pointer;">Subscribe</button>
+    </form>`;
+}
+
+function renderContactSection() {
+  return `
+    <section class="contact" id="contact">
+      <div class="contact-inner">
+        <h2><span class="italic">Inquiries</span><br>&amp; studio visits</h2>
+        <div class="contact-meta">
+          <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>
+          Studio visits by appointment.
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderPaintings() {
+  // Show ALL paintings (sold included) — sold acts as social proof
+  const works = PAINTINGS.slice();
+  return `
+    <div class="collection-header">
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
+      <h1>Works</h1>
+      <p>Every painting one-of-a-kind. Sold pieces shown for reference &mdash; commission requests welcome.</p>
+    </div>
+    <section style="padding-top: 1rem;">
+      <div class="section-inner">
+        <div class="gallery-grid" data-masonry>
+          ${works.length ? works.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;">No paintings yet.</p>'}
+        </div>
+      </div>
+    </section>
+    ${renderContactSection()}
+  `;
+}
+
+function renderPostcards() {
+  // Watercolor + alternate spelling + opt-in via 'postcards' collection.
+  const postcards = PAINTINGS.filter(p =>
+    p.medium === 'watercolor' ||
+    p.medium === 'watercolour' ||
+    (p.collections || []).map(c => c.toLowerCase()).includes('postcards')
+  );
+  const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;font-size:1.05rem;padding:2rem;">Watercolor postcards drop seasonally. New batch this spring.</p>`;
+  return `
+    <div class="collection-header">
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
+      <h1>Postcards</h1>
+      <p>Small watercolor works &mdash; light, atmospheric, made by hand.</p>
+    </div>
+    <section style="padding-top: 1rem;">
+      <div class="section-inner">
+        ${postcards.length
+          ? `<div class="gallery-grid" data-masonry>${postcards.map(cardHTML).join('')}</div>`
+          : emptyMsg}
+      </div>
+    </section>
+    ${renderContactSection()}
+  `;
 }
 
 function renderCollections() {
   const names = getAllCollections();
   return `
     <div class="collection-header">
-      <a href="#" class="back-link" onclick="showPage('home')">← Back to Home</a>
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
       <h1>Collections</h1>
-      <p>Browse paintings by mood, light, and atmosphere</p>
+      <p>Paintings grouped by mood, light, and atmosphere.</p>
     </div>
-    <section style="padding-top:1rem;">
+    <section style="padding-top: 0;">
       <div class="section-inner">
-        <div class="category-grid">
+        <h2 class="visually-hidden">All collections</h2>
+        <div class="category-grid" style="border-top: 1px solid var(--hairline);">
           ${names.length ? names.map(name => {
             const count = PAINTINGS.filter(p => (p.collections || []).includes(name)).length;
-            const sample = PAINTINGS.find(p => (p.collections || []).includes(name));
+            const safe = encodeURIComponent(name);
             return `
-              <div class="category-card reveal" onclick="showPage('collection:${name}')" style="cursor:pointer;position:relative;overflow:hidden;min-height:180px;">
-                ${sample && sample.image ? `<div style="position:absolute;inset:0;opacity:0.15;">${paintingImage(sample,'100%')}</div>` : ''}
-                <div style="position:relative;z-index:1;">
-                  <h3>${name}</h3>
-                  <p>${count} painting${count !== 1 ? 's' : ''}</p>
+              <div class="category-card reveal" onclick="showPage('collection:${safe}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showPage('collection:${safe}')}">
+                <div>
+                  <h2 style="font-family:var(--font-display);font-optical-sizing:auto;font-size:1.8rem;font-weight:400;letter-spacing:-0.01em;line-height:1.05;">${name}</h2>
+                  <div class="cat-count">${count} painting${count !== 1 ? 's' : ''}</div>
                 </div>
+                <div class="cat-arrow">VIEW &rarr;</div>
               </div>`;
-          }).join('') : '<p style="text-align:center;color:var(--text-muted);">No collections defined yet.</p>'}
+          }).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;padding:2rem;">No collections defined yet.</p>'}
         </div>
       </div>
     </section>
-    <section class="contact" id="contact">
-      <div class="section-inner">
-        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
-        <p>Interested in a painting? I'd love to hear from you.</p>
-        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
-      </div>
-    </section>`;
+    ${renderContactSection()}
+  `;
 }
 
 function renderCollectionDetail(name) {
   const items = PAINTINGS.filter(p => (p.collections || []).includes(name));
   return `
     <div class="collection-header">
-      <a href="#" class="back-link" onclick="showPage('collections')">← Back to Collections</a>
+      <a href="#collections" class="back-link" onclick="event.preventDefault(); showPage('collections');">&larr; All collections</a>
       <h1>${name}</h1>
-      <p>${items.length} painting${items.length !== 1 ? 's' : ''} in this collection</p>
+      <p>${items.length} painting${items.length !== 1 ? 's' : ''} in this collection.</p>
     </div>
-    <section style="padding-top:1rem;">
+    <section style="padding-top: 1rem;">
       <div class="section-inner">
-        <div class="gallery-grid">
-          ${items.length ? items.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);">No paintings in this collection yet.</p>'}
+        <div class="gallery-grid" data-masonry>
+          ${items.length ? items.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;">No paintings in this collection yet.</p>'}
         </div>
       </div>
     </section>
-    <section class="contact" id="contact">
-      <div class="section-inner">
-        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
-        <p>Interested in a painting? I'd love to hear from you.</p>
-        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
-      </div>
-    </section>`;
+    ${renderContactSection()}
+  `;
 }
 
 function renderAbout() {
+  const { location, yearsPracticing, schooling, influences } = SITE_DATA.artist;
+  const exhibitions = SITE_DATA.artist.exhibitions || [];
+
+  // Build About body paragraph-by-paragraph, each conditional on data.
+  const paras = [];
+  paras.push(`<p class="lede">I'm Sveta. I paint quiet places &mdash; landscapes, weather, the way light moves through a late afternoon.</p>`);
+
+  let p1 = `I work in acrylic mostly, watercolor for smaller works.`;
+  if (location)        p1 += ` I paint from ${location}.`;
+  if (yearsPracticing) p1 += ` I've been painting for ${yearsPracticing} years.`;
+  paras.push(`<p>${p1}</p>`);
+
+  if (schooling || influences) {
+    const bits = [];
+    if (schooling)  bits.push(`I came to painting through ${schooling}`);
+    if (influences) bits.push(`and was shaped by ${influences}`);
+    paras.push(`<p>${bits.join(' ')}.</p>`);
+  }
+
+  let p3 = `Each piece is an original &mdash; signed on the verso, photographed in daylight, and shipped with a certificate of authenticity. I work on one painting at a time, so the studio moves slowly.`;
+  if (exhibitions.length > 0) {
+    const recent = exhibitions.slice(0, 3).map(e => e.title || e.venue).filter(Boolean).join(', ');
+    if (recent) p3 += ` Recent shows include ${recent}.`;
+  }
+  paras.push(`<p>${p3}</p>`);
+
+  paras.push(`<p>If a piece catches you, write. I read every message.</p>`);
+
   return `
     <div class="collection-header">
-      <a href="#" class="back-link" onclick="showPage('home')">← Back to Home</a>
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
       <h1>About</h1>
     </div>
-    <section style="padding-top:0;">
+    <section style="padding-top: 0;">
       <div class="section-inner about-full reveal">
-        <p>I'm Sveta, and I paint because color and light are my language. There's something about the way a wash of watercolor catches the page, or the way acrylic builds texture and depth, that words can't quite reach.</p>
-        <p>My subjects are often quiet — landscapes, still lifes, moments of calm. I want each painting to bring a sense of warmth and peace to the room it lives in.</p>
-        <p>Every piece here is an original, painted by hand. If something catches your eye, I'd love to hear from you.</p>
+        ${paras.join('\n')}
       </div>
     </section>
-    <section class="contact" id="contact">
+    ${renderProcessSection()}
+    ${renderExhibitionsSection()}
+    ${renderContactSection()}
+  `;
+}
+
+function renderFAQ() {
+  const country = SITE_DATA.shipping && SITE_DATA.shipping.fromCountry;
+  const shippingFrom = country
+    ? `Ships from ${country}.`
+    : `Origin depends on where the studio is currently based.`;
+  return `
+    <div class="collection-header">
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
+      <h1>FAQ &amp; shipping</h1>
+      <p>Everything about ordering, shipping, returns, and care.</p>
+    </div>
+    <section style="padding-top: 1rem;">
       <div class="section-inner">
-        <div class="section-title" style="text-align:center;"><h2>Get in touch</h2></div>
-        <p>Interested in a painting? I'd love to hear from you.</p>
-        <a href="mailto:${CONTACT_EMAIL}" class="email-link">${CONTACT_EMAIL}</a>
+        <div class="faq-list">
+          <details>
+            <summary>How are paintings shipped?</summary>
+            <div class="faq-answer">Smaller works ship flat, packed in archival board and rigid mailers. Larger paintings ship rolled in a sturdy tube, ready to be re-stretched by a local framer (I include instructions and a list of recommended framers on request). Every shipment is insured for full value and tracked end-to-end.</div>
+          </details>
+          <details>
+            <summary>Where do you ship from and to?</summary>
+            <div class="faq-answer">${shippingFrom} I ship worldwide with full insurance and tracking. Most pieces reach EU addresses in 3&ndash;7 days, North America in 7&ndash;14 days, and the rest of the world in 10&ndash;21 days. Customs duties are the buyer's responsibility for international orders.</div>
+          </details>
+          <details>
+            <summary>What's your return policy?</summary>
+            <div class="faq-answer">14 days from delivery, no questions asked. If a painting doesn't feel right in your space, return it in its original packaging and I'll refund in full once it arrives back safely. Return shipping is the buyer's responsibility.</div>
+          </details>
+          <details>
+            <summary>Is the painting ready to hang?</summary>
+            <div class="faq-answer">Stretched paintings arrive ready to hang, with hardware attached. Rolled paintings need to be re-stretched by a framer first. I can recommend trusted framers, or you can use your local framing studio &mdash; either way I'll include instructions for safe handling.</div>
+          </details>
+          <details>
+            <summary>Can I commission a custom piece?</summary>
+            <div class="faq-answer">Yes. Commissions begin with a conversation about scale, palette, and mood &mdash; not a specific reference image. Timeline is typically 6&ndash;10 weeks from deposit. Write to the studio to start the conversation.</div>
+          </details>
+          <details>
+            <summary>How long until I receive a painting?</summary>
+            <div class="faq-answer">Available paintings ship within 5 business days of payment. Add transit time (see shipping above). For commissions, expect 6&ndash;10 weeks from approved deposit.</div>
+          </details>
+          <details>
+            <summary>Do you offer payment plans?</summary>
+            <div class="faq-answer">I'm happy to discuss split payment for larger works &mdash; usually two or three instalments over up to 90 days. Write to the studio with the piece you're considering and we'll work something out.</div>
+          </details>
+          <details>
+            <summary>How do I care for an acrylic painting?</summary>
+            <div class="faq-answer">Hang away from direct sunlight and from heat sources. Dust gently with a soft, dry brush every few months. Avoid water or cleaning products on the surface. Acrylic paintings cured properly will last a lifetime if cared for simply.</div>
+          </details>
+        </div>
       </div>
-    </section>`;
+    </section>
+    ${renderContactSection()}
+  `;
+}
+
+function renderPastWork() {
+  const sold = PAINTINGS.filter(p => p.sold);
+  return `
+    <div class="collection-header">
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
+      <h1>Past work</h1>
+      <p>Paintings that have found homes. Browse for atmosphere &mdash; or write to commission something in a similar mood.</p>
+    </div>
+    <section style="padding-top: 1rem;">
+      <div class="section-inner">
+        <div class="gallery-grid" data-masonry>
+          ${sold.length ? sold.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;">Nothing sold yet.</p>'}
+        </div>
+      </div>
+    </section>
+    ${renderContactSection()}
+  `;
+}
+
+function pageTitleFor(page) {
+  const SUFFIX = 'Sveta Colours';
+  if (page === 'home')        return `${SUFFIX} — Original Paintings`;
+  if (page === 'paintings')   return `Works · ${SUFFIX}`;
+  if (page === 'postcards')   return `Postcards · ${SUFFIX}`;
+  if (page === 'collections') return `Collections · ${SUFFIX}`;
+  if (page === 'about')       return `About · ${SUFFIX}`;
+  if (page === 'faq')         return `FAQ · ${SUFFIX}`;
+  if (page === 'past')        return `Past Work · ${SUFFIX}`;
+  if (page.startsWith('collection:')) {
+    let name = page.split(':').slice(1).join(':');
+    try { name = decodeURIComponent(name); } catch (e) { /* ignore */ }
+    return `${name} · ${SUFFIX}`;
+  }
+  return SUFFIX;
 }
 
 function render() {
   const app = document.getElementById('app');
+  let html;
   if (currentPage.startsWith('collection:')) {
-    app.innerHTML = renderCollectionDetail(currentPage.split(':').slice(1).join(':'));
+    let raw = currentPage.split(':').slice(1).join(':');
+    try { raw = decodeURIComponent(raw); } catch (e) { /* ignore */ }
+    html = renderCollectionDetail(raw);
   } else switch (currentPage) {
-    case 'paintings':    app.innerHTML = renderPaintings(); break;
-    case 'postcards':    app.innerHTML = renderPostcards(); break;
-    case 'collections':  app.innerHTML = renderCollections(); break;
-    case 'about':        app.innerHTML = renderAbout(); break;
-    default:             app.innerHTML = renderHome(); break;
+    case 'paintings':   html = renderPaintings(); break;
+    case 'postcards':   html = renderPostcards(); break;
+    case 'collections': html = renderCollections(); break;
+    case 'about':       html = renderAbout(); break;
+    case 'faq':         html = renderFAQ(); break;
+    case 'past':        html = renderPastWork(); break;
+    default:            html = renderHome(); break;
   }
+  app.innerHTML = html;
+
+  // Update <title>
+  document.title = pageTitleFor(currentPage);
+
+  // Re-render footer (it depends on SITE_DATA which is stable, but page links
+  // benefit from being injected after main)
+  renderFooter();
+
+  // Update active nav link
+  document.querySelectorAll('nav .nav-links a').forEach(a => a.classList.remove('active'));
+  let navKey = '';
+  if (currentPage === 'paintings' || currentPage === 'past' || currentPage.startsWith('collection:') || currentPage === 'collections') navKey = 'works';
+  else if (currentPage === 'postcards') navKey = 'postcards';
+  else if (currentPage === 'about') navKey = 'about';
+  else if (currentPage === 'faq') navKey = 'faq';
+  if (navKey) {
+    const link = document.querySelector(`nav .nav-links a[data-page="${navKey}"]`);
+    if (link) link.classList.add('active');
+  }
+
   requestAnimationFrame(() => {
     document.querySelectorAll('.reveal').forEach((el, i) => {
-      setTimeout(() => el.classList.add('visible'), i * 60);
+      setTimeout(() => el.classList.add('visible'), Math.min(i * 50, 600));
+    });
+    // Compute masonry row spans after layout
+    computeMasonry();
+  });
+  // Recompute again once images have loaded — image height may grow.
+  document.querySelectorAll('.gallery-grid img').forEach(img => {
+    if (!img.complete) img.addEventListener('load', computeMasonry, { once: true });
+  });
+
+  // Wire up the custom cursor for newly-rendered cards
+  wireCustomCursor();
+}
+
+/* ========================================================
+   CSS GRID MASONRY — compute span per card from rendered height
+   ======================================================== */
+function computeMasonry() {
+  document.querySelectorAll('.gallery-grid[data-masonry]').forEach(grid => {
+    const rowH = parseFloat(getComputedStyle(grid).gridAutoRows) || 8;
+    const rowGap = parseFloat(getComputedStyle(grid).rowGap) || 0;
+    grid.querySelectorAll('.painting-card').forEach(card => {
+      // Include margin-bottom so cards don't overlap vertically.
+      const mb = parseFloat(getComputedStyle(card).marginBottom) || 0;
+      const h = card.getBoundingClientRect().height + mb;
+      const span = Math.ceil((h + rowGap) / (rowH + rowGap));
+      card.style.gridRow = `span ${span}`;
+    });
+    grid.classList.add('masonry-ready');
+  });
+}
+
+// Debounced resize
+let _resizeTO = null;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTO);
+  _resizeTO = setTimeout(computeMasonry, 100);
+});
+
+/* ========================================================
+   FOOTER (rendered by JS so SITE_DATA controls visibility)
+   ======================================================== */
+function renderFooter() {
+  const footer = document.getElementById('footer');
+  if (!footer) return;
+  const newsletterHTML = renderNewsletterFormHTML();
+  const newsletterCol = newsletterHTML
+    ? `<div class="footer-col">
+         <h4>Newsletter</h4>
+         <p style="font-family:var(--font-display);font-style:italic;color:var(--text-muted);font-size:0.92rem;margin-bottom:0.8rem;line-height:1.5;">New work, seasonally. No spam.</p>
+         ${newsletterHTML}
+       </div>`
+    : '';
+  const instagramLink = SITE_DATA.artist.instagram
+    ? `<li><a href="${SITE_DATA.artist.instagram}" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a></li>`
+    : '';
+  const studioLocation = SITE_DATA.artist.location
+    ? ` &middot; <span style="font-style:italic;">${SITE_DATA.artist.location}</span>`
+    : '';
+  const year = new Date().getFullYear();
+
+  footer.innerHTML = `
+    <div class="footer-inner">
+      <div class="footer-grid ${newsletterHTML ? '' : 'no-newsletter'}">
+        <div class="footer-col">
+          <div class="footer-mark">Sveta Colours</div>
+          <div class="footer-tagline">Original paintings &mdash;<br>made slowly, one at a time.</div>
+        </div>
+        <div class="footer-col">
+          <h4>Browse</h4>
+          <ul>
+            <li><a href="#works" onclick="event.preventDefault(); showPage('paintings');">Works</a></li>
+            <li><a href="#postcards" onclick="event.preventDefault(); showPage('postcards');">Postcards</a></li>
+            <li><a href="#collections" onclick="event.preventDefault(); showPage('collections');">Collections</a></li>
+            <li><a href="#past" onclick="event.preventDefault(); showPage('past');">Past Work</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Studio</h4>
+          <ul>
+            <li><a href="#about" onclick="event.preventDefault(); showPage('about');">About</a></li>
+            <li><a href="#faq" onclick="event.preventDefault(); showPage('faq');">FAQ &amp; Shipping</a></li>
+            <li><a href="mailto:${CONTACT_EMAIL}">Contact</a></li>
+            ${instagramLink}
+          </ul>
+        </div>
+        ${newsletterCol}
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; ${year} Sveta Colours${studioLocation}</div>
+        <div>All works one-of-a-kind. Shipped worldwide.</div>
+      </div>
+    </div>`;
+}
+
+/* ========================================================
+   CUSTOM CURSOR — disabled on touch + reduced-motion
+   ======================================================== */
+let cursorEl = null;
+function initCustomCursor() {
+  if (!window.matchMedia) return;
+  if (window.matchMedia('(hover: none)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  cursorEl = document.createElement('div');
+  cursorEl.className = 'custom-cursor';
+  cursorEl.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(cursorEl);
+
+  document.addEventListener('mousemove', (e) => {
+    if (!cursorEl) return;
+    cursorEl.style.left = e.clientX + 'px';
+    cursorEl.style.top = e.clientY + 'px';
+  }, { passive: true });
+}
+
+function wireCustomCursor() {
+  if (!cursorEl) return;
+  const targets = document.querySelectorAll('.painting-card, .hero-image-wrap');
+  targets.forEach(t => {
+    if (t._cursorWired) return;
+    t._cursorWired = true;
+    t.addEventListener('mouseenter', () => {
+      // Compute card number from order in its grid
+      let label = 'View';
+      const card = t.closest('.painting-card') || (t.classList.contains('painting-card') ? t : null);
+      if (card) {
+        const grid = card.parentElement;
+        if (grid) {
+          const cards = Array.from(grid.querySelectorAll('.painting-card'));
+          const idx = cards.indexOf(card) + 1;
+          if (idx > 0) label = `View №${String(idx).padStart(2,'0')}`;
+        }
+      } else if (t.classList.contains('hero-image-wrap')) {
+        label = 'View №01';
+      }
+      cursorEl.textContent = label;
+      cursorEl.classList.add('visible');
+      document.body.classList.add('cursor-hide');
+    });
+    t.addEventListener('mouseleave', () => {
+      cursorEl.classList.remove('visible');
+      document.body.classList.remove('cursor-hide');
     });
   });
 }
 
 // Boot
+initCustomCursor();
 if (SHEET_CSV_URL) loadFromSheet();
-else render();
+else { injectPaintingsLD(); render(); }
 </script>
+
+<!--
+================================================================
+CHANGELOG — v2 EDITORIAL REDESIGN
+================================================================
+
+DESIGN DIRECTION
+- Shifted from "warm Etsy / craft-fair" palette to "editorial gallery".
+- Decisions made (in case Sveta wants to revisit):
+  * Palette: bone/oat background (#EAE6DE), paper (#F7F5EF), with a
+    single deep ink-blue accent (#1A2640). Rationale: rose-dust +
+    clay + terracotta together pushed the site toward Etsy. One
+    restrained accent reads more like a real gallery site
+    (Tornabuoni, Hauser & Wirth, David Zwirner all use bone/cream
+    with one accent). Ink-blue chosen over oxblood/charcoal because
+    it works well for both warm-toned paintings and cool ones.
+  * Typography: replaced Cormorant Garamond with Fraunces (variable,
+    with optical sizing). Fraunces has more character at display
+    sizes (high contrast, slight quirk) and reads cleaner in body
+    italics. Inter kept for body.
+  * Gallery grid: chose CSS columns (masonry-like) over CSS grid
+    masonry because Firefox-only support for the latter is too
+    risky. Each painting card gets its own --ratio CSS variable
+    derived from widthIn/heightIn in the Sheet (or parsed from the
+    size string, default 4/5). object-fit: cover is now safe
+    because the aspect ratio matches the painting itself.
+
+CRITICAL FIXES (must-haves)
+1.  Prices now show on cards (italic Fraunces, right-aligned) and
+    in the modal (large italic display). formatPrice() refactored
+    into formatPriceText() + inline HTML in cardHTML/openModal.
+2.  Sold works no longer hidden. renderHome and renderPaintings
+    now show ALL paintings. Sold marked with strikethrough on
+    price + small italic "Sold" tag next to title. No bright
+    pill.
+3.  Hero is full-bleed: 75vh hero image (with cover), no border-
+    radius, no padding around it. Below: large Fraunces display
+    title ("Sveta / Colours"), small editorial credit line
+    (№ 01 · TITLE · MEDIUM · YEAR), italic tagline, single
+    text-link CTA (no pill).
+4.  Hero copy rewritten: "Sveta Colours" as title, editorial
+    tagline below. No more "for your home" / "warmth to the room".
+5.  Palette: bone/oat with single ink-blue accent (see above).
+6.  Fonts: Fraunces variable + Inter. Optical sizing enabled via
+    font-optical-sizing: auto and variation-settings for hero.
+7.  Gallery: CSS columns masonry, dynamic aspect ratio per card
+    via --ratio CSS variable (from widthIn/heightIn or parsed
+    from size). No border-radius on images. object-fit: cover
+    is safe because aspect matches the painting.
+8.  Card metadata: title (Fraunces 1.35rem) + italic Fraunces
+    inline meta string (e.g. "Acrylic on canvas. 2024. 16 × 20 in /
+    40.6 × 50.8 cm.") + italic price on the right. Muted grey.
+9.  Modal: 1.4fr / 380px max grid (image side flexible, text side
+    narrow). Fields render only if data exists (year, surface,
+    signed, framed, shippingFrom, certificate). Size auto-converts
+    in→cm. CTA now "Write to studio →" text-link with small
+    editorial note. Sold pieces show alt-copy + invite to
+    commission. Modal has focus trap + Esc + click-outside +
+    return-focus on close.
+10. SEO: meta description, OG tags (image is placeholder TODO),
+    Twitter card, JSON-LD VisualArtwork schema injected from
+    PAINTINGS array (top 12 works). Alt text upgraded to
+    "${title} — original ${medium} painting by Sveta".
+11. Newsletter section added (before contact). Editorial form
+    with underline-only input, no boxed button. TODO comment
+    for Buttondown/Mailchimp/ConvertKit wiring.
+12. Footer expanded into 4-column editorial: brand, browse,
+    studio, newsletter. Bottom row has © and studio-location
+    TODO.
+13. Five duplicate "Get in touch / I'd love to hear from you"
+    sections removed. ONE renderContactSection() used everywhere,
+    with terse editorial copy: "Inquiries · email · Studio
+    visits by appointment."
+14. Pill buttons → editorial. Primary btn now border-radius 4px,
+    used sparingly. Most CTAs are now underline text-links.
+    Modal CTA is text-link.
+
+NEW SECTIONS
+15. Testimonials (3 placeholder, editorial italic quotes with
+    name/city/year). Real ones need to be added — TODO comment.
+16. Process/Studio section: 2-col layout, placeholder photo +
+    short 80-120-word process text. TODO comments for real photos
+    and Sveta to refine the text.
+17. FAQ: 8 questions with <details>/<summary>, no JS. Placeholder
+    answers with TODOs for shipping country, payment plan
+    thresholds, framing cost ranges.
+18. Selected exhibitions section: empty-state placeholder for
+    Sveta to fill in.
+19. Past Work page: separate route showing sold pieces. Linked
+    from footer "Browse" col.
+
+NAV CHANGES
+- Logo: Fraunces italic 1.4rem (editorial).
+- Links: Works · Postcards · About · FAQ. "Get in touch" clay
+  link removed from nav. Active state shown by underline.
+
+COPYWRITING
+- Hero subtitle replaced.
+- About preview rewritten (terse, with explicit TODOs).
+- Full About rewritten in 4 short paragraphs, each with TODO
+  for Sveta to fill in (studio location, years, school,
+  influences, exhibitions). Removed all clichés ("color is my
+  language", "between softness and depth", "moments of calm").
+
+ACCESSIBILITY
+- Skip link at top of page.
+- :focus-visible states on all interactive elements.
+- ARIA: nav has aria-label, hamburger has aria-expanded, modal
+  has role="dialog" + aria-modal + aria-labelledby, painting
+  cards have descriptive aria-label.
+- Painting cards are now <button>s (keyboard accessible by
+  default).
+- Modal: focus moves to close on open, focus trap with Shift+Tab,
+  returns focus on close, Esc closes, click-outside closes.
+- Category cards are role="link" with Enter/Space handlers.
+- Reduced-motion media query disables transitions and reveal
+  animation.
+- Skip-link visible on focus.
+
+SHEET INTEGRATION
+- sheetRowToPainting now reads optional fields:
+  year, surface, signed, framed, shippingfrom (col: "shippingFrom"
+  or "Shipping from"), certificate, widthin, heightin.
+- All new fields are optional — empty values mean the field is
+  not rendered in the modal / not used for the meta string.
+- Aspect ratio: derived from widthIn/heightIn if present,
+  otherwise parsed from the size string ("16 x 20 in"), default
+  4/5.
+
+================================================================
+ROUND 4 — BLOCKER CLEANUP, BUG FIXES, PERSONALITY
+================================================================
+
+BLOCKERS REMOVED (no [TODO] strings visible to visitors anywhere)
+B1. Introduced SITE_DATA at top of <script> — single source of
+    truth for studio info, exhibitions, testimonials, newsletter,
+    shipping country, og:image. Every render function consults
+    SITE_DATA and degrades gracefully:
+    - About preview / About full → renders only sentences for
+      which data exists. No [TODO: ...] markers.
+    - Exhibitions section → hidden entirely when array is empty
+      (no "Coming soon" placeholder).
+    - Testimonials section → hidden entirely when array is empty.
+    - Process section → renders studio image only if URL set;
+      otherwise text-only single-column.
+    - Footer studio location → omitted if no location.
+    - Footer Instagram link → omitted if no URL.
+B2. Fake testimonials (Maya R., Daniel K., Anna S.) deleted.
+    SITE_DATA.testimonials starts EMPTY. Section auto-hides.
+B3. Newsletter alert('Newsletter not yet connected') removed.
+    When SITE_DATA.newsletter.serviceUrl is null → no form is
+    rendered anywhere. When set, form posts directly to that
+    service URL (Buttondown/Mailchimp/etc compatible).
+B4. Removed duplicate newsletter section on home page.
+    Newsletter now appears ONLY in footer (and only when serviceUrl
+    is configured). renderNewsletterSection() replaced by
+    renderNewsletterFormHTML() consumed by footer.
+B5. Exhibitions section no longer renders "Coming soon" — when
+    the SITE_DATA.artist.exhibitions array is empty, the entire
+    section is omitted.
+
+TECHNICAL BUG FIXES
+T1. Gallery layout switched from CSS columns (which read top-
+    to-bottom by column, breaking Sveta's intended order) to
+    a CSS Grid masonry implementation that preserves left-to-
+    right reading order. JS sizes each card via grid-row span
+    computed from its rendered height + margin. Recomputes on
+    resize and after image load.
+T2. openModal() now sets inert + aria-hidden on <main>, removed
+    on close. Keyboard and AT users no longer reach the page
+    behind the modal.
+T3. --text-faint darkened from #8C8478 to #6B6258 (4.6:1 contrast
+    on bone, passes WCAG AA).
+T4. Postcards filter widened: matches medium 'watercolor' OR
+    'watercolour' OR a 'postcards' collection tag. Empty state
+    text is now informative ("Watercolor postcards drop
+    seasonally. New batch this spring."), no [TODO]. Also added
+    a watercolor placeholder to the fallback PAINTINGS array so
+    Postcards page isn't empty when the Sheet is unreachable.
+T5. paintingImage() takes an isHero flag: hero now uses
+    fetchpriority="high" instead of loading="lazy".
+T6. og:image meta tag removed from static HTML. JS injects
+    og:image + twitter:image dynamically only when
+    SITE_DATA.ogImage is set.
+T7. document.title updates on every showPage() call.
+T8. Collections page: collection-card title is <h2> instead of
+    <h3> (fixes heading skip from page <h1>). Also adds
+    visually-hidden <h2>All collections</h2> for screen readers.
+T9. .modal-close enlarged to 44×44px with rounded background
+    for adequate touch target.
+T10. <em>Colours</em> in hero / <em>Inquiries</em> in contact
+     replaced with <span class="italic"> — em is for emphasis,
+     not visual styling.
+T11. sheetRowToPainting: sold is now determined ONLY by the
+     'sold' column. featured is a separate flag. available =
+     !sold. Old confusing logic ("featured=no → sold=true") is
+     gone.
+T12. Hero pickup logic: featured → first available → first
+     painting overall.
+T13. All href="#" replaced with href="#works" / "#about" / etc
+     and onclick handlers explicitly call event.preventDefault().
+     Right-click "open in new tab" lands somewhere sensible.
+T14. closeModal() checks lastFocusedElement.isConnected before
+     calling .focus() — avoids the race where the hero card was
+     re-rendered while the modal was open.
+T15. Newsletter input has explicit <label class="visually-hidden">
+     for "Email address" plus matching aria-label.
+
+PERSONALITY (DESIGN WISHLIST)
+P1. CSS-counter editorial catalog numbers (№ 01, № 02…) sit in
+    the left margin of every painting card on wide screens, and
+    move to a small backdrop-blurred badge in the top-right
+    corner of the image on screens < 1200px.
+P2. Hand-drawn SVG strikethrough on sold prices (both card +
+    modal) replaces text-decoration:line-through. SVG is a
+    wavy path drawn over the price text, in --text-secondary.
+P3. Modal reacts to dominant painting color. applyAccentTint()
+    either reads p.dominantColor from the Sheet or samples the
+    image center via canvas (32×32, center 60% region) and
+    mixes 55/45 with bone for a tasteful tint. The tint is
+    applied as a top border on .modal. CORS failures (Drive)
+    silently fall back to default accent. Skipped under
+    prefers-reduced-motion.
+P4. Footer columns now 3fr / 1fr / 1fr / 2fr (asymmetric);
+    when newsletter is hidden, footer becomes 3fr / 1fr / 1fr.
+    Testimonials grid 5fr / 4fr / 6fr (only renders if data).
+    Hero gains a № 01 in the left margin (absolute on desktop,
+    inline above title on tablet/mobile).
+P5. Subtle SVG flourish under nav logo (38px wide quill-stroke
+    line in accent color at 55% opacity).
+P6. Custom cursor on .painting-card / .hero-image-wrap hover —
+    64px circle, paper background, Fraunces italic "View №NN"
+    inside. Skipped on touch devices and under
+    prefers-reduced-motion.
+
+COPY UPDATES
+C1. About preview rewritten as data-driven assembly. No [TODO].
+C2. About full rebuilt from conditional paragraphs.
+C3. Process section drops "[TODO: replace with studio photo]" —
+    when no photo, the section becomes text-only single-column.
+C4. FAQ shipping answer uses SITE_DATA.shipping.fromCountry
+    (renders generic "Origin depends on…" copy when null). FAQ
+    framing + payment-plan answers rewritten without dollar
+    placeholders.
+
+================================================================
+SVETA: TO MAKE THIS SITE PRODUCTION-READY
+================================================================
+Edit `SITE_DATA` at the top of <script> in this file. Each
+field has graceful degradation — when null/empty, the
+corresponding sentence / link / section is simply omitted.
+
+  artist.name             → already "Sveta"
+  artist.location         → "City, Country" (About + Footer)
+  artist.yearsPracticing  → number (About preview + About full)
+  artist.schooling        → "self-taught" / "BFA, X" (About full)
+  artist.influences       → "Lois Dodd, Vuillard, Doig" (About)
+  artist.exhibitions      → [{year,title,venue,city}, …]
+  artist.instagram        → full URL (footer link)
+  artist.studioPhotoUrl   → /path/to/photo.jpg (Process section)
+  testimonials            → [{quote,name,city,year}, …]
+  newsletter.serviceUrl   → Buttondown / Mailchimp form action
+  shipping.fromCountry    → "Canada" / "Germany" / …
+  ogImage                 → /og-image.jpg (1200×630)
+
+Optional Google Sheet columns also enrich the modal/meta:
+  year, surface, signed, framed, shippingFrom, certificate,
+  widthIn, heightIn, dominantColor (or color)
+================================================================
+-->
+
 </body>
 </html>
