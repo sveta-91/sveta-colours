@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Sveta Colours — Photo Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root {
   /* Editorial bone palette — aligned with index.html */
@@ -89,114 +91,151 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
 </style>
 </head>
 <body>
-<h2 class="sr-only">Photo processing: upload, auto-correct, crop, perspective, resize, enhance, watermark, export, save to Drive and Sheets.</h2>
+  <h1 class="sr-only">Photo Manager</h1>
 
-<div class="top-layout">
-  <div class="col-left">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-photo" aria-hidden="true"></i> Canvas</div>
-      <div id="dropZone" class="drop-zone">
-        <i class="ti ti-upload" aria-hidden="true"></i>
-        <p>Drag & drop or click to upload</p>
-        <small>JPG, PNG, WEBP — any size</small>
-        <input type="file" id="fileInput" accept="image/*">
-      </div>
-      <div id="workArea" style="display:none">
-        <div class="tool-bar">
-          <button id="btnAutoCorrect" class="accent" onclick="autoCorrectAll()"><i class="ti ti-wand" aria-hidden="true"></i> Auto-correct</button>
-          <button id="btnCrop" onclick="toggleCrop()"><i class="ti ti-crop" aria-hidden="true"></i> Crop</button>
-          <button id="btnApplyCrop" onclick="applyCrop()" style="display:none" class="primary"><i class="ti ti-check" aria-hidden="true"></i> Apply crop</button>
-          <button id="btnCancelCrop" onclick="cancelCrop()" style="display:none"><i class="ti ti-x" aria-hidden="true"></i> Cancel</button>
-          <button id="btnPersp" onclick="togglePersp()"><i class="ti ti-adjustments" aria-hidden="true"></i> Perspective</button>
-          <button id="btnAutoPersp" onclick="autoPersp()" style="display:none"><i class="ti ti-sparkles" aria-hidden="true"></i> Auto-detect</button>
-          <button id="btnApplyPersp" onclick="applyPersp()" style="display:none" class="primary"><i class="ti ti-check" aria-hidden="true"></i> Apply</button>
-          <button id="btnCancelPersp" onclick="cancelPersp()" style="display:none"><i class="ti ti-x" aria-hidden="true"></i> Cancel</button>
-          <button onclick="resetToOriginal()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset</button>
-        </div>
-        <div class="auto-steps" id="autoSteps" style="display:none"></div>
-        <div class="canvas-area" id="canvasArea">
-          <canvas id="preview-canvas"></canvas>
-          <canvas id="crop-overlay"></canvas>
-          <canvas id="persp-overlay"></canvas>
-        </div>
-        <div class="dim-info" id="dimInfo"></div>
-      </div>
-    </div>
-  </div>
+  <main class="top-layout">
+    <section class="col-left" aria-labelledby="canvas-h">
+      <div class="card">
+        <h2 id="canvas-h" class="card-title">Canvas</h2>
 
-  <div class="col-right">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-resize" aria-hidden="true"></i> Resize</div>
-      <div class="resize-row">
-        <input type="number" id="resizeW" placeholder="W" min="1" max="8000">
-        <span style="font-size:12px;color:var(--color-text-secondary)">×</span>
-        <input type="number" id="resizeH" placeholder="H" min="1" max="8000">
-        <span style="font-size:11px;color:var(--color-text-tertiary)">px</span>
-        <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" id="lockAR" checked> lock</label>
-        <button onclick="applyResize()"><i class="ti ti-check" aria-hidden="true"></i></button>
-      </div>
-    </div>
+        <label id="dropZone" class="drop-zone" for="fileInput" tabindex="0" role="button"
+               aria-label="Upload an image: drag a file here or press Enter to browse">
+          <i class="ti ti-upload" aria-hidden="true" style="font-size:36px;color:var(--text-faint)"></i>
+          <p>Drag &amp; drop or press Enter to upload</p>
+          <small>JPG, PNG, WEBP, HEIC — any size</small>
+        </label>
+        <input type="file" id="fileInput" accept="image/*,.heic,.heif">
 
-    <div class="card">
-      <div class="card-title"><i class="ti ti-adjustments-horizontal" aria-hidden="true"></i> Adjustments</div>
-      <div class="ctrl-label">Brightness</div>
-      <div class="ctrl-row"><input type="range" id="brightness" min="-100" max="100" value="0" step="1"><span id="bv">0</span></div>
-      <div class="ctrl-label">Contrast</div>
-      <div class="ctrl-row"><input type="range" id="contrast" min="-100" max="100" value="0" step="1"><span id="cv">0</span></div>
-      <div class="ctrl-label">Saturation</div>
-      <div class="ctrl-row"><input type="range" id="saturation" min="-100" max="100" value="0" step="1"><span id="sv">0</span></div>
-      <hr class="divider">
-      <div class="ctrl-label">Watermark opacity</div>
-      <div class="ctrl-row"><input type="range" id="wmOpacity" min="0" max="100" value="40" step="1"><span id="wov">40</span></div>
-      <div class="wm-row">
-        <input type="text" id="wmText" value="© sveta-colours" placeholder="Watermark text">
-        <button onclick="applyAll()"><i class="ti ti-refresh" aria-hidden="true"></i></button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title"><i class="ti ti-device-floppy" aria-hidden="true"></i> Export</div>
-      <div class="field-row"><label>Format</label>
-        <select id="exportFormat"><option value="jpeg" selected>JPEG</option><option value="png">PNG</option><option value="webp">WEBP</option></select>
-      </div>
-      <div class="field-row" id="qualityRow">
-        <label>Quality</label>
-        <div class="ctrl-row" style="flex:1;margin:0">
-          <input type="range" id="jpegQuality" min="10" max="100" value="90" step="1">
-          <span id="qv" style="font-size:12px;min-width:32px;text-align:right;color:var(--color-text-secondary)">90%</span>
+        <div id="workArea" hidden>
+          <div class="tool-bar" role="toolbar" aria-label="Image tools">
+            <button id="btnAutoCorrect" class="primary" type="button" onclick="autoCorrectAll()">Auto-correct</button>
+            <button id="btnCrop" type="button" onclick="toggleCrop()">Crop</button>
+            <button id="btnApplyCrop" type="button" onclick="applyCrop()" hidden class="primary">Apply crop</button>
+            <button id="btnCancelCrop" type="button" onclick="cancelCrop()" hidden>Cancel</button>
+            <button id="btnPersp" type="button" onclick="togglePersp()">Perspective</button>
+            <button id="btnAutoPersp" type="button" onclick="autoPersp()" hidden>Auto-detect</button>
+            <button id="btnApplyPersp" type="button" onclick="applyPersp()" hidden class="primary">Apply</button>
+            <button id="btnCancelPersp" type="button" onclick="cancelPersp()" hidden>Cancel</button>
+            <button type="button" onclick="resetToOriginal()">Reset</button>
+          </div>
+          <div class="auto-steps" id="autoSteps" aria-live="polite" hidden></div>
+          <div class="canvas-area" id="canvasArea">
+            <canvas id="preview-canvas" aria-label="Image preview"></canvas>
+            <canvas id="crop-overlay"></canvas>
+            <canvas id="persp-overlay"></canvas>
+          </div>
+          <div class="status" id="dimInfo" aria-live="polite"></div>
         </div>
       </div>
-      <div class="btn-row" style="margin-top:.5rem">
-        <button onclick="downloadImg()"><i class="ti ti-download" aria-hidden="true"></i> Download</button>
-        <button class="primary" onclick="saveToDrive()" id="btnDrive"><i class="ti ti-brand-google-drive" aria-hidden="true"></i> Drive</button>
-        <button class="accent" onclick="saveAll()" id="btnSaveAll"><i class="ti ti-device-floppy" aria-hidden="true"></i> Save all</button>
+    </section>
+
+    <aside class="col-right" aria-label="Controls">
+      <!-- Resize -->
+      <div class="card">
+        <h2 class="card-title">Resize</h2>
+        <div class="field-row">
+          <label for="resizeW">Width</label>
+          <input id="resizeW" type="number" min="1" max="8000" placeholder="px">
+        </div>
+        <div class="field-row">
+          <label for="resizeH">Height</label>
+          <input id="resizeH" type="number" min="1" max="8000" placeholder="px">
+        </div>
+        <div class="field-row">
+          <label for="lockAR">Lock ratio</label>
+          <input id="lockAR" type="checkbox" checked>
+          <button type="button" onclick="applyResize()" class="primary">Apply</button>
+        </div>
       </div>
-      <div class="status" id="saveStatus"></div>
-    </div>
-  </div>
-</div>
 
-<div class="bottom-layout" id="bottomLayout" style="display:none">
-  <div class="card">
-    <div class="card-title"><i class="ti ti-sparkles" aria-hidden="true"></i> Claude analysis</div>
-    <div class="ai-box" id="aiBox">Analyzing…</div>
-  </div>
+      <!-- Adjustments -->
+      <div class="card">
+        <h2 class="card-title">Adjustments</h2>
+        <div class="field-row">
+          <label for="brightness">Brightness</label>
+          <input type="range" id="brightness" min="-100" max="100" value="0" step="1">
+          <span id="bv" aria-live="off">0</span>
+        </div>
+        <div class="field-row">
+          <label for="contrast">Contrast</label>
+          <input type="range" id="contrast" min="-100" max="100" value="0" step="1">
+          <span id="cv" aria-live="off">0</span>
+        </div>
+        <div class="field-row">
+          <label for="saturation">Saturation</label>
+          <input type="range" id="saturation" min="-100" max="100" value="0" step="1">
+          <span id="sv" aria-live="off">0</span>
+        </div>
+        <hr class="divider">
+        <div class="field-row">
+          <label for="wmOpacity">Watermark opacity</label>
+          <input type="range" id="wmOpacity" min="0" max="100" value="40" step="1">
+          <span id="wov" aria-live="off">40</span>
+        </div>
+        <div class="field-row">
+          <label for="wmText">Watermark text</label>
+          <input type="text" id="wmText" value="© sveta-colours" placeholder="Watermark text">
+          <button type="button" onclick="applyAll()">Refresh</button>
+        </div>
+      </div>
 
-  <div class="card">
-    <div class="card-title"><i class="ti ti-table" aria-hidden="true"></i> Portfolio record</div>
-    <div class="field-row"><label>Title *</label><input type="text" id="fTitle" placeholder="Artwork title" oninput="onTitleInput()"></div>
-    <div class="field-row"><label>Description</label><textarea id="fDesc" placeholder="Description"></textarea></div>
-    <div class="field-row"><label>Medium</label><input type="text" id="fMedium" placeholder="e.g. oil on canvas"></div>
-    <div class="field-row"><label>Size (cm)</label><input type="text" id="fSize" placeholder="e.g. 40×50"></div>
-    <div class="field-row"><label>Year</label><input type="text" id="fYear" placeholder="2025"></div>
-    <div class="field-row"><label>Tags</label><input type="text" id="fTags" placeholder="comma-separated"></div>
-    <div class="field-row"><label>Status</label>
-      <select id="fStatus"><option value="">—</option><option value="available">Available</option><option value="sold">Sold</option><option value="reserved">Reserved</option><option value="not for sale">Not for sale</option></select>
+      <!-- Export -->
+      <div class="card">
+        <h2 class="card-title">Export</h2>
+        <div class="field-row">
+          <label for="exportFormat">Format</label>
+          <select id="exportFormat">
+            <option value="jpeg" selected>JPEG</option>
+            <option value="png">PNG</option>
+            <option value="webp">WEBP</option>
+          </select>
+        </div>
+        <div class="field-row" id="qualityRow">
+          <label for="jpegQuality">Quality</label>
+          <input id="jpegQuality" type="range" min="10" max="100" value="90">
+          <span id="qv" aria-live="off">90%</span>
+        </div>
+        <div class="btn-row">
+          <button type="button" onclick="downloadImg()">Download</button>
+          <button type="button" class="primary" onclick="saveToDrive()" id="btnDrive">Drive</button>
+          <button type="button" class="primary" onclick="saveAll()" id="btnSaveAll">Save to Drive + Sheets</button>
+        </div>
+        <div class="status" id="saveStatus" aria-live="polite" role="status"></div>
+      </div>
+    </aside>
+  </main>
+
+  <section class="bottom-layout" id="bottomLayout" hidden>
+    <div class="card">
+      <h2 class="card-title">AI analysis</h2>
+      <div class="status" id="aiBox" aria-live="polite">Awaiting upload…</div>
+      <button id="btnManualPaste" type="button" hidden>Use ChatGPT manually instead</button>
     </div>
-    <div class="field-row"><label>Price</label><input type="text" id="fPrice" placeholder="e.g. 350 CAD"></div>
-    <div class="field-row"><label>Notes</label><input type="text" id="fNotes" placeholder="Any additional notes"></div>
-  </div>
-</div>
+
+    <form class="card" id="portfolioForm" onsubmit="event.preventDefault()">
+      <h2 class="card-title">Portfolio record</h2>
+      <fieldset style="border:0;padding:0">
+        <legend class="sr-only">Painting metadata</legend>
+        <div class="field-row"><label for="fTitle">Title *</label><input id="fTitle" type="text" required oninput="onTitleInput()"></div>
+        <div class="field-row"><label for="fDesc">Description</label><textarea id="fDesc" rows="3"></textarea></div>
+        <div class="field-row"><label for="fMedium">Medium</label><input id="fMedium" type="text" placeholder="oil on canvas"></div>
+        <div class="field-row"><label for="fSize">Size (cm)</label><input id="fSize" type="text" placeholder="40×50"></div>
+        <div class="field-row"><label for="fYear">Year</label><input id="fYear" type="text"></div>
+        <div class="field-row"><label for="fTags">Tags</label><input id="fTags" type="text" placeholder="comma-separated"></div>
+        <div class="field-row"><label for="fStatus">Status</label>
+          <select id="fStatus">
+            <option value="">—</option>
+            <option value="available">Available</option>
+            <option value="sold">Sold</option>
+            <option value="reserved">Reserved</option>
+            <option value="not for sale">Not for sale</option>
+          </select>
+        </div>
+        <div class="field-row"><label for="fPrice">Price</label><input id="fPrice" type="text" placeholder="350 CAD"></div>
+        <div class="field-row"><label for="fNotes">Notes</label><input id="fNotes" type="text"></div>
+      </fieldset>
+    </form>
+  </section>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://accounts.google.com/gsi/client" async></script>
@@ -225,6 +264,12 @@ const perspCtx=perspOv.getContext('2d');
 const dz=document.getElementById('dropZone');
 const fi=document.getElementById('fileInput');
 dz.addEventListener('click',()=>fi.click());
+dz.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    fi.click();
+  }
+});
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
 dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');handleFile(e.dataTransfer.files[0]);});
