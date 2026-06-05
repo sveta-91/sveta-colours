@@ -324,17 +324,86 @@ function onTitleInput(){
   }
 }
 
+// Returns EXIF orientation 1–8, or 1 if missing/unparseable.
+function readExifOrientation(arrayBuffer){
+  const v=new DataView(arrayBuffer);
+  if(v.byteLength<4||v.getUint16(0)!==0xFFD8) return 1; // not JPEG
+  let off=2;
+  while(off<v.byteLength){
+    if(off+2>v.byteLength) return 1;
+    const marker=v.getUint16(off);
+    off+=2;
+    if(marker===0xFFE1){ // APP1
+      if(off+8>v.byteLength) return 1;
+      if(v.getUint32(off+2)!==0x45786966) return 1; // "Exif"
+      const tiff=off+8;
+      if(tiff+8>v.byteLength) return 1;
+      const little=v.getUint16(tiff)===0x4949;
+      const get16=o=>v.getUint16(o,little);
+      const get32=o=>v.getUint32(o,little);
+      const ifd=tiff+get32(tiff+4);
+      if(ifd+2>v.byteLength) return 1;
+      const entries=get16(ifd);
+      for(let i=0;i<entries;i++){
+        const entry=ifd+2+i*12;
+        if(entry+10>v.byteLength) return 1;
+        if(get16(entry)===0x0112) return get16(entry+8);
+      }
+      return 1;
+    }
+    if((marker&0xFF00)!==0xFF00) return 1;
+    if(off+2>v.byteLength) return 1;
+    off+=v.getUint16(off);
+  }
+  return 1;
+}
+
+// Bake EXIF orientation into a fresh canvas. Returns a canvas.
+function applyOrientationToCanvas(img, o){
+  const c=document.createElement('canvas');
+  const ctx2=c.getContext('2d');
+  const w=img.width, h=img.height;
+  if(o>=5 && o<=8){ c.width=h; c.height=w; }
+  else { c.width=w; c.height=h; }
+  switch(o){
+    case 2: ctx2.translate(w,0); ctx2.scale(-1,1); break;
+    case 3: ctx2.translate(w,h); ctx2.rotate(Math.PI); break;
+    case 4: ctx2.translate(0,h); ctx2.scale(1,-1); break;
+    case 5: ctx2.rotate(0.5*Math.PI); ctx2.scale(1,-1); break;
+    case 6: ctx2.rotate(0.5*Math.PI); ctx2.translate(0,-h); break;
+    case 7: ctx2.rotate(0.5*Math.PI); ctx2.translate(w,-h); ctx2.scale(-1,1); break;
+    case 8: ctx2.rotate(-0.5*Math.PI); ctx2.translate(-w,0); break;
+  }
+  ctx2.drawImage(img,0,0);
+  return c;
+}
+
 function handleFile(file){
-  if(!file||!file.type.startsWith('image/'))return;
-  state.titleFilled=false;state.aiData=null;
+  if(!file) return;
+  if(!file.type.startsWith('image/') && !/\.(heic|heif)$/i.test(file.name)){
+    setStatus('saveStatus','Only image files (JPG, PNG, WEBP, HEIC) supported.','err');
+    return;
+  }
+  state.titleFilled=false;state.aiData=null;state.aiDataDims=null;
+
   const reader=new FileReader();
-  reader.onload=e=>{
+  reader.onload=async e=>{
+    const buf=e.target.result;
+    const orientation = file.type==='image/jpeg' ? readExifOrientation(buf) : 1;
+    const blob=new Blob([buf],{type:file.type||'application/octet-stream'});
+    const url=URL.createObjectURL(blob);
     const img=new Image();
+    img.onerror=()=>{
+      URL.revokeObjectURL(url);
+      setStatus('saveStatus','Could not decode image (corrupted or unsupported format).','err');
+    };
     img.onload=()=>{
-      state.origImg=img;
-      setupCanvas(img);
-      document.getElementById('resizeW').value=img.width;
-      document.getElementById('resizeH').value=img.height;
+      URL.revokeObjectURL(url);
+      const oriented=applyOrientationToCanvas(img,orientation);
+      state.origImg=oriented;
+      setupCanvasFromCanvas(oriented);
+      document.getElementById('resizeW').value=oriented.width;
+      document.getElementById('resizeH').value=oriented.height;
       document.getElementById('fYear').value=new Date().getFullYear();
       dz.style.display='none';
       document.getElementById('workArea').style.display='block';
@@ -342,11 +411,12 @@ function handleFile(file){
       const name=file.name.replace(/\.[^.]+$/,'');
       document.getElementById('fTitle').value=name;
       drawPreview();
-      analyzeWithClaude(file);
+      // analyzeWithAI is introduced in Task 9; for now keep the existing analyzeWithClaude.
+      analyzeWithClaude(file).catch(err=>console.warn('AI:',err));
     };
-    img.src=e.target.result;
+    img.src=url;
   };
-  reader.readAsDataURL(file);
+  reader.readAsArrayBuffer(file);
 }
 
 // Seed the off-screen full-resolution canvas and the on-screen preview.
