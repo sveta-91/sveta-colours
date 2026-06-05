@@ -244,7 +244,7 @@ const SHEET_ID='170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI';
 const SHEET_GID='1031748871';
 const CLIENT_ID='754552250731-hdl67ujna2lk1lataah35mnl69emi8qt.apps.googleusercontent.com';
 const SHEET_TAB='Paintings';
-const COLS=['title','medium','price','sold','size','image','date','year','description','tags','notes'];
+const COLS=['title','medium','price','sold','size','image','description','collection','date','year','notes'];
 
 const state = {
   origImg: null,                                  // EXIF-corrected source canvas
@@ -1230,10 +1230,10 @@ function getCellForCol(col, driveFileId) {
     'sold': status === 'sold' ? 'yes' : 'no',
     'size': document.getElementById('fSize').value,
     'image': driveFileId,
+    'description': document.getElementById('fDesc').value,
+    'collection': document.getElementById('fTags').value,
     'date': new Date().toISOString().slice(0, 10),
     'year': document.getElementById('fYear').value,
-    'description': document.getElementById('fDesc').value,
-    'tags': document.getElementById('fTags').value,
     'notes': document.getElementById('fNotes').value,
   };
   return m[col] || '';
