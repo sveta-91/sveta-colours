@@ -914,29 +914,43 @@ async function canvasToBase64(){
 }
 
 // ── GOOGLE AUTH ──
-async function getAccessToken(){
-  if(state.cachedToken)return state.cachedToken;
-  return new Promise(resolve=>{
-    if(!window.google?.accounts?.oauth2){resolve(null);return;}
-    const client=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets',callback:r=>{state.cachedToken=r.access_token||null;setTimeout(()=>{state.cachedToken=null;},3500000);resolve(state.cachedToken);}});
+function getAccessToken() {
+  return new Promise((resolve, reject) => {
+    if (state.cachedToken && Date.now() < state.cachedTokenExpiresAt) return resolve(state.cachedToken);
+    if (!window.google?.accounts?.oauth2) return reject(new Error('GIS not loaded'));
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets',
+      callback: r => {
+        if (r.error) return reject(new Error('OAuth: ' + r.error));
+        state.cachedToken = r.access_token;
+        state.cachedTokenExpiresAt = Date.now() + (r.expires_in - 30) * 1000;
+        resolve(r.access_token);
+      },
+      error_callback: err => reject(new Error('OAuth cancelled: ' + (err && err.type)))
+    });
     client.requestAccessToken();
   });
 }
 
 // ── SAVE ALL ──
-async function saveAll(){
-  const btn=document.getElementById('btnSaveAll');
-  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving…';setStatus('saveStatus','');
-  try{
-    const token=await getAccessToken();
-    if(!token){setStatus('saveStatus','Auth failed','err');btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save all';return;}
-    setStatus('saveStatus','Uploading to Drive…');
-    const driveLink=await uploadToDrive(token);
-    setStatus('saveStatus','Updating Sheets…');
-    await upsertSheetRow(token,driveLink);
-    setStatus('saveStatus','Saved to Drive + Sheets ✓','ok');
-  }catch(e){setStatus('saveStatus','Error: '+e.message,'err');}
-  btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy" aria-hidden="true"></i> Save all';
+async function saveAll() {
+  if (state.saveInFlight) return;
+  state.saveInFlight = true;
+  const btn = document.getElementById('btnSaveAll');
+  btn.disabled = true;
+  setStatus('saveStatus', 'Saving…');
+  try {
+    const token = await getAccessToken();
+    const driveLink = await uploadToDrive(token);  // composes full-res blob inside
+    await upsertSheetRow(token, driveLink);
+    setStatus('saveStatus', 'Saved.', 'ok');
+  } catch (e) {
+    setStatus('saveStatus', 'Save failed: ' + e.message, 'err');
+  } finally {
+    state.saveInFlight = false;
+    btn.disabled = false;
+  }
 }
 async function saveToDrive(){
   const btn=document.getElementById('btnDrive');btn.disabled=true;setStatus('saveStatus','');
@@ -956,37 +970,83 @@ async function uploadToDrive(token){
   if(!res.ok){const e=await res.json();throw new Error(e.error?.message||res.status);}
   const d=await res.json();return `https://drive.google.com/file/d/${d.id}/view`;
 }
-async function upsertSheetRow(token,driveLink){
-  const title=document.getElementById('fTitle').value||'';
-  const readRes=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:B`,{headers:{Authorization:'Bearer '+token}});
-  const readData=await readRes.json();
-  const rows=readData.values||[];
-  let rowIdx=-1;
-  for(let i=1;i<rows.length;i++){if(rows[i][1]&&rows[i][1].toLowerCase()===title.toLowerCase()){rowIdx=i+1;break;}}
-  const dims=state.fullCanvas.width?`${state.fullCanvas.width}×${state.fullCanvas.height}`:'';
-  const fmt=document.getElementById('exportFormat').value.toUpperCase();
-  const values=[[
-    new Date().toISOString().slice(0,10),
-    document.getElementById('fTitle').value,
-    document.getElementById('fDesc').value,
-    document.getElementById('fMedium').value,
-    document.getElementById('fSize').value,
-    document.getElementById('fYear').value,
-    document.getElementById('fTags').value,
-    document.getElementById('fStatus').value,
-    document.getElementById('fPrice').value,
-    document.getElementById('fNotes').value,
-    dims,fmt,driveLink||`https://drive.google.com/drive/folders/${DRIVE_FOLDER}`
-  ]];
-  if(rows.length===0){await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:append?valueInputOption=USER_ENTERED`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({values:[COLS]})});}
-  if(rowIdx>0){
-    const range=`${SHEET_TAB}!A${rowIdx}:M${rowIdx}`;
-    const res=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=USER_ENTERED`,{method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({range,values})});
-    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||res.status);}
-  }else{
-    const res=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:append?valueInputOption=USER_ENTERED`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({values})});
-    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||res.status);}
+
+// Sheets RAW already prevents formula execution, but normalize for dedup/display.
+function sanitizeCell(s) {
+  if (s == null) return '';
+  return String(s).replace(/\r\n/g, '\n').trim();
+}
+
+function normalizeTitle(s) {
+  return sanitizeCell(s).toLowerCase().replace(/\s+/g, ' ');
+}
+
+async function upsertSheetRow(token, driveLink) {
+  // 1) Read existing A:B (Date + Title) to find dedup target
+  const readRes = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:B`,
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  if (!readRes.ok) throw new Error('Sheets read failed: ' + readRes.status);
+  const rows = (await readRes.json()).values || [];
+
+  // 2) Ensure header row exists FIRST and is committed before any further write
+  if (rows.length === 0 || normalizeTitle(rows[0][1] || '') !== 'title') {
+    const headRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1?valueInputOption=RAW`,
+      { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [COLS] }) }
+    );
+    if (!headRes.ok) throw new Error('Sheets header init failed: ' + headRes.status);
   }
+
+  // 3) Compose row from form fields
+  const title = document.getElementById('fTitle').value;
+  const normTitle = normalizeTitle(title);
+  const row = COLS.map(col => sanitizeCell(getCellForCol(col, driveLink)));
+
+  // 4) Find existing row by normalized title (skip header)
+  let foundIdx = -1;
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i] && normalizeTitle(rows[i][1] || '') === normTitle) { foundIdx = i; break; }
+  }
+
+  if (foundIdx >= 0) {
+    const rowNum = foundIdx + 1;
+    const range = `${SHEET_TAB}!A${rowNum}:${String.fromCharCode(64 + COLS.length)}${rowNum}`;
+    const res = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,
+      { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ range, values: [row] }) }
+    );
+    if (!res.ok) throw new Error('Sheets update failed: ' + res.status);
+  } else {
+    const res = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:append?valueInputOption=RAW`,
+      { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [row] }) }
+    );
+    if (!res.ok) throw new Error('Sheets append failed: ' + res.status);
+  }
+}
+
+function getCellForCol(col, driveLink) {
+  const m = {
+    'Date': new Date().toISOString().slice(0, 10),
+    'Title': document.getElementById('fTitle').value,
+    'Description': document.getElementById('fDesc').value,
+    'Medium': document.getElementById('fMedium').value,
+    'Size': document.getElementById('fSize').value,
+    'Year': document.getElementById('fYear').value,
+    'Tags': document.getElementById('fTags').value,
+    'Status': document.getElementById('fStatus').value,
+    'Price': document.getElementById('fPrice').value,
+    'Notes': document.getElementById('fNotes').value,
+    'Dimensions': `${state.fullCanvas.width}×${state.fullCanvas.height}`,
+    'Format': document.getElementById('exportFormat').value,
+    'Drive link': driveLink,
+  };
+  return m[col] || '';
 }
 function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Read failed'));r.readAsDataURL(file);});}
 
