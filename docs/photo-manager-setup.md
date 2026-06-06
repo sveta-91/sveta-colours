@@ -34,3 +34,21 @@ If the backend is unreachable (down, port conflict, etc.), the page still works 
 - [ ] AI offline (Gemini quota / no key) → manual-paste button works as fallback
 - [ ] All form fields keyboard-reachable from the file input through Save
 - [ ] Auto-correct twice in a row on the same upload doesn't double-crop
+
+## Python backend acceptance
+
+Subset of qa scenarios that can be checked via curl without a browser:
+
+- [ ] `curl http://localhost:8001/health` → `{"ok":true}`
+- [ ] `curl -X POST -F image=@output/processed/landscape/MorningCoffee.jpeg http://localhost:8001/analyze` returns valid JSON with `source:"python"`
+- [ ] `curl -X POST -F image=@/etc/hosts http://localhost:8001/analyze` returns 400 with `error:"could not decode image"`
+- [ ] `curl -X OPTIONS -H "Origin: http://localhost:8000" -i http://localhost:8001/analyze` returns 204 with `Access-Control-Allow-Origin: http://localhost:8000`
+- [ ] Tiny image (100×100): `python -c "import cv2,numpy as np;cv2.imwrite('/tmp/tiny.jpg', np.zeros((100,100,3),'uint8'))"`, then POST it → returns `reason:"no_frame_detected"`, no exception
+
+Browser-only checks (after curl checks pass):
+
+- [ ] Backend running + Gemini key: upload angled painting photo → Auto-correct straightens precisely (Python wins over Gemini for geometry)
+- [ ] Backend running + NO Gemini key: status says "Geometry via Python only", Auto-correct still works
+- [ ] Backend OFF: badge shows fallback within 500ms of page load; Auto-correct uses Gemini coords
+- [ ] Backend dies mid-session: next upload's analyze fails silently, badge flips to fallback
+
