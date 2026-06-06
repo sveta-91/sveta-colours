@@ -6,3 +6,4 @@ Pillow
 pillow-heif
 opencv-python
 numpy
+flask
