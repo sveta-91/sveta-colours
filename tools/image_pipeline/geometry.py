@@ -433,6 +433,46 @@ def _needs_crop_array(
 # ── Public entry point ─────────────────────────────────────────────────────
 
 
+def _compute_post_warp_crop(img_bgr: np.ndarray, corners: np.ndarray) -> Optional[dict]:
+    """Apply the perspective warp internally, then run crop detection on the
+    warped result. Returns crop as fractions of the warped output dimensions,
+    or None when the warped image is already tight to the painting.
+
+    Used to recover from Hough overshoot: even when corners include some
+    background, this second pass catches and trims it.
+    """
+    xs = corners[:, 0]
+    ys = corners[:, 1]
+    out_w = int(round(max(xs) - min(xs)))
+    out_h = int(round(max(ys) - min(ys)))
+    if out_w < 50 or out_h < 50:
+        return None
+
+    src = corners.astype(np.float32)
+    dst = np.array(
+        [[0, 0], [out_w, 0], [out_w, out_h], [0, out_h]], dtype=np.float32
+    )
+    try:
+        H = cv2.getPerspectiveTransform(src, dst)
+        warped = cv2.warpPerspective(img_bgr, H, (out_w, out_h))
+    except cv2.error:
+        return None
+
+    needs, _reason, bbox = _needs_crop_array(warped)
+    if not needs or bbox is None:
+        return None
+    x, y, bw, bh = bbox
+    # Skip near-identity crops — saves a redundant render in the browser.
+    if bw / out_w > 0.97 and bh / out_h > 0.97:
+        return None
+    return {
+        "x": x / out_w,
+        "y": y / out_h,
+        "w": bw / out_w,
+        "h": bh / out_h,
+    }
+
+
 def analyze(img_bgr: np.ndarray) -> dict:
     """Top-level entry. Returns the dict shape the photo_manager expects.
 
@@ -459,9 +499,16 @@ def analyze(img_bgr: np.ndarray) -> dict:
     if corners is not None and len(corners) == 4:
         ordered = _order_corners(corners)  # TL, TR, BR, BL
         # Clip to image bounds — Hough can overshoot by ~50px (run_pipeline.py:645)
-        clipped = np.clip(ordered, [[0, 0]], [[w - 1, h - 1]])
-        frac = clipped.astype(float) / np.array([w, h])
-        return {
+        clipped = np.clip(ordered, [[0, 0]], [[w - 1, h - 1]]).astype(np.float32)
+        frac = clipped / np.array([w, h], dtype=np.float32)
+
+        # Internally apply the warp and check whether the result still has
+        # background bleed (Hough corners can sit on wall edges rather than
+        # the painting's actual frame). Return the post-warp crop in fractions
+        # of the WARPED image so the browser can apply it after its own warp.
+        post_crop = _compute_post_warp_crop(img_bgr, clipped)
+
+        result = {
             "needs_perspective_correction": True,
             "perspective_corners": {
                 "tl": {"x": float(frac[0][0]), "y": float(frac[0][1])},
@@ -469,11 +516,16 @@ def analyze(img_bgr: np.ndarray) -> dict:
                 "br": {"x": float(frac[2][0]), "y": float(frac[2][1])},
                 "bl": {"x": float(frac[3][0]), "y": float(frac[3][1])},
             },
-            "needs_crop": False,
-            "crop": None,
             "source": "python",
             "reason": None,
         }
+        if post_crop is not None:
+            result["needs_crop"] = True
+            result["crop"] = post_crop  # fractions in WARPED image space
+        else:
+            result["needs_crop"] = False
+            result["crop"] = None
+        return result
 
     # 2) No perspective needed — try a pure crop via the same _needs_crop signals
     needs, reason, bbox = _needs_crop_array(img_bgr)

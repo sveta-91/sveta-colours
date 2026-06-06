@@ -668,14 +668,20 @@ async function analyzeWithAI(file) {
   }
 
   // Python geometry overrides — runs whether or not Gemini succeeded.
+  // When perspective is needed, Python also returns post-warp crop fractions
+  // (in WARPED image space) so the browser chains warp → crop and trims any
+  // Hough overshoot in one Auto-correct pass.
   if (pythonRes.status === 'fulfilled') {
     const geo = pythonRes.value;
     if (geo && geo.source === 'python') {
       if (geo.needs_perspective_correction && geo.perspective_corners) {
         aiData.needs_perspective_correction = true;
         aiData.perspective_corners = geo.perspective_corners;
-        aiData.needs_crop = false;
-        aiData.crop = null;
+        // Crop fractions, when present, are in post-warp space; autoApplyCrop
+        // multiplies by current state.fullCanvas dims, which equal the warped
+        // dims by the time the crop branch runs.
+        aiData.needs_crop = !!(geo.needs_crop && geo.crop);
+        aiData.crop = geo.crop || null;
       } else if (geo.needs_crop && geo.crop) {
         aiData.needs_perspective_correction = false;
         aiData.perspective_corners = null;
