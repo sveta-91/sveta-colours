@@ -616,12 +616,51 @@ function ensureGeminiKey() {
   return null;
 }
 
+async function fetchPythonGeometry(blob) {
+  if (!state.pythonBackend.available) throw new Error('backend not available');
+  const form = new FormData();
+  form.append('image', blob, 'image.jpg');
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), PYTHON_BACKEND_ANALYZE_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${PYTHON_BACKEND}/analyze`, {
+      method: 'POST', body: form, signal: ctrl.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const j = await res.json();
+    return j;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function analyzeWithAI(file) {
   const box = document.getElementById('aiBox');
   const key = ensureGeminiKey();
   if (!key) {
-    setStatus('aiBox', 'No Gemini key — use "Use ChatGPT manually" below.', 'err');
+    // No text analysis possible, but Python geometry can still help
+    setStatus('aiBox', 'No Gemini key — geometry via Python only.', null);
     document.getElementById('btnManualPaste').hidden = false;
+    if (state.pythonBackend.available) {
+      const blob = await composeFullBlob('image/jpeg', 0.85);
+      const { blob: small } = await downscaleToMaxEdge(blob, 2048);
+      try {
+        const geo = await fetchPythonGeometry(small);
+        // Build a minimal state.aiData with just the geometry — fields that follow stay empty
+        state.aiData = {
+          description: '', medium: '', style: '', tags: [],
+          brightness_adjust: 0, contrast_adjust: 0, saturation_adjust: 0,
+          needs_perspective_correction: !!geo.needs_perspective_correction,
+          perspective_corners: geo.perspective_corners || null,
+          needs_crop: !!geo.needs_crop,
+          crop: geo.crop || null,
+          quality_notes: geo.reason || '',
+        };
+        state.aiDataDims = { w: state.fullCanvas.width, h: state.fullCanvas.height };
+      } catch (e) {
+        console.warn('Python geometry failed:', e);
+      }
+    }
     return;
   }
   box.innerHTML = '<span class="spinner"></span> Analyzing with Gemini…';
@@ -675,6 +714,37 @@ async function analyzeWithAI(file) {
   }
 
   state.aiData = sanitizeAiData(json);
+
+  // If the Python backend reported healthy at page load, ask it for geometry.
+  // Errors here are silent — Gemini's geometry remains in place as fallback.
+  if (state.pythonBackend.available) {
+    try {
+      // Reuse the SAME downscaled JPEG we sent to Gemini, so coordinates match.
+      const geo = await fetchPythonGeometry(downscaled.blob);
+      if (geo && geo.source === 'python') {
+        // Override geometry fields when Python found something useful
+        if (geo.needs_perspective_correction && geo.perspective_corners) {
+          state.aiData.needs_perspective_correction = true;
+          state.aiData.perspective_corners = geo.perspective_corners;
+          state.aiData.needs_crop = false;
+          state.aiData.crop = null;
+        } else if (geo.needs_crop && geo.crop) {
+          state.aiData.needs_perspective_correction = false;
+          state.aiData.perspective_corners = null;
+          state.aiData.needs_crop = true;
+          state.aiData.crop = geo.crop;
+        }
+        // If Python said "no_frame_detected" — keep Gemini's geometry untouched
+      }
+    } catch (e) {
+      // Flip badge to fallback for this session if backend goes down mid-flow
+      state.pythonBackend.available = false;
+      state.pythonBackend.lastError = e.name === 'AbortError' ? 'timeout' : e.message;
+      renderGeomBadge();
+      console.warn('Python geometry failed:', e);
+    }
+  }
+
   renderAiBox(state.aiData);
   // Do NOT auto-apply transforms — user picks via Auto-correct
   // Do NOT auto-fill fields until user clears the auto-filled-from-filename Title
