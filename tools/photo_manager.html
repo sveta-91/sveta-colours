@@ -636,43 +636,82 @@ async function fetchPythonGeometry(blob) {
 
 async function analyzeWithAI(file) {
   const box = document.getElementById('aiBox');
-  const key = ensureGeminiKey();
-  if (!key) {
-    // No text analysis possible, but Python geometry can still help
-    setStatus('aiBox', 'No Gemini key — geometry via Python only.', null);
-    document.getElementById('btnManualPaste').hidden = false;
-    if (state.pythonBackend.available) {
-      const blob = await composeFullBlob('image/jpeg', 0.85);
-      const { blob: small } = await downscaleToMaxEdge(blob, 2048);
-      try {
-        const geo = await fetchPythonGeometry(small);
-        // Build a minimal state.aiData with just the geometry — fields that follow stay empty
-        state.aiData = {
-          description: '', medium: '', style: '', tags: [],
-          brightness_adjust: 0, contrast_adjust: 0, saturation_adjust: 0,
-          needs_perspective_correction: !!geo.needs_perspective_correction,
-          perspective_corners: geo.perspective_corners || null,
-          needs_crop: !!geo.needs_crop,
-          crop: geo.crop || null,
-          quality_notes: geo.reason || '',
-        };
-        state.aiDataDims = { w: state.fullCanvas.width, h: state.fullCanvas.height };
-      } catch (e) {
-        console.warn('Python geometry failed:', e);
-      }
-    }
-    return;
-  }
-  box.innerHTML = '<span class="spinner"></span> Analyzing with Gemini…';
+  box.innerHTML = '<span class="spinner"></span> Analyzing…';
 
-  // Send the FULL-resolution image (or downscale to 2048px max edge to keep payloads sane)
+  // Prepare ONE downscaled JPEG for both Gemini + Python so coordinates align.
   const blob = await composeFullBlob('image/jpeg', 0.85);
   const downscaled = await downscaleToMaxEdge(blob, 2048);
-  const b64 = await blobToBase64(downscaled.blob);
-
-  // Track what dimensions AI saw — fractions are normalized to this
   state.aiDataDims = { w: downscaled.w, h: downscaled.h };
 
+  // Fire both providers in parallel — they fail independently.
+  const key = ensureGeminiKey();
+  const geminiPromise = key
+    ? callGemini(key, downscaled.blob)
+    : Promise.reject(new Error('no Gemini key'));
+  const pythonPromise = state.pythonBackend.available
+    ? fetchPythonGeometry(downscaled.blob)
+    : Promise.reject(new Error('Python backend unavailable'));
+
+  const [geminiRes, pythonRes] = await Promise.allSettled([geminiPromise, pythonPromise]);
+
+  // Start with whatever Gemini gave us, or an empty skeleton.
+  let aiData;
+  if (geminiRes.status === 'fulfilled') {
+    aiData = sanitizeAiData(geminiRes.value);
+  } else {
+    aiData = {
+      description: '', medium: '', style: '', tags: [],
+      brightness_adjust: 0, contrast_adjust: 0, saturation_adjust: 0,
+      needs_perspective_correction: false, perspective_corners: null,
+      needs_crop: false, crop: null, quality_notes: '',
+    };
+  }
+
+  // Python geometry overrides — runs whether or not Gemini succeeded.
+  if (pythonRes.status === 'fulfilled') {
+    const geo = pythonRes.value;
+    if (geo && geo.source === 'python') {
+      if (geo.needs_perspective_correction && geo.perspective_corners) {
+        aiData.needs_perspective_correction = true;
+        aiData.perspective_corners = geo.perspective_corners;
+        aiData.needs_crop = false;
+        aiData.crop = null;
+      } else if (geo.needs_crop && geo.crop) {
+        aiData.needs_perspective_correction = false;
+        aiData.perspective_corners = null;
+        aiData.needs_crop = true;
+        aiData.crop = geo.crop;
+      }
+      // If Python returned 'no_frame_detected' we keep Gemini's geometry untouched.
+    }
+  } else if (state.pythonBackend.available) {
+    // Backend was healthy at page load but failed this call — flip the badge.
+    state.pythonBackend.available = false;
+    state.pythonBackend.lastError = pythonRes.reason?.name === 'AbortError'
+      ? 'timeout'
+      : (pythonRes.reason?.message || 'failed');
+    renderGeomBadge();
+  }
+
+  state.aiData = aiData;
+
+  // Surface the right message in the AI box based on what worked.
+  if (geminiRes.status === 'fulfilled') {
+    renderAiBox(aiData);
+  } else if (pythonRes.status === 'fulfilled') {
+    const why = geminiRes.reason?.message || 'unavailable';
+    setStatus('aiBox', `Geometry ready (Python). Gemini ${why} — paste text manually if needed.`, null);
+    document.getElementById('btnManualPaste').hidden = false;
+  } else {
+    const why = geminiRes.reason?.message || 'failed';
+    setStatus('aiBox', 'AI: ' + why, 'err');
+    document.getElementById('btnManualPaste').hidden = false;
+  }
+}
+
+// Gemini call extracted so analyzeWithAI can run it parallel to Python via Promise.allSettled.
+async function callGemini(key, downscaledBlob) {
+  const b64 = await blobToBase64(downscaledBlob);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`;
   const body = {
     contents: [{
@@ -681,73 +720,26 @@ async function analyzeWithAI(file) {
         { text: AI_PROMPT }
       ]
     }],
-    generationConfig: {
-      responseMimeType: 'application/json',
-      responseSchema: AI_SCHEMA
-    }
+    generationConfig: { responseMimeType: 'application/json', responseSchema: AI_SCHEMA }
   };
-
-  let json;
-  try {
-    const res = await fetch(url, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) {
-      const t = await res.text();
-      if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('pm_gemini_key');
-        state.geminiKey = null;
-        throw new Error('Gemini key invalid');
-      }
-      if (res.status === 429) throw new Error('Gemini rate-limited — try manual paste');
-      throw new Error('Gemini ' + res.status + ': ' + t.slice(0, 120));
+  const res = await fetch(url, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    if (res.status === 401 || res.status === 403) {
+      localStorage.removeItem('pm_gemini_key');
+      state.geminiKey = null;
+      throw new Error('key invalid');
     }
-    const j = await res.json();
-    const text = j.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error('Gemini returned no content');
-    json = JSON.parse(text);  // responseMimeType=application/json guarantees parseable
-  } catch (e) {
-    setStatus('aiBox', 'AI: ' + e.message, 'err');
-    document.getElementById('btnManualPaste').hidden = false;
-    return;
+    if (res.status === 429) throw new Error('rate-limited');
+    throw new Error(`${res.status}: ${t.slice(0, 120)}`);
   }
-
-  state.aiData = sanitizeAiData(json);
-
-  // If the Python backend reported healthy at page load, ask it for geometry.
-  // Errors here are silent — Gemini's geometry remains in place as fallback.
-  if (state.pythonBackend.available) {
-    try {
-      // Reuse the SAME downscaled JPEG we sent to Gemini, so coordinates match.
-      const geo = await fetchPythonGeometry(downscaled.blob);
-      if (geo && geo.source === 'python') {
-        // Override geometry fields when Python found something useful
-        if (geo.needs_perspective_correction && geo.perspective_corners) {
-          state.aiData.needs_perspective_correction = true;
-          state.aiData.perspective_corners = geo.perspective_corners;
-          state.aiData.needs_crop = false;
-          state.aiData.crop = null;
-        } else if (geo.needs_crop && geo.crop) {
-          state.aiData.needs_perspective_correction = false;
-          state.aiData.perspective_corners = null;
-          state.aiData.needs_crop = true;
-          state.aiData.crop = geo.crop;
-        }
-        // If Python said "no_frame_detected" — keep Gemini's geometry untouched
-      }
-    } catch (e) {
-      // Flip badge to fallback for this session if backend goes down mid-flow
-      state.pythonBackend.available = false;
-      state.pythonBackend.lastError = e.name === 'AbortError' ? 'timeout' : e.message;
-      renderGeomBadge();
-      console.warn('Python geometry failed:', e);
-    }
-  }
-
-  renderAiBox(state.aiData);
-  // Do NOT auto-apply transforms — user picks via Auto-correct
-  // Do NOT auto-fill fields until user clears the auto-filled-from-filename Title
+  const j = await res.json();
+  const text = j.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('no content');
+  return JSON.parse(text);
 }
 
 const AI_PROMPT = `Analyze this artwork photo. Reply ONLY with JSON matching the schema.
