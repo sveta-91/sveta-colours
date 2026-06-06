@@ -206,7 +206,10 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
 
   <section class="bottom-layout" id="bottomLayout" hidden>
     <div class="card">
-      <h2 class="card-title">AI analysis</h2>
+      <div class="card-title-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <h2 class="card-title" style="margin-bottom:0">AI analysis</h2>
+        <span id="geomBadge" class="status" aria-live="polite" style="font-size:0.75rem;margin-top:0;min-height:0"></span>
+      </div>
       <div class="status" id="aiBox" aria-live="polite">Awaiting upload…</div>
       <button id="btnManualPaste" type="button" hidden>Use ChatGPT manually instead</button>
     </div>
@@ -246,6 +249,10 @@ const CLIENT_ID='754552250731-hdl67ujna2lk1lataah35mnl69emi8qt.apps.googleuserco
 const SHEET_TAB='Paintings';
 const COLS=['title','medium','price','sold','size','image','description','collection','featured','date','year','notes'];
 
+const PYTHON_BACKEND = 'http://localhost:8001';
+const PYTHON_BACKEND_HEALTH_TIMEOUT_MS = 500;
+const PYTHON_BACKEND_ANALYZE_TIMEOUT_MS = 8000;   // 5s was too tight on 30-MP JPEGs
+
 const state = {
   origImg: null,                                  // EXIF-corrected source canvas
   fullCanvas: document.createElement('canvas'),   // FULL RESOLUTION — source of truth
@@ -259,6 +266,7 @@ const state = {
   geminiKey: localStorage.getItem('pm_gemini_key') || null,
   titleFilled: false,
   aiApplied: { crop: false, persp: false, adjust: false },
+  pythonBackend: { available: false, checked: false, lastError: null },
 };
 const fullCtx = state.fullCanvas.getContext('2d', { willReadFrequently: false });
 
@@ -1265,6 +1273,40 @@ function getCellForCol(col, driveFileId) {
   };
   return m[col] || '';
 }
+// ── Python backend probe ──
+async function checkPythonBackend() {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), PYTHON_BACKEND_HEALTH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${PYTHON_BACKEND}/health`, { signal: ctrl.signal });
+    state.pythonBackend.available = res.ok;
+    state.pythonBackend.lastError = res.ok ? null : `HTTP ${res.status}`;
+  } catch (e) {
+    state.pythonBackend.available = false;
+    state.pythonBackend.lastError = e.name === 'AbortError' ? 'timeout' : e.message;
+  } finally {
+    clearTimeout(timer);
+    state.pythonBackend.checked = true;
+    renderGeomBadge();
+  }
+}
+
+function renderGeomBadge() {
+  const el = document.getElementById('geomBadge');
+  if (!el) return;
+  if (!state.pythonBackend.checked) { el.textContent = ''; return; }
+  if (state.pythonBackend.available) {
+    el.textContent = 'Geometry: Python ✓';
+    el.style.color = 'var(--success)';
+  } else {
+    el.textContent = `Geometry: Gemini fallback (${state.pythonBackend.lastError || 'backend down'})`;
+    el.style.color = 'var(--text-muted)';
+  }
+}
+
+// Probe on page load
+checkPythonBackend();
+
 // ── SELF-TESTS (?test=1) ──
 if(new URLSearchParams(location.search).get('test')==='1'){
   // Sanity: identity homography — unit square -> unit square
