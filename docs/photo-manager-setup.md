@@ -14,12 +14,16 @@
 
 ## Running the page
 
+The photo manager needs **two** local servers: the static file server (port 8000) that serves the HTML, and the Python backend (port 8001) that runs the Hough-based perspective/crop detection. `scripts/dev.sh` starts both in one command and cleans them up together on Ctrl-C.
+
 ```bash
 cd /Users/sveta.mordkovich/private/sveta-colours
-python3 -m http.server 8000
+./scripts/dev.sh
 ```
 
 Open `http://localhost:8000/tools/photo_manager.html` (NOT `file://`).
+
+If the backend is unreachable (down, port conflict, etc.), the page still works — it falls back to Gemini's approximate geometry coordinates. The "Geometry: Python ✓" / "Geometry: Gemini fallback" badge on the AI card reflects which path is active.
 
 ## Acceptance checklist
 - [ ] 30-MP painting upload → Drive file is full resolution, not a thumbnail
