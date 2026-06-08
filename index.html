@@ -1688,10 +1688,11 @@ function sheetRowToPainting(row, headers, index) {
   const featured = yes(get('featured'));
 
   // Dimensions for aspect ratio + size-chapter assignment. Prefer explicit
-  // `widthin`/`heightin` columns; fall back to parsing the `size` string
-  // (e.g. "16x20 in"). Populated here once at load so every downstream
-  // consumer (cardHTML, sizeChapterFor, paintingImage, aspectRatioFor) gets
-  // numeric dims without re-parsing per render.
+  // `widthin`/`heightin` columns; otherwise pull the two numbers out of the
+  // `size` string ("16x20 in") and use the `orientation` column to decide
+  // which is width vs. height — a 16×20 painting can be either portrait
+  // (16w × 20h) or landscape (20w × 16h), and the `size` text alone is
+  // ambiguous. Defaults to portrait when orientation is blank.
   const widthInStr = get('widthin');
   const heightInStr = get('heightin');
   let widthIn = widthInStr ? parseFloat(widthInStr) : null;
@@ -1701,8 +1702,17 @@ function sheetRowToPainting(row, headers, index) {
     if (sizeStr) {
       const m = sizeStr.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/i);
       if (m) {
-        widthIn = parseFloat(m[1]);
-        heightIn = parseFloat(m[2]);
+        const a = parseFloat(m[1]);
+        const b = parseFloat(m[2]);
+        const orient = (get('orientation') || '').toLowerCase().trim();
+        const smaller = Math.min(a, b);
+        const larger = Math.max(a, b);
+        if (orient === 'landscape' || orient === 'wide' || orient === 'l') {
+          widthIn = larger;  heightIn = smaller;
+        } else {
+          // portrait (default) or square
+          widthIn = smaller; heightIn = larger;
+        }
       }
     }
   }
