@@ -1687,11 +1687,25 @@ function sheetRowToPainting(row, headers, index) {
   const sold = yes(get('sold'));
   const featured = yes(get('featured'));
 
-  // Optional dimensions for aspect ratio
+  // Dimensions for aspect ratio + size-chapter assignment. Prefer explicit
+  // `widthin`/`heightin` columns; fall back to parsing the `size` string
+  // (e.g. "16x20 in"). Populated here once at load so every downstream
+  // consumer (cardHTML, sizeChapterFor, paintingImage, aspectRatioFor) gets
+  // numeric dims without re-parsing per render.
   const widthInStr = get('widthin');
   const heightInStr = get('heightin');
-  const widthIn = widthInStr ? parseFloat(widthInStr) : null;
-  const heightIn = heightInStr ? parseFloat(heightInStr) : null;
+  let widthIn = widthInStr ? parseFloat(widthInStr) : null;
+  let heightIn = heightInStr ? parseFloat(heightInStr) : null;
+  if ((!widthIn || isNaN(widthIn) || !heightIn || isNaN(heightIn))) {
+    const sizeStr = get('size');
+    if (sizeStr) {
+      const m = sizeStr.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/i);
+      if (m) {
+        widthIn = parseFloat(m[1]);
+        heightIn = parseFloat(m[2]);
+      }
+    }
+  }
 
   return {
     id: index + 1,
