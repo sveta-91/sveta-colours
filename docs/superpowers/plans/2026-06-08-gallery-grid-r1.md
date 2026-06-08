@@ -123,6 +123,7 @@ Six roles, swarm → director-led, 2 rounds run (R1 cold + R1.5 with inventory f
 | T2.8 | Drop `year` from card meta entirely (only 4/17 have it; asymmetric right-edge of meta strings is visually messier than missing data). Meta becomes `medium · size`. Year stays in modal | Designer R1.5 |
 | T2.9 | Add `fetchpriority="high"` to the first `<img>` in `.gallery-grid` after render (LCP hint) | Frontend dev R1.5 |
 | T2.10 | Drop `${PAINTINGS.length} pieces in the studio` from home (`:2323`) — accidentally diminishing at 17. Replace with editorial subtitle naming through-line of selected 6 (display italic, ≤120ch). Keep `<span class="eyebrow">Selected works</span>` since featured-count is now 6 (real selection) | Skeptic |
+| T2.11 | **Derive `dominantColor` + `brightness` from image bytes at upload** in `push_painting.py` (one-time OpenCV sample, write back to the Sheet's existing `dominantColor` column plus a new `brightness` 0–1). Unlocks: (a) chromatic-collision check in `interleaveByOrientation` so adjacent cards don't both saturate / both go dark, (b) color-aware `selectFeatured` pick for the home 6 (cohere or contrast deliberately, not by accident), (c) possible "by mood" chapter on /works as a third axis alongside size. Avoids manual `brightness`/`color-scheme` columns that decay as inventory grows | Designer (chromatic-insulation R1.5 ask) + Curator (color-aware curation gap) |
 
 ## Tier 3 — nice-to-have
 
