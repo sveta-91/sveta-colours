@@ -399,30 +399,51 @@ button.hero-image-wrap {
 }
 
 /* --- Gallery Grid: CSS Grid masonry (left-to-right reading order) --- */
-/* Row height is small (8px); each card spans N rows computed in JS from its
-   rendered height. This preserves the array order top-to-bottom, left-to-right
-   while still giving a tight masonry look. Before JS computes spans, cards
-   flow as a regular auto-flow grid with proper aspect-ratio per card,
-   which avoids the FOUC from a fixed span placeholder. */
+/* Row height is fixed at 8px from page-load; each card carries an inline
+   `grid-row: span N` seeded at render time from its aspect ratio, then
+   refined post-image-load by computeMasonry(). No auto→8px swap, no FOUC. */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  /* Before masonry-ready: cards lay out with auto row height — each one
-     naturally takes the space its --ratio aspect-ratio asks for, so we
-     never get the giant 480px "span 60" placeholder block. Once JS has
-     measured + assigned spans, we switch to a small grid-auto-rows so
-     spans-of-N work cleanly. */
-  grid-auto-rows: auto;
+  grid-auto-rows: 8px;
   gap: 3rem 2.5rem;
   position: relative;
 }
-.gallery-grid.masonry-ready { grid-auto-rows: 8px; }
 
 @media (max-width: 1024px) {
   .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2.5rem 2rem; }
 }
 @media (max-width: 600px)  {
   .gallery-grid { grid-template-columns: 1fr; gap: 2.5rem 0; }
+}
+
+/* Editorial size-chapter heading on /works. Two sections — large 16×20 and
+   small 11×14 — each preceded by this label so the page reads as two rooms
+   instead of one flat 11-painting feed. Display-italic + hairline rule. */
+.hang-chapter {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  margin: 4rem 0 1.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--hairline);
+}
+.hang-chapter:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* 11×14 inset — Designer's real-world-scale cue without a S/M chip. The
+   smaller painting size renders at 85% of the column width, centered, so
+   the eye registers it as physically smaller on the wall. Title + meta +
+   price stay at full column width below. */
+.painting-card[data-size="small"] .card-image {
+  width: 85%;
+  margin: 0 auto;
 }
 
 .painting-card {
@@ -433,21 +454,9 @@ button.hero-image-wrap {
   padding: 0;
   text-align: left;
   position: relative;
-}
-
-/* Editorial catalog number — sits above the image, top-left of the card.
-   Rendered as a real inline element (.card-number) inside the card so
-   numbering is global and stable, not local to each grid via CSS counter. */
-.painting-card .card-number {
   display: block;
-  margin-bottom: 0.55rem;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
-  color: var(--text-faint);
-  line-height: 1;
-  pointer-events: none;
+  color: inherit;
+  text-decoration: none;
 }
 
 .painting-card .card-image {
@@ -477,14 +486,11 @@ button.hero-image-wrap {
 .painting-card:hover .card-image img { transform: scale(1.02); }
 
 .painting-card .card-info {
-  padding: 1.1rem 0 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1.5rem;
+  padding: 1.35rem 0 0;
+  display: block;
 }
 
-.painting-card .card-text { flex: 1; min-width: 0; }
+.painting-card .card-text { min-width: 0; }
 
 .painting-card .card-title {
   font-family: var(--font-display);
@@ -505,26 +511,25 @@ button.hero-image-wrap {
   line-height: 1.45;
 }
 
+/* Price slot sits below meta as a quiet caption-plate line. Uniform $400
+   across the available inventory means this is layout-rhythm, not signal —
+   kept whisper-weight on purpose. Sold pieces fill the same slot with the
+   word "Sold" so the card geometry doesn't shift between states. */
 .painting-card .card-price {
+  display: block;
+  margin-top: 0.4rem;
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  flex-shrink: 0;
-  padding-top: 0.1rem;
-}
-
-/* Hand-drawn SVG strikethrough replaces text-decoration on Sold price.
-   The .sold-stroke SVG is inserted next to the price text inside the
-   .card-price span; we keep the price text color muted but readable. */
-.painting-card .card-price {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-faint);
   position: relative;
 }
-.painting-card .card-price.sold {
+.painting-card .card-price--sold {
   color: var(--text-faint);
 }
-.painting-card .card-price .sold-stroke,
+/* Modal price keeps the struck-through treatment for sold pieces; the card
+   doesn't, since the card just shows the word "Sold". */
 .modal-price .sold-stroke {
   position: absolute;
   inset: 50% 0 auto 0;
@@ -535,17 +540,8 @@ button.hero-image-wrap {
   pointer-events: none;
   display: none;
 }
-.painting-card .card-price.sold .sold-stroke,
 .modal-price.sold .sold-stroke {
   display: block;
-}
-
-.painting-card .card-sold-tag {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 0.85rem;
-  color: var(--text-faint);
-  margin-left: 0.4rem;
 }
 
 /* --- Category cards --- */
@@ -1367,24 +1363,6 @@ nav .logo .logo-squiggle {
   opacity: 0.55;
 }
 
-/* --- Hero №01 in the left margin --- */
-.hero-meta {
-  position: relative;
-}
-.hero-number {
-  position: absolute;
-  left: 2rem;
-  top: 2.5rem;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  color: var(--text-faint);
-}
-@media (max-width: 1024px) {
-  .hero-number { position: static; margin-bottom: 0.5rem; }
-}
-
 /* --- Visually hidden (for labels) --- */
 .visually-hidden {
   position: absolute;
@@ -1763,7 +1741,24 @@ async function loadFromSheet() {
   // Assign stable global catalog numbers (used in cards + hero + cursor).
   assignCatalogNumbers();
   injectPaintingsLD();
+  togglePostcardsNav();
   render();
+  hydrateFromHash();
+}
+
+// Hide the "Postcards" nav entry while there's nothing to show under it.
+// We re-expose it the moment a watercolor lands in the Sheet — no extra
+// step needed when inventory grows.
+function togglePostcardsNav() {
+  const hasPostcards = PAINTINGS.some(p =>
+    p.medium === 'watercolor' ||
+    p.medium === 'watercolour' ||
+    (p.collections || []).map(c => c.toLowerCase()).includes('postcards')
+  );
+  document.querySelectorAll('a[data-page="postcards"], a[href="#postcards"]').forEach(a => {
+    const item = a.closest('li') || a;
+    item.hidden = !hasPostcards;
+  });
 }
 
 /* ========================================================
@@ -1900,52 +1895,89 @@ function paintingImage(p, opts) {
   if (p.image) {
     const loadAttr = opts.isHero ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"';
     const crossOrigin = opts.crossOrigin ? 'crossorigin="anonymous"' : '';
-    // onload: refine the real aspect ratio from natural dims, but only when
-    // it differs from the pre-paint ratio by more than 5%. This avoids a
-    // visible layout shift (CLS) in the common case where widthIn/heightIn
-    // in the Sheet already match the photo.
+    // Intrinsic dims from Sheet widthIn/heightIn eliminate first-paint CLS:
+    // the browser knows the image's natural ratio before the bytes arrive.
+    // Fall back to a 4×5 portrait if dims are missing (matches the CSS
+    // default in aspectRatioFor()).
+    const wAttr = p.widthIn ? `width="${Math.round(p.widthIn * 100)}"` : 'width="400"';
+    const hAttr = p.heightIn ? `height="${Math.round(p.heightIn * 100)}"` : 'height="500"';
+    // Google Drive (lh3.googleusercontent.com) accepts an =w<N> suffix that
+    // returns a thumbnail at that pixel width. Build a srcset so phones
+    // don't pull the full-res original. Hero gets a larger floor.
+    const srcsetAttr = (p.image.indexOf('lh3.googleusercontent.com') !== -1)
+      ? `srcset="${p.image}=w400 400w, ${p.image}=w800 800w, ${p.image}=w1400 1400w" sizes="${opts.isHero ? '(max-width:768px) 100vw, 1200px' : '(max-width:600px) 100vw, (max-width:1024px) 50vw, 33vw'}"`
+      : '';
+    // Refine the rendered aspect ratio from natural dims, but only when it
+    // differs from the pre-paint ratio by more than 5% — and gated through
+    // requestAnimationFrame so the span recompute lands in one frame, not
+    // a frame after the dimension change. For accurate Sheet dims this is
+    // effectively dead code (the comparison shortcuts before the write).
     const ratioVar = opts.heroRatioVar ? '--hero-ratio' : '--ratio';
     const closestSel = opts.heroRatioVar ? '.hero-image-wrap' : '.card-image-inner';
-    // Compare to the container's actual rendered aspect ratio (W/H of its
-    // bounding rect, which is what aspect-ratio currently produces). Only
-    // write a new --ratio when the natural ratio differs by >5%. For a
-    // Sheet row with accurate widthIn/heightIn, the rendered W/H already
-    // matches the photo and the onload becomes a no-op (no CLS).
-    const onLoad = `onload="var c=this.closest('${closestSel}');if(!c||!this.naturalWidth||!this.naturalHeight)return;var rect=c.getBoundingClientRect();if(!rect.width||!rect.height)return;var nr=this.naturalWidth/this.naturalHeight;var cur=rect.width/rect.height;if(Math.abs(nr-cur)/cur<0.05)return;c.style.setProperty('${ratioVar}',this.naturalWidth+'/'+this.naturalHeight);"`;
-    return `<img src="${p.image}" alt="${alt}" ${loadAttr} ${crossOrigin} ${onLoad}>`;
+    const onLoad = `onload="(function(el){requestAnimationFrame(function(){var c=el.closest('${closestSel}');if(!c||!el.naturalWidth||!el.naturalHeight)return;var rect=c.getBoundingClientRect();if(!rect.width||!rect.height)return;var nr=el.naturalWidth/el.naturalHeight;var cur=rect.width/rect.height;if(Math.abs(nr-cur)/cur<0.05)return;c.style.setProperty('${ratioVar}',el.naturalWidth+'/'+el.naturalHeight);});})(this);"`;
+    return `<img src="${p.image}" ${srcsetAttr} alt="${alt}" ${wAttr} ${hAttr} ${loadAttr} ${crossOrigin} ${onLoad}>`;
   }
   return `<div style="width:100%;height:100%;min-height:240px;background:${placeholderGradient(p.id)};display:flex;align-items:center;justify-content:center;" role="img" aria-label="${alt}"><span style="font-family:var(--font-display);font-style:italic;font-size:1.1rem;color:rgba(20,19,15,0.22);text-align:center;padding:1rem;">${p.title}</span></div>`;
 }
 
 function cardHTML(p) {
   const ratio = aspectRatioFor(p);
-  // Sold cards: no price in the card (art-critic note — sold prices read
-  // as commerce, not curation). Just an italic "Sold" tag next to title.
-  // The struck-through price is kept for the modal where it informs.
+  // Sold cards fill the price slot with the word "Sold" so the card layout
+  // is identical across states — the slot is always there, never blank.
+  // (Modal still uses the struck-through price treatment where it informs.)
   const priceHTML = p.sold
-    ? ''
+    ? `<span class="card-price card-price--sold">Sold</span>`
     : (p.price ? `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}</span>` : '');
-  const soldTag = p.sold ? `<span class="card-sold-tag">Sold</span>` : '';
   const meta = paintingMeta(p);
-  // Global catalog number assigned once when PAINTINGS is loaded; same
-  // painting always shows the same № across pages.
-  const num = p.catalogNumber != null
-    ? `<span class="card-number" aria-hidden="true">&#8470; ${String(p.catalogNumber).padStart(2,'0')}</span>`
-    : '';
+  // Mark cards by physical size so the 11×14 inset rule can shrink the
+  // image to ~85% column width — a real-world scale cue without an S/M chip.
+  const area = (p.widthIn && p.heightIn) ? p.widthIn * p.heightIn : null;
+  const dataSize = (area != null && area < 300) ? ' data-size="small"' : '';
+  // Pre-seed grid-row span at render time from the aspect ratio + estimated
+  // column width so masonry lands stable on first paint (no auto→8px swap).
+  // computeMasonry() refines this after images load.
+  const span = estimateGridRowSpan(ratio);
+  const aria = p.sold
+    ? `Open details for ${p.title}, sold`
+    : `Open details for ${p.title}${p.price ? ', ' + CURRENCY + p.price : ''}`;
   return `
-    <button class="painting-card reveal" type="button" data-card-id="${p.id}" onclick="openModal(${p.id})" aria-label="Open details for ${p.title}">
-      ${num}
+    <a class="painting-card reveal" href="#painting/${p.id}" data-card-id="${p.id}"${dataSize} style="grid-row: span ${span};" onclick="return cardClick(event, ${p.id});" aria-label="${aria}">
       <div class="card-image">
         <div class="card-image-inner" style="--ratio: ${ratio};">${paintingImage(p)}</div>
       </div>
       <div class="card-info">
         <div class="card-text">
-          <div class="card-title">${p.title}${soldTag}</div>
+          <div class="card-title">${p.title}</div>
           ${meta ? `<div class="card-meta">${meta}</div>` : ''}
+          ${priceHTML}
         </div>
-        ${priceHTML}
       </div>
-    </button>`;
+    </a>`;
+}
+
+// Estimate the masonry span at render-time from the aspect ratio. Reads
+// `--gallery-col-width` if set on the grid (computed once after layout); else
+// falls back to a viewport-based estimate. Width-driven height = colW / ratio
+// (ratio = w/h), plus ~120px for .card-info (title + meta + price). Rounded
+// up to 8px row grid. Refined post-image-load by computeMasonry().
+function estimateGridRowSpan(ratio) {
+  const m = String(ratio).split('/');
+  const w = parseFloat(m[0]) || 4;
+  const h = parseFloat(m[1]) || 5;
+  const aspect = w / h;
+  let colW;
+  if (typeof window !== 'undefined' && window.innerWidth) {
+    const vw = window.innerWidth;
+    if (vw <= 600) colW = vw - 32;          // single column
+    else if (vw <= 1024) colW = Math.min(360, (vw - 80) / 3);
+    else colW = Math.min(360, (vw - 120) / 4);
+  } else {
+    colW = 300;
+  }
+  const imageHeight = colW / aspect;
+  const infoHeight = 120;
+  const total = imageHeight + infoHeight;
+  return Math.ceil(total / 8);
 }
 
 /* ========================================================
@@ -1954,10 +1986,31 @@ function cardHTML(p) {
 
 let lastFocusedElement = null;
 
-function openModal(id) {
+// Card-click handler that respects modifier keys + non-primary clicks so
+// right-click / cmd-click / middle-click still work as native browser
+// behaviours (open in new tab, open in new window). Only left-click without
+// modifiers gets intercepted to open the modal.
+function cardClick(e, id) {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return true;
+  e.preventDefault();
+  openModal(id, { pushHistory: true });
+  return false;
+}
+
+function openModal(id, opts) {
+  opts = opts || {};
   const p = PAINTINGS.find(x => x.id === id);
   if (!p) return;
   lastFocusedElement = document.activeElement;
+
+  // Reflect the open modal in the URL so deep-links + back-button work. Skip
+  // when called from a popstate handler (we're already at the right URL) or
+  // when called from the initial direct-link hydration path.
+  if (opts.pushHistory) {
+    try {
+      history.pushState({ paintingId: id }, '', '#painting/' + id);
+    } catch (e) { /* private mode, opaque origin, etc. — non-fatal */ }
+  }
 
   const subject = encodeURIComponent(`Inquiry about "${p.title}"`);
 
@@ -2090,8 +2143,16 @@ function applyAccentTint(p) {
   else img.addEventListener('load', finish, { once: true });
 }
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
+// `closeModal(fromPopstate)` — when we're closing because a popstate event
+// took us away from a #painting/N URL, the history is already where it
+// should be and we MUST NOT push or back again. When we're closing via X /
+// ESC / backdrop, undo the history.pushState we did on open: history.back()
+// if the topmost state is ours, else strip the hash with replaceState so the
+// URL doesn't keep a stale #painting/N.
+function closeModal(fromPopstate) {
+  const modalEl = document.getElementById('modal');
+  if (!modalEl.classList.contains('open')) return;
+  modalEl.classList.remove('open');
   document.body.style.overflow = '';
 
   // Reset accent tint
@@ -2104,9 +2165,44 @@ function closeModal() {
     mainEl.removeAttribute('aria-hidden');
   }
 
+  if (!fromPopstate) {
+    try {
+      if (history.state && history.state.paintingId) {
+        history.back();
+      } else if (/#painting\//.test(window.location.hash)) {
+        history.replaceState({}, '', window.location.pathname + window.location.search);
+      }
+    } catch (e) { /* non-fatal */ }
+  }
+
   // Guard against detached node (race: e.g. card was re-rendered while modal was open)
   if (lastFocusedElement && typeof lastFocusedElement.focus === 'function' && lastFocusedElement.isConnected) {
     lastFocusedElement.focus();
+  }
+}
+
+// popstate: drive the modal from the URL. If the hash resolves to a painting,
+// open it (without re-pushing); else close any open modal.
+window.addEventListener('popstate', () => {
+  const m = window.location.hash.match(/^#painting\/(\d+)$/);
+  if (m) {
+    const id = parseInt(m[1], 10);
+    if (PAINTINGS.find(p => p.id === id)) {
+      openModal(id, { pushHistory: false });
+      return;
+    }
+  }
+  closeModal(true);
+});
+
+// Direct-link arrival: if the page loads with #painting/N, open that modal
+// once paintings are available. Called from loadFromSheet / the no-Sheet boot.
+function hydrateFromHash() {
+  const m = window.location.hash.match(/^#painting\/(\d+)$/);
+  if (!m) return;
+  const id = parseInt(m[1], 10);
+  if (PAINTINGS.find(p => p.id === id)) {
+    openModal(id, { pushHistory: false });
   }
 }
 
@@ -2167,19 +2263,15 @@ function injectPaintingsLD() {
         excluding the hero piece, excluding sold.
      2) Fill: from remaining available && image && !sold, in
         original Sheet order, until we reach `count`.
-     3) Fallback: if still short, fill from any remaining
-        available paintings (no-image included as last resort).
-     4) De-cluster orientation: split the chosen set into
-        landscape (ratio>1) and portrait (ratio<=1) buckets,
-        then "zip" them so we don't get 3 portraits or 3
-        landscapes in a row visually. We start with whichever
-        bucket is larger to avoid leaving a trailing run.
+     3) De-cluster orientation via interleaveByOrientation()
+        so adjacent cards don't stack into same-orientation
+        bands on the wall.
 
-   The function never returns sold pieces — the home grid is
-   for what's available. Sold is moved to the dedicated
-   /past page. */
+   The function never returns sold pieces. If the available
+   pool is smaller than `count`, the grid simply shows fewer
+   cards — we never pad with sold work. */
 function selectFeatured(paintings, count, excludeHeroId) {
-  count = count || 8;
+  count = count || 6;
   const isShowable = p => p.available && !p.sold && p.image;
   const not = id => p => p.id !== id;
 
@@ -2190,34 +2282,37 @@ function selectFeatured(paintings, count, excludeHeroId) {
   const filler = pool
     .filter(p => isShowable(p) && !pinnedIds.has(p.id));
 
-  let chosen = pinned.concat(filler).slice(0, count);
+  // Cap at whatever's actually showable — no sold-padding branch. At ~11
+  // available the home grid should never resort to surfacing sold pieces.
+  const showable = pinned.concat(filler);
+  let chosen = showable.slice(0, Math.min(count, showable.length));
 
-  // Last-resort: if we still have headroom (e.g. small studio, no images),
-  // pad from remaining available paintings without strict !sold filter.
-  if (chosen.length < count) {
-    const chosenIds = new Set(chosen.map(p => p.id));
-    const extras = pool.filter(p => p.available && !chosenIds.has(p.id));
-    chosen = chosen.concat(extras).slice(0, count);
-  }
+  return interleaveByOrientation(chosen);
+}
 
-  // De-cluster by orientation. ratio > 1 = landscape, else portrait/square.
-  const ratioOf = (p) => {
-    if (p.widthIn && p.heightIn && p.heightIn > 0) return p.widthIn / p.heightIn;
-    if (p.size) {
-      const m = p.size.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/i);
-      if (m) {
-        const w = parseFloat(m[1]), h = parseFloat(m[2]);
-        if (h > 0) return w / h;
-      }
+// Numeric w/h ratio for a painting (landscape > 1, portrait/square ≤ 1).
+// Used by interleaveByOrientation; also a small lookup for the size-class.
+function paintingRatio(p) {
+  if (p.widthIn && p.heightIn && p.heightIn > 0) return p.widthIn / p.heightIn;
+  if (p.size) {
+    const m = p.size.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/i);
+    if (m) {
+      const w = parseFloat(m[1]), h = parseFloat(m[2]);
+      if (h > 0) return w / h;
     }
-    return 4 / 5; // portrait default
-  };
-  const landscape = chosen.filter(p => ratioOf(p) > 1);
-  const portrait  = chosen.filter(p => ratioOf(p) <= 1);
+  }
+  return 4 / 5; // portrait default
+}
+
+// "Zip" portrait + landscape paintings so no more than 2 consecutive cards
+// share orientation. Stable: relative order within each bucket is preserved.
+// We start with whichever bucket is larger so any trailing run is shortest.
+function interleaveByOrientation(items) {
+  const landscape = items.filter(p => paintingRatio(p) > 1);
+  const portrait  = items.filter(p => paintingRatio(p) <= 1);
   const out = [];
-  // Start with the larger bucket so trailing runs are minimised.
-  let a = landscape.length >= portrait.length ? landscape : portrait;
-  let b = landscape.length >= portrait.length ? portrait : landscape;
+  let a = landscape.length >= portrait.length ? landscape.slice() : portrait.slice();
+  let b = landscape.length >= portrait.length ? portrait.slice() : landscape.slice();
   while (a.length || b.length) {
     if (a.length) out.push(a.shift());
     if (b.length) out.push(b.shift());
@@ -2267,10 +2362,6 @@ function renderHero() {
   }
   const credit = creditParts.join(' <span class="sep">&middot;</span> ');
 
-  const heroNum = heroPiece && heroPiece.catalogNumber != null
-    ? String(heroPiece.catalogNumber).padStart(2, '0')
-    : '01';
-
   // Pre-paint hero aspect ratio: prefer Sheet dims so the box is the right
   // shape on first render (no CLS). Falls back to a portrait default.
   const heroRatio = heroPiece ? aspectRatioFor(heroPiece) : '4/5';
@@ -2292,7 +2383,6 @@ function renderHero() {
     <section class="hero" aria-label="Featured painting">
       ${heroBox}
       <div class="hero-meta">
-        <span class="hero-number">&#8470; ${heroNum}</span>
         <h1 class="hero-title">Sveta <span class="italic">Colours</span></h1>
         <div class="hero-side">
           ${credit ? `<div class="hero-credit">${credit}</div>` : ''}
@@ -2309,7 +2399,7 @@ function renderHome() {
   // Curated featured grid — see selectFeatured() for the algorithm.
   // Hero piece is excluded so we never repeat it as the first card.
   const heroPiece = getHeroPiece();
-  const featured = selectFeatured(PAINTINGS, 8, heroPiece && heroPiece.id);
+  const featured = selectFeatured(PAINTINGS, 6, heroPiece && heroPiece.id);
   const collections = getAllCollections();
 
   return `
@@ -2495,16 +2585,59 @@ function renderContactSection() {
   `;
 }
 
+// Size-class label for the /works chapters. Today the studio inventory
+// clusters into two formats — 16×20 in (large) and 11×14 in (small) — so
+// the page reads as two rooms rather than one flat 11-painting feed.
+// `area` is in square inches; anything ≥ 300 sq in is treated as "large"
+// (16×20 = 320; 11×14 = 154). Falls back to a single chapter when paintings
+// don't carry dimensions yet.
+function sizeChapterFor(p) {
+  if (!p.widthIn || !p.heightIn) return 'unknown';
+  return (p.widthIn * p.heightIn) >= 300 ? 'large' : 'small';
+}
+
 function renderPaintings() {
   // /works shows ONLY available paintings. Sold pieces live on /past.
-  // The card here never carries a sold-tag (it can't — these are all
-  // available by construction) which keeps the page focused on what
-  // visitors can actually buy or commission similar to.
   const works = PAINTINGS.filter(p => !p.sold);
   const soldCount = PAINTINGS.filter(p => p.sold).length;
   const pastLink = soldCount > 0
     ? `<p style="margin-top:0.4rem;"><a href="#past" class="link link-arrow" onclick="event.preventDefault(); showPage('past');">See past work (${soldCount})</a></p>`
     : '';
+
+  // Partition by size class. Interleave portrait/landscape within each
+  // chapter so adjacent same-orientation cards don't stack into bands.
+  const large = interleaveByOrientation(works.filter(p => sizeChapterFor(p) === 'large'));
+  const small = interleaveByOrientation(works.filter(p => sizeChapterFor(p) === 'small'));
+  const unknown = works.filter(p => sizeChapterFor(p) === 'unknown');
+
+  const chapter = (title, items, id) => items.length
+    ? `<section aria-labelledby="${id}" class="works-chapter">
+         <div class="section-inner">
+           <h2 id="${id}" class="hang-chapter">${title}</h2>
+           <div class="gallery-grid" data-masonry>
+             ${items.map(cardHTML).join('')}
+           </div>
+         </div>
+       </section>`
+    : '';
+
+  const emptyMsg = `<section><div class="section-inner"><p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;">No paintings yet.</p></div></section>`;
+
+  // When every painting carries dimensions: render two real chapters.
+  // When some are missing dims: render an extra "Other works" chapter so
+  // nothing silently disappears.
+  let body;
+  if (!works.length) {
+    body = emptyMsg;
+  } else if (large.length + small.length === 0) {
+    // No dimensions on any painting — fall back to one undifferentiated grid.
+    body = `<section><div class="section-inner"><div class="gallery-grid" data-masonry>${unknown.map(cardHTML).join('')}</div></div></section>`;
+  } else {
+    body = chapter('Large works &mdash; 16 &times; 20 in', large, 'works-large')
+         + chapter('Small works &mdash; 11 &times; 14 in', small, 'works-small')
+         + chapter('Other works', interleaveByOrientation(unknown), 'works-other');
+  }
+
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
@@ -2512,13 +2645,7 @@ function renderPaintings() {
       <p>Every painting one-of-a-kind. Available now &mdash; commission requests welcome.</p>
       ${pastLink}
     </div>
-    <section style="padding-top: 1rem;">
-      <div class="section-inner">
-        <div class="gallery-grid" data-masonry>
-          ${works.length ? works.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;">No paintings yet.</p>'}
-        </div>
-      </div>
-    </section>
+    ${body}
     ${renderContactSection()}
   `;
 }
@@ -2797,20 +2924,26 @@ function render() {
 }
 
 /* ========================================================
-   CSS GRID MASONRY — compute span per card from rendered height
+   CSS GRID MASONRY — refines the pre-seeded span (cardHTML emits an
+   estimated `grid-row: span N` from aspect-ratio + viewport-based column
+   width). computeMasonry() runs after layout and again on image-load to
+   correct the seed against the real rendered height. With grid-auto-rows
+   fixed at 8px from page-load, there is no FOUC class to toggle.
    ======================================================== */
 function computeMasonry() {
   document.querySelectorAll('.gallery-grid[data-masonry]').forEach(grid => {
     const rowH = parseFloat(getComputedStyle(grid).gridAutoRows) || 8;
     const rowGap = parseFloat(getComputedStyle(grid).rowGap) || 0;
     grid.querySelectorAll('.painting-card').forEach(card => {
-      // Include margin-bottom so cards don't overlap vertically.
+      // Temporarily clear inline grid-row so getBoundingClientRect() reflects
+      // the natural content height (otherwise we'd be measuring the seeded
+      // span, not the actual card). Re-set with the measured span below.
+      card.style.gridRow = '';
       const mb = parseFloat(getComputedStyle(card).marginBottom) || 0;
       const h = card.getBoundingClientRect().height + mb;
       const span = Math.ceil((h + rowGap) / (rowH + rowGap));
       card.style.gridRow = `span ${span}`;
     });
-    grid.classList.add('masonry-ready');
   });
 }
 
@@ -2916,23 +3049,24 @@ function wireCustomCursor() {
     if (t._cursorWired) return;
     t._cursorWired = true;
     t.addEventListener('mouseenter', () => {
-      // Label uses the global catalog number from the painting object,
-      // not local grid order — same painting reads the same wherever it
-      // appears. Falls back to "View" if we can't resolve.
+      // Cursor label = the painting's title, truncated. Falls back to "View"
+      // if we can't resolve. (Previously used catalog № — removed when № was
+      // dropped from the card geometry.)
       let label = 'View';
       const card = t.closest('.painting-card') || (t.classList.contains('painting-card') ? t : null);
+      const resolveTitle = (painting) => {
+        if (!painting || !painting.title) return null;
+        return painting.title.length > 26 ? painting.title.slice(0, 24) + '…' : painting.title;
+      };
       if (card) {
         const idAttr = card.getAttribute('data-card-id');
         const id = idAttr ? parseInt(idAttr, 10) : NaN;
         const painting = !isNaN(id) ? PAINTINGS.find(p => p.id === id) : null;
-        if (painting && painting.catalogNumber != null) {
-          label = `View №${String(painting.catalogNumber).padStart(2,'0')}`;
-        }
+        const title = resolveTitle(painting);
+        if (title) label = `View "${title}"`;
       } else if (t.classList.contains('hero-image-wrap')) {
-        const hero = getHeroPiece();
-        if (hero && hero.catalogNumber != null) {
-          label = `View №${String(hero.catalogNumber).padStart(2,'0')}`;
-        }
+        const title = resolveTitle(getHeroPiece());
+        if (title) label = `View "${title}"`;
       }
       cursorEl.textContent = label;
       cursorEl.classList.add('visible');
@@ -2976,7 +3110,7 @@ function initMobileCTA() {
 initCustomCursor();
 initMobileCTA();
 if (SHEET_CSV_URL) loadFromSheet();
-else { assignCatalogNumbers(); injectPaintingsLD(); render(); }
+else { assignCatalogNumbers(); injectPaintingsLD(); togglePostcardsNav(); render(); hydrateFromHash(); }
 </script>
 
 <!--
