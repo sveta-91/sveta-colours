@@ -2935,12 +2935,19 @@ function computeMasonry() {
     const rowH = parseFloat(getComputedStyle(grid).gridAutoRows) || 8;
     const rowGap = parseFloat(getComputedStyle(grid).rowGap) || 0;
     grid.querySelectorAll('.painting-card').forEach(card => {
-      // Temporarily clear inline grid-row so getBoundingClientRect() reflects
-      // the natural content height (otherwise we'd be measuring the seeded
-      // span, not the actual card). Re-set with the measured span below.
-      card.style.gridRow = '';
+      // Sum children's natural heights instead of measuring the card itself.
+      // With grid-auto-rows: 8px + align-items: stretch (grid default), the
+      // card's own bounding rect reflects its grid-allocated height — clearing
+      // grid-row would collapse it to 8px, not reveal its natural content.
+      // The block-flow children (.card-image and .card-info) report their
+      // real rendered heights regardless of the card's forced cell size.
+      const img = card.querySelector('.card-image');
+      const info = card.querySelector('.card-info');
+      const imgH = img ? img.getBoundingClientRect().height : 0;
+      const infoH = info ? info.getBoundingClientRect().height : 0;
       const mb = parseFloat(getComputedStyle(card).marginBottom) || 0;
-      const h = card.getBoundingClientRect().height + mb;
+      const h = imgH + infoH + mb;
+      if (h <= 0) return; // no children laid out yet — skip
       const span = Math.ceil((h + rowGap) / (rowH + rowGap));
       card.style.gridRow = `span ${span}`;
     });
