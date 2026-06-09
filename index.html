@@ -2321,39 +2321,55 @@ function injectPaintingsLD() {
 
 /* ========================================================
    CURATION HELPERS
-   ========================================================
-   selectFeatured — picks the home-page "Recent paintings" set.
+   ======================================================== */
 
-   Algorithm:
-     1) Pinned: take up to 4 paintings flagged featured===true,
-        excluding the hero piece, excluding sold.
-     2) Fill: from remaining available && image && !sold, in
-        original Sheet order, until we reach `count`.
-     3) De-cluster orientation via interleaveByOrientation()
-        so adjacent cards don't stack into same-orientation
-        bands on the wall.
+// Hand-picked titles for the home "Recent paintings" grid, in display
+// order. Sold pieces ARE allowed here — the home wall is editorial, not
+// a buy-now lane. Set to null or empty array to fall back to the
+// available-pool heuristic below.
+const FEATURED_TITLES = [
+  'Where the Forest Breathes',
+  'Autumn Light',
+  'Morning Coffee',
+  'Walking Home',
+  'Frost and Sun',
+];
 
-   The function never returns sold pieces. If the available
-   pool is smaller than `count`, the grid simply shows fewer
-   cards — we never pad with sold work. */
+/* selectFeatured — picks the home-page "Recent paintings" set.
+
+   When FEATURED_TITLES is non-empty: that list wins. Titles are matched
+   case-insensitively, the hero piece is skipped, paintings without
+   images are skipped, and order is preserved (no orientation interleave
+   — the user picked the wall).
+
+   Otherwise (heuristic fallback):
+     1) Pinned: up to 4 paintings flagged featured===true, excluding
+        the hero, excluding sold.
+     2) Fill: remaining available && image && !sold, in Sheet order,
+        until we reach `count`.
+     3) De-cluster orientation via interleaveByOrientation(). */
 function selectFeatured(paintings, count, excludeHeroId) {
   count = count || 6;
-  const isShowable = p => p.available && !p.sold && p.image;
   const not = id => p => p.id !== id;
-
   const pool = paintings.filter(not(excludeHeroId));
+
+  if (FEATURED_TITLES && FEATURED_TITLES.length) {
+    const byTitle = new Map();
+    pool.forEach(p => {
+      if (p.title && p.image) byTitle.set(p.title.toLowerCase().trim(), p);
+    });
+    return FEATURED_TITLES
+      .map(t => byTitle.get(t.toLowerCase().trim()))
+      .filter(Boolean)
+      .slice(0, count);
+  }
+
+  const isShowable = p => p.available && !p.sold && p.image;
   const pinned = pool.filter(p => p.featured && isShowable(p)).slice(0, 4);
   const pinnedIds = new Set(pinned.map(p => p.id));
-
-  const filler = pool
-    .filter(p => isShowable(p) && !pinnedIds.has(p.id));
-
-  // Cap at whatever's actually showable — no sold-padding branch. At ~11
-  // available the home grid should never resort to surfacing sold pieces.
+  const filler = pool.filter(p => isShowable(p) && !pinnedIds.has(p.id));
   const showable = pinned.concat(filler);
-  let chosen = showable.slice(0, Math.min(count, showable.length));
-
-  return interleaveByOrientation(chosen);
+  return interleaveByOrientation(showable.slice(0, Math.min(count, showable.length)));
 }
 
 // Numeric w/h ratio for a painting (landscape > 1, portrait/square ≤ 1).
