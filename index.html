@@ -501,10 +501,12 @@ button.hero-image-wrap {
 /* Override the .reveal stagger (opacity:0; translateY(14px)) when a card is
    keyboard-focused mid-stagger — otherwise the focus ring sits 14px below
    the card's eventual position and looks broken. Global :focus-visible
-   (top of file) supplies the outline; this rule just pins position+opacity. */
+   (top of file) supplies the outline; this rule snaps position+opacity
+   to final values with no transition, so the focused card lands instantly. */
 .painting-card:focus-visible {
   opacity: 1 !important;
   transform: none !important;
+  transition: none !important;
 }
 
 .painting-card .card-info {
