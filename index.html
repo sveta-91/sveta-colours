@@ -3242,6 +3242,15 @@ function initCustomCursor() {
 
 function wireCustomCursor() {
   if (!cursorEl) return;
+  const showCursor = () => {
+    cursorEl.classList.add('visible');
+    document.body.classList.add('cursor-hide');
+  };
+  const hideCursor = () => {
+    cursorEl.classList.remove('visible');
+    document.body.classList.remove('cursor-hide');
+  };
+
   const targets = document.querySelectorAll('.painting-card, .hero-image-wrap');
   targets.forEach(t => {
     if (t._cursorWired) return;
@@ -3267,12 +3276,25 @@ function wireCustomCursor() {
         if (title) label = `View "${title}"`;
       }
       cursorEl.textContent = label;
-      cursorEl.classList.add('visible');
-      document.body.classList.add('cursor-hide');
+      showCursor();
     });
-    t.addEventListener('mouseleave', () => {
-      cursorEl.classList.remove('visible');
-      document.body.classList.remove('cursor-hide');
+    t.addEventListener('mouseleave', hideCursor);
+  });
+
+  // Interactive descendants of a card (currently just .card-commission)
+  // hide the custom cursor while hovered, otherwise the 64px overlay sits
+  // on top of the button and the buyer can't see or read what they're
+  // clicking. We restore on mouseleave back into the card; if the mouse
+  // exits the card entirely the card's own mouseleave hides it again.
+  document.querySelectorAll('.card-commission').forEach(b => {
+    if (b._cursorWired) return;
+    b._cursorWired = true;
+    b.addEventListener('mouseenter', hideCursor);
+    b.addEventListener('mouseleave', e => {
+      // Only re-show if we're still inside the parent card — otherwise
+      // we'd flicker the cursor visible during a card-exit motion.
+      const card = b.closest('.painting-card');
+      if (card && card.contains(e.relatedTarget)) showCursor();
     });
   });
 }
