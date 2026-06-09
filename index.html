@@ -523,6 +523,27 @@ button.hero-image-wrap {
   transition: none !important;
 }
 
+/* Sold cards in mixed grids (/works, home featured, collection details)
+   read as quietly muted so the eye lands on available pieces first. The
+   price slot already says "Sold" — this is supporting visual weight,
+   not a replacement. Hover/focus restore full presence so the work
+   itself can still be examined. On /past the whole page is sold, so the
+   muting is suppressed via .gallery-grid--all-sold. */
+.painting-card.is-sold {
+  opacity: 0.7;
+}
+.painting-card.reveal.is-sold.visible {
+  opacity: 0.7;
+}
+.painting-card.is-sold:hover,
+.painting-card.is-sold:focus-visible {
+  opacity: 1 !important;
+}
+.gallery-grid--all-sold .painting-card.is-sold,
+.gallery-grid--all-sold .painting-card.reveal.is-sold.visible {
+  opacity: 1;
+}
+
 .painting-card .card-info {
   padding: 1.35rem 0 0;
   display: block;
@@ -2006,7 +2027,7 @@ function cardHTML(p) {
     ? `Open details for ${p.title}, sold`
     : `Open details for ${p.title}${p.price ? ', ' + CURRENCY + p.price : ''}`;
   return `
-    <a class="painting-card reveal" href="#painting/${p.id}" data-card-id="${p.id}"${dataSize} style="grid-row: span ${span};" onclick="return cardClick(event, ${p.id});" aria-label="${aria}">
+    <a class="painting-card reveal${p.sold ? ' is-sold' : ''}" href="#painting/${p.id}" data-card-id="${p.id}"${dataSize} style="grid-row: span ${span};" onclick="return cardClick(event, ${p.id});" aria-label="${aria}">
       <div class="card-image">
         <div class="card-image-inner" style="--ratio: ${ratio};">${paintingImage(p)}</div>
       </div>
@@ -2668,12 +2689,12 @@ function sizeChapterFor(p) {
 }
 
 function renderPaintings() {
-  // /works shows ONLY available paintings. Sold pieces live on /past.
-  const works = PAINTINGS.filter(p => !p.sold);
-  const soldCount = PAINTINGS.filter(p => p.sold).length;
-  const pastLink = soldCount > 0
-    ? `<p style="margin-top:0.4rem;"><a href="#past" class="link link-arrow" onclick="event.preventDefault(); showPage('past');">See past work (${soldCount})</a></p>`
-    : '';
+  // /works shows the WHOLE body of work — available paintings and pieces
+  // already in private collections, side by side. Each sold card renders
+  // "Sold" in its price slot and carries an .is-sold class for the muted
+  // visual treatment. /past remains as a sold-only archive view reachable
+  // by URL, but isn't linked from here anymore.
+  const works = PAINTINGS;
 
   // Partition by size class. Interleave portrait/landscape within each
   // chapter so adjacent same-orientation cards don't stack into bands.
@@ -2713,8 +2734,7 @@ function renderPaintings() {
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
       <h1>Works</h1>
-      <p>Every painting one-of-a-kind. Available now &mdash; commission requests welcome.</p>
-      ${pastLink}
+      <p>Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.</p>
     </div>
     ${body}
     ${renderContactSection()}
@@ -2915,7 +2935,7 @@ function renderPastWork() {
     </div>
     <section style="padding-top: 1rem;">
       <div class="section-inner">
-        <div class="gallery-grid" data-masonry>
+        <div class="gallery-grid gallery-grid--all-sold" data-masonry>
           ${sold.length ? sold.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;">Nothing sold yet.</p>'}
         </div>
       </div>
