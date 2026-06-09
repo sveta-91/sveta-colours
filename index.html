@@ -1755,6 +1755,16 @@ function sheetRowToPainting(row, headers, index) {
     }
   }
 
+  // Sheet-driven home curation:
+  //   - `hero` (truthy) marks the painting that fronts the home page.
+  //   - `recent` (positive integer) opts a painting into the home
+  //     "Recent paintings" grid; lower numbers render first.
+  // Both fall back to inline constants if blank — see getHeroPiece() and
+  // selectFeatured() for the resolution order.
+  const heroFlag = yes(get('hero'));
+  const recentStr = get('recent');
+  const recentN = recentStr ? parseInt(recentStr, 10) : NaN;
+
   return {
     id: index + 1,
     title: get('title'),
@@ -1767,6 +1777,8 @@ function sheetRowToPainting(row, headers, index) {
     collections: get('collection') ? get('collection').split(',').map(c => c.trim()).filter(Boolean) : [],
     available: !sold,
     featured: featured,
+    hero: heroFlag,
+    recent: isNaN(recentN) ? null : recentN,
     // New optional fields — render only if present
     year: get('year'),
     surface: get('surface'),
@@ -2323,10 +2335,9 @@ function injectPaintingsLD() {
    CURATION HELPERS
    ======================================================== */
 
-// Hand-picked titles for the home "Recent paintings" grid, in display
-// order. Sold pieces ARE allowed here — the home wall is editorial, not
-// a buy-now lane. Set to null or empty array to fall back to the
-// available-pool heuristic below.
+// Fallback list if the Sheet's `recent` column is empty across every row.
+// Sheet wins when populated; this is the safety net so "Recent paintings"
+// never empties out. Sold pieces ARE allowed — the home wall is editorial.
 const FEATURED_TITLES = [
   'Where the Forest Breathes',
   'Autumn Light',
@@ -2337,33 +2348,41 @@ const FEATURED_TITLES = [
 
 /* selectFeatured — picks the home-page "Recent paintings" set.
 
-   When FEATURED_TITLES is non-empty: that list wins. Titles are matched
-   case-insensitively, the hero piece is skipped, paintings without
-   images are skipped, and order is preserved (no orientation interleave
-   — the user picked the wall).
+   Resolution order:
+     1) Sheet-driven: paintings with a `recent` integer set, sorted by
+        that integer ascending, with an image and excluding the hero.
+     2) Constant fallback FEATURED_TITLES, in declared order.
+     3) Heuristic: featured-flag pins (up to 4) + available filler
+        (image, !sold), de-clustered by orientation.
 
-   Otherwise (heuristic fallback):
-     1) Pinned: up to 4 paintings flagged featured===true, excluding
-        the hero, excluding sold.
-     2) Fill: remaining available && image && !sold, in Sheet order,
-        until we reach `count`.
-     3) De-cluster orientation via interleaveByOrientation(). */
+   When the Sheet or the constant pins the wall, order is preserved
+   exactly — no interleave applied (the editor picked the order). */
 function selectFeatured(paintings, count, excludeHeroId) {
   count = count || 6;
   const not = id => p => p.id !== id;
   const pool = paintings.filter(not(excludeHeroId));
 
+  // Path 1 — sheet-driven by `recent` integer.
+  const sheetRecent = pool
+    .filter(p => typeof p.recent === 'number' && p.recent > 0 && p.image)
+    .sort((a, b) => a.recent - b.recent)
+    .slice(0, count);
+  if (sheetRecent.length > 0) return sheetRecent;
+
+  // Path 2 — constant title pin.
   if (FEATURED_TITLES && FEATURED_TITLES.length) {
     const byTitle = new Map();
     pool.forEach(p => {
       if (p.title && p.image) byTitle.set(p.title.toLowerCase().trim(), p);
     });
-    return FEATURED_TITLES
+    const chosen = FEATURED_TITLES
       .map(t => byTitle.get(t.toLowerCase().trim()))
       .filter(Boolean)
       .slice(0, count);
+    if (chosen.length > 0) return chosen;
   }
 
+  // Path 3 — heuristic.
   const isShowable = p => p.available && !p.sold && p.image;
   const pinned = pool.filter(p => p.featured && isShowable(p)).slice(0, 4);
   const pinnedIds = new Set(pinned.map(p => p.id));
@@ -2408,21 +2427,29 @@ function assignCatalogNumbers() {
   PAINTINGS.forEach((p, i) => { p.catalogNumber = i + 1; });
 }
 
-// Title pinned as the hero piece. Change to swap which painting fronts the
-// home page. Falls through to the regular available/featured priority if
-// the pinned title isn't in the Sheet, isn't available, or has no image.
+// Fallback hero pin if the Sheet's `hero` column is unset. Sheet wins
+// when populated; this is just the safety net so the home page never
+// blanks if the column is empty or the editor forgot to tick a row.
 const HERO_PIN_TITLE = 'Held Summer';
 
 function getHeroPiece() {
   // Sold pieces are NEVER the hero — never put a "Sold" piece front-and-centre.
   const isShowable = p => p.available && !p.sold && p.image;
-  const pinned = HERO_PIN_TITLE
-    ? PAINTINGS.find(p =>
-        p.title && p.title.toLowerCase() === HERO_PIN_TITLE.toLowerCase() && isShowable(p)
-      )
-    : null;
+
+  // Sheet-driven pin (column `hero` truthy).
+  const sheetHero = PAINTINGS.find(p => p.hero && isShowable(p));
+  if (sheetHero) return sheetHero;
+
+  // Constant fallback.
+  if (HERO_PIN_TITLE) {
+    const pinned = PAINTINGS.find(p =>
+      p.title && p.title.toLowerCase() === HERO_PIN_TITLE.toLowerCase() && isShowable(p)
+    );
+    if (pinned) return pinned;
+  }
+
+  // Heuristic fallbacks.
   return (
-    pinned ||
     PAINTINGS.find(p => p.featured && isShowable(p)) ||
     PAINTINGS.find(p => isShowable(p)) ||
     PAINTINGS.find(p => p.available && !p.sold) ||
