@@ -1,0 +1,15 @@
+# Brainstorm-panel log — sveta-colours
+
+Append-only record of what each panel run produced and what got tuned at the user's review gate. Used by `brainstorm-panel` skill (Step 6) to bias future proposals on this repo.
+
+---
+
+## 2026-06-08 — gallery/catalog grid in `index.html` (improving existing artifact)
+
+- Proposed: gallery curator (director), visual designer, frontend dev, collector/buyer advocate, adversarial UX skeptic. User added: **UX/UI design auditor**. User removed: none.
+- Style: swarm → director-led, 3-round cap. Ran 2 rounds (R1 cold + R1.5 with inventory facts). Fit well — diverge produced 41 distinct critiques, director synthesis kept it coherent.
+- **Big lesson: pull real inventory data before convening.** R1 assumed ~50 paintings; actual was 17, all priced identically, all acrylic, /postcards empty. Half the R1 moves had to be re-derived in R1.5. *Next panel run on this site: snapshot live data before drafting the bar and convening roles.*
+- User gate edits trended toward "keep more on the card, lean on typography" — Designer + Curator's keep-meta-and-price call edged out Buyer + Skeptic + Auditor's strip-down consensus. Note for future panels here: don't read R1.5-style consensus as inevitable; user weights chromatic/typographic distinctness over information minimalism.
+- Auditor (the user-added role) earned its seat — surfaced WCAG 2.4.10 (chapter headings on /works), focus-visible during stagger, and the postcards-empty-state Nielsen violation that Curator + Buyer had also flagged from different angles. **Keep proposing the UX/UI auditor on visual / cross-context UI targets in this repo.**
+- Skeptic earned its seat too — caught the catalog-№ over-reach and the 8-of-17 "preview-not-curation" framing. Disagreement between Skeptic and Curator was the most productive axis.
+- Domain quirk for next time: **don't infer painting orientation from photo thumbnails** — photos include landscape context around portrait paintings. Use the `orientation` column or ask. (Also captured as a feedback memory.)
