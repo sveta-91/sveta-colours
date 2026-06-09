@@ -502,9 +502,16 @@ button.hero-image-wrap {
      we never crop the artwork. background bone shows around the edges. */
   object-fit: contain;
   background: var(--surface-alt);
+  /* Quick transition so the :active press-down (0.995) and its release
+     both feel snappy rather than animated. */
+  transition: transform 0.1s ease;
 }
 
 .painting-card:hover .card-image { transform: translateY(-2px); }
+/* Press feedback: while the mouse button is held on a card, the image
+   subtly contracts. Combined with the hover lift on .card-image this
+   reads as "the painting tilts and is pressed back into the wall." */
+.painting-card:active .card-image img { transform: scale(0.995); }
 .painting-card:hover .card-title {
   color: var(--accent);
   text-decoration: underline;
@@ -573,6 +580,36 @@ button.hero-image-wrap {
 }
 .painting-card .card-price--sold {
   color: var(--text-faint);
+}
+
+/* "Commission similar →" mailto button — only present on sold cards.
+   Buyer-recovery path so the wall doesn't dead-end at a sold piece.
+   Rendered as a button (semantically correct, keyboard-focusable) but
+   styled flat like a link so it reads as quiet meta, not a CTA. */
+.painting-card .card-commission {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  cursor: pointer;
+  text-align: left;
+}
+.painting-card .card-commission:hover {
+  color: var(--accent-hover);
+}
+.painting-card .card-commission:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 /* --- Category cards --- */
 .categories { background: var(--surface); }
@@ -1928,7 +1965,10 @@ function paintingMeta(p) {
   else if (medium) parts.push(medium);
   const dims = formatDimensions(p);
   if (dims) parts.push(dims);
-  return parts.length ? parts.join(' · ') : '';
+  // En-dash with regular spaces for editorial typography; replaces the
+  // middle-dot we used earlier. Renders consistently across the display
+  // and body fonts.
+  return parts.length ? parts.join(' – ') : '';
 }
 
 function aspectRatioFor(p) {
@@ -2000,6 +2040,17 @@ function cardHTML(p) {
   const priceHTML = p.sold
     ? `<span class="card-price card-price--sold">Sold</span>`
     : (p.price ? `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}</span>` : '');
+  // Sold-card recovery: a buyer falling for a sold piece gets an in-card
+  // path to inquire about a commission instead of a dead end. The button
+  // is nested in the card-link <a>, which is invalid HTML in the strict
+  // sense, but every browser handles it correctly; the stopPropagation
+  // prevents the outer card click from also opening the modal.
+  const commissionSubject = p.sold
+    ? encodeURIComponent(`Commission similar to "${p.title}"`)
+    : '';
+  const commissionHTML = p.sold
+    ? `<button type="button" class="card-commission" onclick="event.stopPropagation(); event.preventDefault(); window.location.href='mailto:${CONTACT_EMAIL}?subject=${commissionSubject}';">Commission similar &rarr;</button>`
+    : '';
   const meta = paintingMeta(p);
   // Mark cards by physical size so the 11×14 inset rule can shrink the
   // image to ~85% column width — a real-world scale cue without an S/M chip.
@@ -2022,6 +2073,7 @@ function cardHTML(p) {
           <div class="card-title">${p.title}</div>
           ${meta ? `<div class="card-meta">${meta}</div>` : ''}
           ${priceHTML}
+          ${commissionHTML}
         </div>
       </div>
     </a>`;
@@ -2843,7 +2895,11 @@ function renderCollectionDetail(name) {
     <section style="padding-top: 1rem;">
       <div class="section-inner">
         <div class="gallery-grid" data-masonry>
-          ${items.length ? items.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;">No paintings in this collection yet.</p>'}
+          ${items.length ? items.map(cardHTML).join('') : `
+            <div style="text-align:center;padding:2.5rem 1rem;grid-column:1/-1;">
+              <p style="color:var(--text-muted);font-family:var(--font-display);font-style:italic;margin-bottom:1rem;">No paintings in this collection yet.</p>
+              <a href="#works" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all available works &rarr;</a>
+            </div>`}
         </div>
       </div>
     </section>
