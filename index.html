@@ -523,26 +523,11 @@ button.hero-image-wrap {
   transition: none !important;
 }
 
-/* Sold cards in mixed grids (/works, home featured, collection details)
-   read as quietly muted so the eye lands on available pieces first. The
-   price slot already says "Sold" — this is supporting visual weight,
-   not a replacement. Hover/focus restore full presence so the work
-   itself can still be examined. On /past the whole page is sold, so the
-   muting is suppressed via .gallery-grid--all-sold. */
-.painting-card.is-sold {
-  opacity: 0.7;
-}
-.painting-card.reveal.is-sold.visible {
-  opacity: 0.7;
-}
-.painting-card.is-sold:hover,
-.painting-card.is-sold:focus-visible {
-  opacity: 1 !important;
-}
-.gallery-grid--all-sold .painting-card.is-sold,
-.gallery-grid--all-sold .painting-card.reveal.is-sold.visible {
-  opacity: 1;
-}
+/* Sold cards keep full visual presence — the "Sold" label in the price
+   slot (and the modal) carries the status. Earlier we dimmed sold cards
+   to opacity 0.7 to make the eye land on available pieces first, but it
+   read as a blur and undersold the work itself. The .is-sold class stays
+   on the card as a semantic hook for any future modal/aria treatment. */
 
 .painting-card .card-info {
   padding: 1.35rem 0 0;
@@ -589,22 +574,6 @@ button.hero-image-wrap {
 .painting-card .card-price--sold {
   color: var(--text-faint);
 }
-/* Modal price keeps the struck-through treatment for sold pieces; the card
-   doesn't, since the card just shows the word "Sold". */
-.modal-price .sold-stroke {
-  position: absolute;
-  inset: 50% 0 auto 0;
-  transform: translateY(-50%);
-  width: 100%;
-  height: 0.6em;
-  color: var(--text-secondary);
-  pointer-events: none;
-  display: none;
-}
-.modal-price.sold .sold-stroke {
-  display: block;
-}
-
 /* --- Category cards --- */
 .categories { background: var(--surface); }
 
@@ -1972,9 +1941,6 @@ function placeholderGradient(id) {
   return grads[id % grads.length];
 }
 
-// Inline hand-drawn SVG strikethrough for sold prices
-const SOLD_STROKE_SVG = `<svg class="sold-stroke" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M2 6 Q 30 3, 55 7 T 98 6" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`;
-
 function paintingImage(p, opts) {
   opts = opts || {};
   const alt = `${p.title} — original ${p.medium || 'painting'} painting by Sveta`;
@@ -2127,8 +2093,14 @@ function openModal(id, opts) {
     ? `<details class="modal-extra"><summary>Details</summary><div class="modal-meta">${rowsToHTML(extraRows)}</div></details>`
     : '';
 
+  // Sold pieces show the word "Sold" in the price slot — never the
+  // crossed-out price. (The previous strike-through SVG also rendered
+  // wider than the price text because the absolutely-positioned SVG was
+  // measured against modal-details, not the inline-block .modal-price.)
+  // The label stands alone; the modal CTA section restates "Sold."
+  // alongside the commission offer.
   const priceHTML = p.sold
-    ? `<div class="modal-price sold">${p.price ? `${CURRENCY}${p.price.toLocaleString()}` : 'Sold'}${SOLD_STROKE_SVG}</div>`
+    ? `<div class="modal-price sold">Sold</div>`
     : (p.price ? `<div class="modal-price">${CURRENCY}${p.price.toLocaleString()}</div>` : '');
 
   // Trim long descriptions to keep the modal scannable: hard-cap at the
