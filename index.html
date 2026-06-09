@@ -298,23 +298,30 @@ section { padding: 6rem 2rem; }
 }
 
 /* Hero takes the shape of the painting itself.
-   --hero-ratio is set inline from widthIn/heightIn (pre-paint) and refined
-   on image load from natural dimensions. max-height clamps tall portraits;
-   min-height keeps tiny images from collapsing. */
+   We constrain HEIGHT (not max-height) and let aspect-ratio derive width,
+   so a portrait painting renders tall-and-narrow centered, with page-bg
+   margins on the sides, instead of being cropped landscape. max-width:100%
+   prevents overflow on narrow viewports (mobile portrait paintings then
+   become width-bounded, aspect-ratio recomputes height). object-fit:contain
+   is the safety net: even if box and ratio ever desync, the painting is
+   never cropped. Background is page-bg so the margins read as page, not
+   as a tinted frame around the work. */
 .hero-image-wrap {
-  width: 100%;
-  aspect-ratio: var(--hero-ratio, 4/5);
-  max-height: 88vh;
+  width: auto;
+  height: 72vh;
+  max-width: 100%;
   min-height: 380px;
-  background: var(--surface-alt);
+  aspect-ratio: var(--hero-ratio, 4/5);
+  background: var(--bg);
   position: relative;
   overflow: hidden;
+  margin: 0 auto;
 }
 
 .hero-image-wrap img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -1342,7 +1349,7 @@ footer {
 
   nav .nav-links.open { display: flex; }
 
-  .hero-image-wrap { max-height: 80vh; min-height: 320px; }
+  .hero-image-wrap { height: 64vh; min-height: 320px; }
   .hero-meta { padding: 1.75rem 1.5rem 3rem; }
   .hero-title { font-size: clamp(2.6rem, 11vw, 4.4rem); }
 
