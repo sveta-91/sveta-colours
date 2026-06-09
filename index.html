@@ -513,12 +513,13 @@ button.hero-image-wrap {
 .painting-card .card-image-inner {
   width: 100%;
   aspect-ratio: var(--ratio, 4/5);
-  /* Frame box reads as page background (chromatic-insulation move from R1.5
-     designer notes): the painting's own colors then carry the contrast,
-     instead of fighting a tinted bone wash behind every image.
-     --surface-alt stays on the <img> below as the pre-load placeholder so
-     the card area isn't a bright bg flash during image fetch. */
-  background: var(--bg);
+  /* --surface-alt reads as warm matte — distinct from the page --bg so
+     letterbox bars (where the photo aspect doesn't quite match the
+     canvas aspect) read as intentional matting around the work, not as
+     dead space. Brainstorm-panel pick over plain --bg, 2026-06-09.
+     The same --surface-alt is the <img> pre-load placeholder below, so
+     letterbox bars and placeholder share a tone. */
+  background: var(--surface-alt);
   overflow: hidden;
   position: relative;
 }
@@ -2055,14 +2056,19 @@ function paintingImage(p, opts) {
     const srcsetAttr = (p.image.indexOf('lh3.googleusercontent.com') !== -1)
       ? `srcset="${p.image}=w400 400w, ${p.image}=w800 800w, ${p.image}=w1400 1400w" sizes="${opts.isHero ? '(max-width:768px) 100vw, 1200px' : '(max-width:600px) 100vw, (max-width:1024px) 50vw, 33vw'}"`
       : '';
-    // Refine the rendered aspect ratio from natural dims, but only when it
-    // differs from the pre-paint ratio by more than 5% — and gated through
-    // requestAnimationFrame so the span recompute lands in one frame, not
-    // a frame after the dimension change. For accurate Sheet dims this is
-    // effectively dead code (the comparison shortcuts before the write).
+    // Hero only: refine --hero-ratio from the image's natural dims after
+    // load, so the hero band hugs the photo (no letterbox bars on the
+    // single most prominent painting on the page). Gallery cards skip
+    // this — they stay locked to the physical canvas ratio so paintings
+    // of the same canvas size hang at the same visible scale.
+    // push_painting.py enforces a 2% photo↔canvas tolerance at ingest, so
+    // new gallery photos never need this override; existing photos with
+    // mismatched aspect get small matte bars (see .card-image-inner bg).
     const ratioVar = opts.heroRatioVar ? '--hero-ratio' : '--ratio';
     const closestSel = opts.heroRatioVar ? '.hero-image-wrap' : '.card-image-inner';
-    const onLoad = `onload="(function(el){requestAnimationFrame(function(){var c=el.closest('${closestSel}');if(!c||!el.naturalWidth||!el.naturalHeight)return;var rect=c.getBoundingClientRect();if(!rect.width||!rect.height)return;var nr=el.naturalWidth/el.naturalHeight;var cur=rect.width/rect.height;if(Math.abs(nr-cur)/cur<0.05)return;c.style.setProperty('${ratioVar}',el.naturalWidth+'/'+el.naturalHeight);});})(this);"`;
+    const onLoad = opts.heroRatioVar
+      ? `onload="(function(el){requestAnimationFrame(function(){var c=el.closest('${closestSel}');if(!c||!el.naturalWidth||!el.naturalHeight)return;var rect=c.getBoundingClientRect();if(!rect.width||!rect.height)return;var nr=el.naturalWidth/el.naturalHeight;var cur=rect.width/rect.height;if(Math.abs(nr-cur)/cur<0.05)return;c.style.setProperty('${ratioVar}',el.naturalWidth+'/'+el.naturalHeight);});})(this);"`
+      : '';
     return `<img src="${p.image}" ${srcsetAttr} alt="${alt}" ${wAttr} ${hAttr} ${loadAttr} ${crossOrigin} ${onLoad}>`;
   }
   return `<div style="width:100%;height:100%;min-height:240px;background:${placeholderGradient(p.id)};display:flex;align-items:center;justify-content:center;" role="img" aria-label="${alt}"><span style="font-family:var(--font-display);font-style:italic;font-size:1.1rem;color:rgba(20,19,15,0.22);text-align:center;padding:1rem;">${p.title}</span></div>`;

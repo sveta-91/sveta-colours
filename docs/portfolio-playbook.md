@@ -89,6 +89,48 @@ function computeMasonry() {
 (e.g. `4/5`); the actual rendered height shifts when the image's natural
 aspect (e.g. `0.75`) refines it. We compute on `load` and on `resize`.
 
+### Same-canvas paintings hang at the same on-page scale
+
+Every gallery card locks its rendered aspect to the **physical canvas**
+(`widthIn / heightIn`), never to the photo's natural pixel aspect.
+
+**Why:** photos vary in framing — Sveta's photographer step (Grok web
+UI) crops to the artwork edge, but the crop isn't pixel-perfect. A
+12% photo-aspect spread across the same 16×20" group is normal. If
+the card uses the photo aspect, paintings labeled "16 × 20 in" render
+at visibly different heights, and the gallery wall reads as
+inconsistent. Brainstorm panel converged on this 2026-06-09: 4 of 6
+roles picked "force canvas aspect" over "honest photo aspect."
+
+```js
+// cardHTML: --ratio is canvas-derived, never refined from photo
+<div class="card-image-inner" style="--ratio: ${widthIn}/${heightIn}">
+```
+
+The earlier `onLoad` handler that overrode `--ratio` to photo-natural
+when off by >5% is **disabled on gallery cards** (still active on the
+hero band, where a single large image benefits from edge-to-edge
+fill).
+
+Photos whose aspect doesn't quite match canvas show small letterbox
+bars in `var(--surface-alt)` — reads as museum-matte, not as dead
+space.
+
+### Enforce photo↔canvas match at publish time
+
+`push_painting.py` runs a `check_canvas_aspect()` guard right before
+upload:
+
+- Photo within **2%** of canvas aspect: passes as-is.
+- 2–5% per-side trim: snap-crops centered to canvas aspect, writes
+  to `<name>.canvas.<ext>`, uploads that.
+- >5% per-side trim: hard-fails with a "reshoot or re-crop in Grok"
+  message. The threshold protects painted pixels — beyond 5% the
+  crop is likely to eat into the artwork itself.
+
+Pre-2026-06-09 photos may still have larger drift. They render with
+matte letterbox bars until republished.
+
 ### Landscape cards have transposed dimensions
 
 A portrait card is 280×480 (image 280×365 + info ~115). A landscape card is
