@@ -412,23 +412,28 @@ button.hero-image-wrap {
   margin-top: 0.5rem;
 }
 
-/* --- Gallery Grid: CSS Grid masonry (left-to-right reading order) --- */
-/* Row height is fixed at 8px from page-load; each card carries an inline
-   `grid-row: span N` seeded at render time from its aspect ratio, then
-   refined post-image-load by computeMasonry(). No auto→8px swap, no FOUC. */
+/* --- Gallery: flex-wrap with transposed landscape dimensions --- */
+/* Portrait cards are 280×350 (image 280×350 + info ~130 = ~480 total).
+   Landscape cards are 350×280 — width = portrait height, height = portrait
+   width (Sveta's symmetry rule). With align-items:stretch all cards in a
+   row match the tallest card's height; .card-info uses margin-top:auto
+   to anchor at card bottom, so the landscape's shorter image leaves
+   ~70px of breathing room between image and title — absorbing the
+   gap-below-landscape that the previous grid layout created. */
 .gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  grid-auto-rows: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: flex-start;
   gap: 4rem 2.75rem;
   position: relative;
 }
 
 @media (max-width: 1024px) {
-  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 3.25rem 2rem; }
+  .gallery-grid { gap: 3.25rem 2rem; }
 }
 @media (max-width: 600px)  {
-  .gallery-grid { grid-template-columns: 1fr; gap: 3.5rem 0; }
+  .gallery-grid { gap: 3.5rem 0; }
 }
 
 /* Editorial size-chapter heading on /works. Two sections — large 16×20 and
@@ -460,31 +465,39 @@ button.hero-image-wrap {
   margin: 0 auto;
 }
 
-/* Landscape paintings span 2 grid columns so they read at proportional
-   visual heft to portrait cards — at single-column width they rendered
-   as squat thumbnails and broke the column rhythm. On narrow viewports
-   the grid collapses to 1 column, so the span declaration falls back
-   to filling the lone available track. */
+/* Landscape painting cards: transposed dimensions vs. portraits.
+   Width = 350px = portrait card height, so a 20×16 landscape painting
+   reads at the same on-wall scale as a 16×20 portrait — same canvas
+   size, rotated 90°. With flex align-items:stretch the card stretches
+   to the row's tallest card (the portrait); the painting itself sits
+   at the top and the title at the bottom (see .card-info below) so
+   the 70px height delta becomes breathing space inside the card. */
 .painting-card[data-orientation="landscape"] {
-  grid-column: span 2;
+  flex: 0 0 350px;
 }
 @media (max-width: 600px) {
   .painting-card[data-orientation="landscape"] {
-    grid-column: span 1;
+    flex: 0 0 100%;
   }
 }
 
 .painting-card {
-  width: 100%;
+  flex: 0 0 280px;
+  max-width: 100%;
   cursor: pointer;
   background: none;
   border: none;
   padding: 0;
   text-align: left;
   position: relative;
-  display: block;
+  display: flex;
+  flex-direction: column;
   color: inherit;
   text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .painting-card { flex: 0 0 100%; }
 }
 
 .painting-card .card-image {
@@ -553,6 +566,7 @@ button.hero-image-wrap {
 .painting-card .card-info {
   padding: 1.35rem 0 0;
   display: block;
+  margin-top: auto;
 }
 
 .painting-card .card-text { min-width: 0; }
@@ -3130,12 +3144,7 @@ function render() {
     document.querySelectorAll('.reveal').forEach((el, i) => {
       setTimeout(() => el.classList.add('visible'), Math.min(i * 50, 600));
     });
-    // Compute masonry row spans after layout
-    computeMasonry();
-  });
-  // Recompute again once images have loaded — image height may grow.
-  document.querySelectorAll('.gallery-grid img').forEach(img => {
-    if (!img.complete) img.addEventListener('load', computeMasonry, { once: true });
+    // Flex layout handles card sizing — masonry no longer needed.
   });
 
   // Wire up the custom cursor for newly-rendered cards
@@ -3173,12 +3182,7 @@ function computeMasonry() {
   });
 }
 
-// Debounced resize
-let _resizeTO = null;
-window.addEventListener('resize', () => {
-  clearTimeout(_resizeTO);
-  _resizeTO = setTimeout(computeMasonry, 100);
-});
+// Flex layout reflows automatically on resize — no JS masonry needed.
 
 /* ========================================================
    FOOTER (rendered by JS so SITE_DATA controls visibility)
