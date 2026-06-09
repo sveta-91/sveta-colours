@@ -2478,21 +2478,6 @@ function renderHome() {
   return `
     ${renderHero()}
 
-    <section style="background: var(--bg);">
-      <div class="section-inner">
-        <div class="section-title">
-          <span class="eyebrow">Selected works</span>
-          <h2>Recent paintings</h2>
-        </div>
-        <div class="gallery-grid" data-masonry>
-          ${featured.map(cardHTML).join('')}
-        </div>
-        <div style="margin-top: 2rem; text-align: center;">
-          <a href="#works" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all works</a>
-        </div>
-      </div>
-    </section>
-
     ${collections.length ? `
     <section class="categories">
       <div class="section-inner">
@@ -2516,6 +2501,21 @@ function renderHome() {
         </div>
       </div>
     </section>` : ''}
+
+    <section style="background: var(--bg);">
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="eyebrow">Selected works</span>
+          <h2>Recent paintings</h2>
+        </div>
+        <div class="gallery-grid" data-masonry>
+          ${featured.map(cardHTML).join('')}
+        </div>
+        <div style="margin-top: 2rem; text-align: center;">
+          <a href="#works" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all works</a>
+        </div>
+      </div>
+    </section>
 
     <section>
       <div class="section-inner">
