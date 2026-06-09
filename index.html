@@ -460,6 +460,20 @@ button.hero-image-wrap {
   margin: 0 auto;
 }
 
+/* Landscape paintings span 2 grid columns so they read at proportional
+   visual heft to portrait cards — at single-column width they rendered
+   as squat thumbnails and broke the column rhythm. On narrow viewports
+   the grid collapses to 1 column, so the span declaration falls back
+   to filling the lone available track. */
+.painting-card[data-orientation="landscape"] {
+  grid-column: span 2;
+}
+@media (max-width: 600px) {
+  .painting-card[data-orientation="landscape"] {
+    grid-column: span 1;
+  }
+}
+
 .painting-card {
   width: 100%;
   cursor: pointer;
@@ -1456,23 +1470,31 @@ nav .logo .logo-squiggle {
 .custom-cursor {
   position: fixed;
   top: 0; left: 0;
-  width: 64px; height: 64px;
-  border: 1px solid var(--text);
+  /* Pill-shaped CTA chip rather than a circular badge — the previous
+     64×64 ring read as a magnifying glass, suggesting zoom that didn't
+     happen. Pill + arrow reads as "click to view". Auto width fits the
+     painting title; max-width keeps long titles from sprawling. */
+  width: auto; height: auto;
+  max-width: 220px;
+  padding: 0.5rem 1rem;
   border-radius: 999px;
-  background: rgba(247, 245, 239, 0.42);
-  backdrop-filter: blur(2px);
+  border: none;
+  background: rgba(247, 245, 239, 0.94);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 10px rgba(20, 19, 15, 0.08);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.18s ease;
   z-index: 300;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--text);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   user-select: none;
   will-change: transform;
 }
@@ -2056,6 +2078,12 @@ function cardHTML(p) {
   // image to ~85% column width — a real-world scale cue without an S/M chip.
   const area = (p.widthIn && p.heightIn) ? p.widthIn * p.heightIn : null;
   const dataSize = (area != null && area < 300) ? ' data-size="small"' : '';
+  // Mark orientation so landscape paintings can span 2 grid columns — at
+  // single-column width they were rendering noticeably small (a 20×16 at
+  // 287px wide is only 230px tall) and breaking the column's rhythm with
+  // empty space below.
+  const isLandscape = !!(p.widthIn && p.heightIn && p.widthIn > p.heightIn);
+  const dataOrient = isLandscape ? ' data-orientation="landscape"' : '';
   // Pre-seed grid-row span at render time from the aspect ratio + estimated
   // column width so masonry lands stable on first paint (no auto→8px swap).
   // computeMasonry() refines this after images load.
@@ -2064,7 +2092,7 @@ function cardHTML(p) {
     ? `Open details for ${p.title}, sold`
     : `Open details for ${p.title}${p.price ? ', ' + CURRENCY + p.price : ''}`;
   return `
-    <a class="painting-card reveal${p.sold ? ' is-sold' : ''}" href="#painting/${p.id}" data-card-id="${p.id}"${dataSize} style="grid-row: span ${span};" onclick="return cardClick(event, ${p.id});" aria-label="${aria}">
+    <a class="painting-card reveal${p.sold ? ' is-sold' : ''}" href="#painting/${p.id}" data-card-id="${p.id}"${dataSize}${dataOrient} style="grid-row: span ${span};" onclick="return cardClick(event, ${p.id});" aria-label="${aria}">
       <div class="card-image">
         <div class="card-image-inner" style="--ratio: ${ratio};">${paintingImage(p)}</div>
       </div>
@@ -3250,30 +3278,28 @@ function wireCustomCursor() {
     cursorEl.classList.remove('visible');
     document.body.classList.remove('cursor-hide');
   };
+  const resolveTitle = (painting) => {
+    if (!painting || !painting.title) return null;
+    return painting.title.length > 26 ? painting.title.slice(0, 24) + '…' : painting.title;
+  };
 
-  const targets = document.querySelectorAll('.painting-card, .hero-image-wrap');
-  targets.forEach(t => {
+  // Scope the custom cursor to the painting IMAGE only — not the whole card.
+  // Hovering the title/meta/Commission button below the image no longer
+  // shows the cursor, which used to keep "View 'X'" visible (and visually
+  // covering the very text the buyer wanted to read) until the entire card
+  // was exited.
+  const cardImages = document.querySelectorAll('.painting-card .card-image-inner');
+  cardImages.forEach(t => {
     if (t._cursorWired) return;
     t._cursorWired = true;
     t.addEventListener('mouseenter', () => {
-      // Cursor label = the painting's title, truncated. Falls back to "View"
-      // if we can't resolve. (Previously used catalog № — removed when № was
-      // dropped from the card geometry.)
-      let label = 'View';
-      const card = t.closest('.painting-card') || (t.classList.contains('painting-card') ? t : null);
-      const resolveTitle = (painting) => {
-        if (!painting || !painting.title) return null;
-        return painting.title.length > 26 ? painting.title.slice(0, 24) + '…' : painting.title;
-      };
+      let label = 'View →';
+      const card = t.closest('.painting-card');
       if (card) {
-        const idAttr = card.getAttribute('data-card-id');
-        const id = idAttr ? parseInt(idAttr, 10) : NaN;
+        const id = parseInt(card.getAttribute('data-card-id'), 10);
         const painting = !isNaN(id) ? PAINTINGS.find(p => p.id === id) : null;
         const title = resolveTitle(painting);
-        if (title) label = `View "${title}"`;
-      } else if (t.classList.contains('hero-image-wrap')) {
-        const title = resolveTitle(getHeroPiece());
-        if (title) label = `View "${title}"`;
+        if (title) label = `${title} →`;
       }
       cursorEl.textContent = label;
       showCursor();
@@ -3281,21 +3307,18 @@ function wireCustomCursor() {
     t.addEventListener('mouseleave', hideCursor);
   });
 
-  // Interactive descendants of a card (currently just .card-commission)
-  // hide the custom cursor while hovered, otherwise the 64px overlay sits
-  // on top of the button and the buyer can't see or read what they're
-  // clicking. We restore on mouseleave back into the card; if the mouse
-  // exits the card entirely the card's own mouseleave hides it again.
-  document.querySelectorAll('.card-commission').forEach(b => {
-    if (b._cursorWired) return;
-    b._cursorWired = true;
-    b.addEventListener('mouseenter', hideCursor);
-    b.addEventListener('mouseleave', e => {
-      // Only re-show if we're still inside the parent card — otherwise
-      // we'd flicker the cursor visible during a card-exit motion.
-      const card = b.closest('.painting-card');
-      if (card && card.contains(e.relatedTarget)) showCursor();
+  // Hero image gets the same treatment — cursor over the painting only.
+  document.querySelectorAll('.hero-image-wrap').forEach(t => {
+    if (t._cursorWired) return;
+    t._cursorWired = true;
+    t.addEventListener('mouseenter', () => {
+      let label = 'View →';
+      const title = resolveTitle(getHeroPiece());
+      if (title) label = `${title} →`;
+      cursorEl.textContent = label;
+      showCursor();
     });
+    t.addEventListener('mouseleave', hideCursor);
   });
 }
 
