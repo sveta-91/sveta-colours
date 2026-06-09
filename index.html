@@ -2392,11 +2392,23 @@ function assignCatalogNumbers() {
   PAINTINGS.forEach((p, i) => { p.catalogNumber = i + 1; });
 }
 
+// Title pinned as the hero piece. Change to swap which painting fronts the
+// home page. Falls through to the regular available/featured priority if
+// the pinned title isn't in the Sheet, isn't available, or has no image.
+const HERO_PIN_TITLE = 'Held Summer';
+
 function getHeroPiece() {
   // Sold pieces are NEVER the hero — never put a "Sold" piece front-and-centre.
+  const isShowable = p => p.available && !p.sold && p.image;
+  const pinned = HERO_PIN_TITLE
+    ? PAINTINGS.find(p =>
+        p.title && p.title.toLowerCase() === HERO_PIN_TITLE.toLowerCase() && isShowable(p)
+      )
+    : null;
   return (
-    PAINTINGS.find(p => p.featured && p.available && !p.sold && p.image) ||
-    PAINTINGS.find(p => p.available && !p.sold && p.image) ||
+    pinned ||
+    PAINTINGS.find(p => p.featured && isShowable(p)) ||
+    PAINTINGS.find(p => isShowable(p)) ||
     PAINTINGS.find(p => p.available && !p.sold) ||
     PAINTINGS[0]
   );
