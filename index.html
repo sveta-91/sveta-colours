@@ -1114,6 +1114,12 @@ button.hero-image-wrap {
 .modal-meta .value {
   color: var(--text);
   font-size: 0.94rem;
+  /* Keep meta values (especially "16 × 20 in / 40.6 × 50.8 cm") on a
+     single line — the natural break points around `/` and the unit caused
+     the size string to wrap "cm" onto a stray second line. At very narrow
+     viewports the mobile media query stacks the row so the full value
+     gets the full container width. */
+  white-space: nowrap;
 }
 
 .modal-price {
@@ -1358,7 +1364,9 @@ footer {
     max-height: 70vh;
   }
   .modal-details { max-height: none; padding: 1.75rem 1.5rem; }
-  .modal-meta .row { grid-template-columns: 100px 1fr; }
+  /* Narrow viewports: stack label above value so the size string can
+     still render on one line at the full container width. */
+  .modal-meta .row { grid-template-columns: 1fr; gap: 0.2rem; }
 
   section { padding: 4rem 1.5rem; }
   .collection-header { padding: 7rem 1.5rem 2.5rem; }
