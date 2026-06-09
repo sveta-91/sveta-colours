@@ -472,7 +472,12 @@ button.hero-image-wrap {
 .painting-card .card-image-inner {
   width: 100%;
   aspect-ratio: var(--ratio, 4/5);
-  background: var(--surface-alt);
+  /* Frame box reads as page background (chromatic-insulation move from R1.5
+     designer notes): the painting's own colors then carry the contrast,
+     instead of fighting a tinted bone wash behind every image.
+     --surface-alt stays on the <img> below as the pre-load placeholder so
+     the card area isn't a bright bg flash during image fetch. */
+  background: var(--bg);
   overflow: hidden;
   position: relative;
 }
@@ -491,6 +496,15 @@ button.hero-image-wrap {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
+}
+
+/* Override the .reveal stagger (opacity:0; translateY(14px)) when a card is
+   keyboard-focused mid-stagger — otherwise the focus ring sits 14px below
+   the card's eventual position and looks broken. Global :focus-visible
+   (top of file) supplies the outline; this rule just pins position+opacity. */
+.painting-card:focus-visible {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 .painting-card .card-info {
@@ -2921,6 +2935,15 @@ function render() {
     default:            html = renderHome(); break;
   }
   app.innerHTML = html;
+
+  // LCP hint: promote the first image in each gallery grid. On home and
+  // /works that image is almost always the largest contentful paint, so
+  // asking the browser to fetch it ahead of the rest meaningfully improves
+  // perceived load. Lazy-loading stays on for the rest via paintingImage().
+  document.querySelectorAll('.gallery-grid').forEach(grid => {
+    const firstImg = grid.querySelector('img');
+    if (firstImg) firstImg.setAttribute('fetchpriority', 'high');
+  });
 
   // Update <title>
   document.title = pageTitleFor(currentPage);
