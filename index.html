@@ -388,9 +388,16 @@ button.hero-image-wrap {
   text-transform: uppercase;
   color: var(--text-muted);
   line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .hero-credit .sep { margin: 0 0.5rem; color: var(--text-faint); }
+/* Social-proof line sits under the painting credit. Same uppercase rhythm
+   so they read as one block, but de-emphasized so the painting credit
+   leads visually. */
+.hero-credit .hero-credit-stat { color: var(--text-faint); }
 
 .hero-tagline {
   font-family: var(--font-display);
@@ -2407,18 +2414,22 @@ function getAllCollections() {
 function renderHero() {
   const heroPiece = getHeroPiece();
 
-  // Build credit line + sold-count social proof. Sold count is only shown
-  // when it's meaningful (>=3) so a brand-new studio doesn't read empty.
+  // Build credit on two lines: painting credit on top, social-proof stat
+  // (sold count) underneath. Concatenating them into one line read as if
+  // the painting itself were "N paintings in private collections" —
+  // hence the split. Sold count only shown when meaningful (>=3) so a
+  // brand-new studio doesn't read empty.
   const soldCount = PAINTINGS.filter(p => p.sold).length;
-  const creditParts = heroPiece ? [
-    heroPiece.title,
-    heroPiece.medium ? capitalize(heroPiece.medium) : '',
-    heroPiece.year || ''
-  ].filter(Boolean) : [];
-  if (soldCount >= 3) {
-    creditParts.push(`${soldCount} paintings in private collections`);
-  }
-  const credit = creditParts.join(' <span class="sep">&middot;</span> ');
+  const creditWork = heroPiece
+    ? [
+        heroPiece.title,
+        heroPiece.medium ? capitalize(heroPiece.medium) : '',
+        heroPiece.year || ''
+      ].filter(Boolean).join(' <span class="sep">&middot;</span> ')
+    : '';
+  const creditStat = soldCount >= 3
+    ? `${soldCount} paintings in private collections`
+    : '';
 
   // Pre-paint hero aspect ratio: prefer Sheet dims so the box is the right
   // shape on first render (no CLS). Falls back to a portrait default.
@@ -2443,7 +2454,10 @@ function renderHero() {
       <div class="hero-meta">
         <h1 class="hero-title">Sveta <span class="italic">Colours</span></h1>
         <div class="hero-side">
-          ${credit ? `<div class="hero-credit">${credit}</div>` : ''}
+          ${(creditWork || creditStat) ? `<div class="hero-credit">
+            ${creditWork ? `<div class="hero-credit-work">${creditWork}</div>` : ''}
+            ${creditStat ? `<div class="hero-credit-stat">${creditStat}</div>` : ''}
+          </div>` : ''}
           <p class="hero-tagline">Paintings of light, weather, and quiet places &mdash; acrylic and watercolor, made slowly.</p>
           <div class="hero-cta-row">
             <a href="#works" class="link link-arrow link-accent" onclick="event.preventDefault(); showPage('paintings');">View available paintings</a>
