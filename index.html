@@ -2956,33 +2956,12 @@ function renderCollectionDetail(name) {
 }
 
 function renderAbout() {
-  const { location, yearsPracticing, schooling, influences } = SITE_DATA.artist;
-  const exhibitions = SITE_DATA.artist.exhibitions || [];
-
-  // Build About body paragraph-by-paragraph, each conditional on data.
-  const paras = [];
-  paras.push(`<p class="lede">I'm Sveta. I paint quiet places &mdash; landscapes, weather, the way light moves through a late afternoon.</p>`);
-
-  let p1 = `I work in acrylic mostly, watercolor for smaller works.`;
-  if (location)        p1 += ` I paint from ${location}.`;
-  if (yearsPracticing) p1 += ` I've been painting for ${yearsPracticing} years.`;
-  paras.push(`<p>${p1}</p>`);
-
-  if (schooling || influences) {
-    const bits = [];
-    if (schooling)  bits.push(`I came to painting through ${schooling}`);
-    if (influences) bits.push(`and was shaped by ${influences}`);
-    paras.push(`<p>${bits.join(' ')}.</p>`);
-  }
-
-  let p3 = `Each piece is an original &mdash; signed on the verso, photographed in daylight, and shipped with a certificate of authenticity. I work on one painting at a time, so the studio moves slowly.`;
-  if (exhibitions.length > 0) {
-    const recent = exhibitions.slice(0, 3).map(e => e.title || e.venue).filter(Boolean).join(', ');
-    if (recent) p3 += ` Recent shows include ${recent}.`;
-  }
-  paras.push(`<p>${p3}</p>`);
-
-  paras.push(`<p>If a piece catches you, write. I read every message.</p>`);
+  // Statement in Sveta's voice — finalized via brainstorm panel 2026-06-10.
+  const paras = [
+    `<p class="lede">I've always doodled &mdash; on whatever paper was at hand &mdash; but I'd assumed learning to paint properly was something other people did.</p>`,
+    `<p>Eventually I tried, starting from the very beginning: discovering that a tree shadows itself from within, lit only on the outside, lit from below at sunset &mdash; and that mixing colors is a sort of witchcraft.</p>`,
+    `<p>My paintings start from a memory &mdash; a walk through the woods, warm evening light, wandering through the city. Each one carries the feeling I had then &mdash; whatever it was.</p>`,
+  ];
 
   return `
     <div class="collection-header">

@@ -25,3 +25,15 @@ Append-only record of what each panel run produced and what got tuned at the use
 - Skeptic's strongest counter — "visible defect is 2-3 photos, not 7" — was empirically correct (4 of the 7 "overridden" cards happen to render identically). Director conceded the framing and adopted C as ingest-time enforcement rather than manual discipline. Note: when Skeptic is right about scope, fold their framing into HOW we implement, not whether.
 - Recurring across two panels: **buyer trust signals + visual consistency** trump information minimalism. Pattern holds; promote to CLAUDE.md if it survives one more run.
 - Note for next time: when the user's prompt is an open question ("should X be adjusted and how?"), option E (do nothing) is implicitly off the table by the question's framing. State this explicitly so the Skeptic's E-pick gets engaged on the substance (visible defect or not?) rather than treated as a procedural exit.
+
+---
+
+## 2026-06-10 — About-page statement refinement (improving existing artifact)
+
+- Proposed: Literary editor (director), Memoirist editor, Buyer, Anti-AI skeptic. **User added: Painter who began in her 50s, now in her 80s** — a peer-experience seat. Earned every minute of it: the truest moves in R2 (the door-had-closed framing, "one forgives me, the other doesn't") came from her notes, not from the craft roles.
+- Style: swarm → director-led (literary editor). 2-round cap, ran clean.
+- **Convergence was extraordinary** across 5 R1 outputs: 4 of 5 roles flagged the witchcraft/magic echo, 4 of 5 flagged the "inviting the viewer" closer. Director just had to pick *which* substitute, not whether to substitute.
+- **Lesson on user-added roles:** the Painter's seat replaced what would have been an editorial pile-on. Editor + Memoirist + Skeptic could have agreed to cut the medium sentence; the Painter argued to *replace* it with a lived contrast ("one forgives me, the other doesn't"). The right move was hers, not theirs. **When the user adds a seat, it usually outranks the proposed roster on whatever axis it represents — give it more weight than a 5th voice would normally get.**
+- Anti-AI skeptic continued to earn its standing seat: flagged generic patterns (e.g., "Many of," "simple memory," "the viewer") with specific cuts attached.
+- Recurring across three panels now: **Sveta wants flavor preserved when in doubt.** Director sided with Painter+Buyer on protecting "learning to really see" against Skeptic's cliché flag. Same instinct as "keep more on the card, lean on typography" from the gallery-grid panel. Promoting this to CLAUDE.md when the next panel confirms it.
+- Process note: the artifact-as-context worked well. Sveta's draft text was the data; no separate inventory needed. For prose-editing targets here, the artifact IS the data.
