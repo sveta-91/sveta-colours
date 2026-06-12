@@ -6,7 +6,9 @@ Personal art portfolio site + local image-processing tooling for Sveta.
 
 ```
 index.html                       — main portfolio page (editorial gallery)
+favicon.ico                      — root favicon (legacy auto-request)
 CNAME                            — custom domain for GitHub Pages
+icons/                           — favicon assets (SVG + multi-size PNG)
 docs/
   roadmap.md                     — image pipeline implementation roadmap
   photo-manager-setup.md         — one-time Google setup + acceptance checklist
@@ -17,6 +19,7 @@ scripts/
 tools/
   photo_manager.html             — local HTML page for processing photos end-to-end
   image_pipeline/                — Python pipeline (download → process → upload)
+  favicon/                       — favicon generation scripts (palette sampling + final render)
 CLAUDE.md                        — project instructions for Claude Code agents
 ```
 
