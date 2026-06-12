@@ -24,10 +24,11 @@ from PIL import Image, ImageDraw, ImageFont
 OUT = Path(__file__).resolve().parent / "final"
 OUT.mkdir(exist_ok=True)
 
-INK   = (26, 38, 64, 255)
-INK_HEX = "#1A2640"
+LETTER     = (242, 232, 212, 255)   # warm cream — lighter than ink, never pure white
+LETTER_HEX = "#F2E8D4"
 AL_STOPS = [(126, 143, 194), (231, 135, 76), (124, 49, 27)]
 AL_HEX = ["#7E8FC2", "#E7874C", "#7C311B"]
+SHAPE = "circle"  # "circle" (full ellipse) or "rounded-square"
 
 COCHIN_PATH = "/System/Library/Fonts/Supplemental/Cochin.ttc"
 COCHIN_ITALIC_INDEX = 1  # 0=Roman, 1=Italic, 2=Bold, 3=BoldItalic typically
@@ -58,7 +59,10 @@ def gradient_bg(s, stops, radius_frac=1/8):
     grad = grad.resize((s, s))
     mask = Image.new('L', (s, s), 0)
     md = ImageDraw.Draw(mask)
-    md.rounded_rectangle([(0, 0), (s, s)], radius=int(s * radius_frac), fill=255)
+    if SHAPE == "circle":
+        md.ellipse([(0, 0), (s, s)], fill=255)
+    else:
+        md.rounded_rectangle([(0, 0), (s, s)], radius=int(s * radius_frac), fill=255)
     out = Image.new('RGBA', (s, s), (0, 0, 0, 0))
     out.paste(grad.convert('RGBA'), (0, 0), mask)
     return out
@@ -74,7 +78,7 @@ def render_png(size, radius_frac=1/8):
         tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
         x = (s - tw) / 2 - bbox[0]
         y = (s - th) / 2 - bbox[1] - s * 0.05
-        d.text((x, y), "SM", fill=INK, font=font)
+        d.text((x, y), "SM", fill=LETTER, font=font)
     return _antialias(draw, size)
 
 
@@ -121,6 +125,9 @@ def build_svg():
     ty = (32 - target_h) / 2 + yMax * scale - 32 * 0.05
     # Flip Y: scale(scale, -scale); the yMax of glyph (top) goes to top of bbox
 
+    shape_svg = ('<circle cx="16" cy="16" r="16" fill="url(#g)"/>'
+                 if SHAPE == "circle"
+                 else '<rect width="32" height="32" rx="4" fill="url(#g)"/>')
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="0" y2="32" gradientUnits="userSpaceOnUse">
@@ -129,8 +136,8 @@ def build_svg():
       <stop offset="100%" stop-color="{AL_HEX[2]}"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="4" fill="url(#g)"/>
-  <g transform="translate({tx:.4f},{ty:.4f}) scale({scale:.6f},{-scale:.6f})" fill="{INK_HEX}">
+  {shape_svg}
+  <g transform="translate({tx:.4f},{ty:.4f}) scale({scale:.6f},{-scale:.6f})" fill="{LETTER_HEX}">
     <path d="{s_path}"/>
     <g transform="translate({s_adv},0)"><path d="{m_path}"/></g>
   </g>
