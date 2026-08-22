@@ -137,16 +137,23 @@ def check_canvas_aspect(image_path: Path, size_str: str) -> Path:
     m = re.search(r"(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)", size_str)
     if not m:
         return image_path
-    w_in, h_in = float(m.group(1)), float(m.group(2))
-    if w_in <= 0 or h_in <= 0:
+    a, b = float(m.group(1)), float(m.group(2))
+    if a <= 0 or b <= 0:
         return image_path
-    canvas_aspect = w_in / h_in
 
     img = cv2.imread(str(image_path))
     if img is None:
         return image_path
     h_px, w_px = img.shape[:2]
     photo_aspect = w_px / h_px
+
+    # Size strings like "11x14 in" don't carry orientation — a 16×20
+    # canvas is either portrait (16w × 20h) or landscape (20w × 16h),
+    # and the sheet's `size` field stores the numbers in whatever order
+    # Sveta typed. Pick the canvas aspect that matches the photo's own
+    # orientation, so landscape photos compare against landscape canvas.
+    smaller, larger = min(a, b), max(a, b)
+    canvas_aspect = (larger / smaller) if w_px > h_px else (smaller / larger)
     delta_pct = abs(photo_aspect - canvas_aspect) / canvas_aspect
 
     if delta_pct < 0.02:

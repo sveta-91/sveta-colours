@@ -433,13 +433,59 @@ def _needs_crop_array(
 # ── Public entry point ─────────────────────────────────────────────────────
 
 
-def _compute_post_warp_crop(img_bgr: np.ndarray, corners: np.ndarray) -> Optional[dict]:
-    """Apply the perspective warp internally, then run crop detection on the
-    warped result. Returns crop as fractions of the warped output dimensions,
-    or None when the warped image is already tight to the painting.
+def _edge_density_bbox(warped_bgr: np.ndarray) -> Optional[tuple[int, int, int, int]]:
+    """Find a tight bbox of edge-bearing content in a warped image.
 
-    Used to recover from Hough overshoot: even when corners include some
-    background, this second pass catches and trims it.
+    Premise: after the perspective warp, the painting occupies most of the
+    frame with painting-content edges (brush strokes, trees, signatures).
+    Any background bleed at the borders is uniform color with near-zero
+    edges. Bbox of edge-density therefore tracks the painting edge.
+
+    Returns (x, y, w, h) in pixels, or None when the bbox is too aggressive
+    (would chop more than 40% of any dimension), too timid (less than 4 px
+    total trim), or there isn't enough edge content to be confident.
+    """
+    gray = cv2.cvtColor(warped_bgr, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150)
+    h, w = edges.shape
+
+    row_density = edges.sum(axis=1) / 255.0
+    col_density = edges.sum(axis=0) / 255.0
+
+    if row_density.max() < 5 or col_density.max() < 5:
+        return None  # not enough edge content overall — can't trust this
+
+    row_thresh = max(2, row_density.max() * 0.05)
+    col_thresh = max(2, col_density.max() * 0.05)
+
+    rows = np.where(row_density > row_thresh)[0]
+    cols = np.where(col_density > col_thresh)[0]
+    if len(rows) == 0 or len(cols) == 0:
+        return None
+
+    top, bottom = int(rows[0]), int(rows[-1]) + 1
+    left, right = int(cols[0]), int(cols[-1]) + 1
+
+    bw = right - left
+    bh = bottom - top
+
+    # Sanity: refuse to chop too aggressively
+    if bw < w * 0.6 or bh < h * 0.6:
+        return None
+    # Sanity: skip negligible trims
+    if top + (h - bottom) + left + (w - right) < 4:
+        return None
+
+    return (left, top, bw, bh)
+
+
+def _compute_post_warp_crop(img_bgr: np.ndarray, corners: np.ndarray) -> Optional[dict]:
+    """Apply the perspective warp internally, then locate the painting bbox
+    on the warped result via edge density. Returns crop as fractions of the
+    warped output dimensions, or None when the warped image is already tight.
+
+    Catches Hough overshoot — corners that include a strip of background
+    along the painting frame.
     """
     xs = corners[:, 0]
     ys = corners[:, 1]
@@ -458,13 +504,10 @@ def _compute_post_warp_crop(img_bgr: np.ndarray, corners: np.ndarray) -> Optiona
     except cv2.error:
         return None
 
-    needs, _reason, bbox = _needs_crop_array(warped)
-    if not needs or bbox is None:
+    bbox = _edge_density_bbox(warped)
+    if bbox is None:
         return None
     x, y, bw, bh = bbox
-    # Skip near-identity crops — saves a redundant render in the browser.
-    if bw / out_w > 0.97 and bh / out_h > 0.97:
-        return None
     return {
         "x": x / out_w,
         "y": y / out_h,

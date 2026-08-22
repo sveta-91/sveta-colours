@@ -9,10 +9,10 @@ from typing import Iterable
 
 import cv2
 import numpy as np
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from PIL import Image
 
-from drive_auth import get_drive_service
+from drive_auth import get_drive_service, get_user_drive_service
 
 
 # ------------------------------------------------------------
@@ -952,14 +952,10 @@ def save_processed_output(result: ProcessResult, normalized_path: Path, config: 
 
 
 def upload_result_to_drive(result: ProcessResult, config: PipelineConfig) -> None:
-    """
-    TODO:
-    Replace this stub with Google Drive upload logic.
+    """Upload the processed image to the appropriate Drive folder.
 
-    Rules for v1:
-    - processed files go to processed Drive folder
-    - needs-review files go to needs-review Drive folder
-    - no Google Sheet updates yet
+    - processed → google_drive_processed_folder_id
+    - needs-review → google_drive_needs_review_folder_id
     """
     if result.output_path is None:
         logging.info("No output to upload.")
@@ -969,7 +965,32 @@ def upload_result_to_drive(result: ProcessResult, config: PipelineConfig) -> Non
         logging.info("[dry-run] Would upload %s (status=%s)", result.output_path.name, result.status)
         return
 
-    logging.info("Uploading result to Drive: %s", result.output_path.name)
+    if not result.output_path.exists():
+        logging.warning("Output file not found, skipping upload: %s", result.output_path)
+        return
+
+    if result.status == "needs-review":
+        folder_id = config.google_drive_needs_review_folder_id
+    else:
+        folder_id = config.google_drive_processed_folder_id
+
+    oauth_client_path = config.google_service_account_key_path.parent / "oauth-client.json"
+    service = get_user_drive_service(oauth_client_path)
+
+    file_metadata = {
+        "name": result.output_path.name,
+        "parents": [folder_id],
+    }
+    media = MediaFileUpload(str(result.output_path), mimetype="image/jpeg")
+
+    uploaded = service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields="id, name",
+    ).execute()
+
+    logging.info("Uploaded to Drive: %s (id=%s, folder=%s)",
+                 uploaded.get("name"), uploaded.get("id"), folder_id)
 
 
 def cleanup_temp_files(paths: Iterable[Path]) -> None:
