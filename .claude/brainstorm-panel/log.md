@@ -37,3 +37,17 @@ Append-only record of what each panel run produced and what got tuned at the use
 - Anti-AI skeptic continued to earn its standing seat: flagged generic patterns (e.g., "Many of," "simple memory," "the viewer") with specific cuts attached.
 - Recurring across three panels now: **Sveta wants flavor preserved when in doubt.** Director sided with Painter+Buyer on protecting "learning to really see" against Skeptic's cliché flag. Same instinct as "keep more on the card, lean on typography" from the gallery-grid panel. Promoting this to CLAUDE.md when the next panel confirms it.
 - Process note: the artifact-as-context worked well. Sveta's draft text was the data; no separate inventory needed. For prose-editing targets here, the artifact IS the data.
+
+---
+
+## 2026-06-10 — painting descriptions spec (greenfield, voice-derivation)
+
+- Proposed: Literary editor (director), Voice anthropologist, Visual storyteller, Painter who began in her 50s, Anti-AI skeptic, Buyer/collector. User added: none — but Sveta added a meta-directive mid-run that became the most durable outcome: **`sveta-writing` skill** at `.claude/skills/sveta-writing/SKILL.md`, with a bilingual prompt-reading rule that applies always (also saved as feedback memory).
+- Style: swarm → director-led (Editor). 2-round cap, ran clean. All 6 R1 agents returned in ~50s each in parallel; R2 director synthesized in ~110s with no rewrites needed on the 5 sample drafts.
+- **Convergence was strong on the bans, divergent on the requirements.** Editor wanted "all three" required ingredients; Buyer wanted "at least one of three" rotating; Painter wanted "the small thing" elevated. Director folded all three by splitting *content* requirements (small thing + hedge, both mandatory) from *voice-pattern* requirement (one of three, rotating). The compromise resolved the templated-feel risk Buyer flagged without losing Editor's structural floor.
+- **Anti-AI skeptic continues to earn its standing seat** — the ~30-word ban list and the em-dash cap rationale (the About's density is the *upper* bound, not the target) were skeptic-driven and survived intact.
+- **Painter's "small thing" rule turned out to be the load-bearing constraint.** Without it, all the voice-marker rules still allow generic landscape copy. With it, each description must point to something a non-painter would scroll past. This is the rule the next greenfield-voice panel should propose by default.
+- **Format note: the voice anchor IS the data, the painting subjects are scaffolding.** For voice-derivation panels here, lead with the locked voice source (About statement), not with the deliverables.
+- **Promoting the "preserve flavor over minimalism" pattern to CLAUDE.md.** Three panels now: gallery grid kept meta + price, About kept "learning to really see," descriptions promoted "the small thing" over efficiency. Confirmed enough.
+- Domain quirk for next time: **Sveta switches into Russian when she means it most.** Build that into the prompt-reading layer (now codified in `feedback_bilingual_prompts.md` memory + the sveta-writing skill).
+- Process note: skill-as-deliverable is durable. Earlier panels left lessons in the log; this one left a callable spec at `.claude/skills/sveta-writing/SKILL.md` that the next writing task picks up automatically. Worth doing this for future voice/style/UX panels here.

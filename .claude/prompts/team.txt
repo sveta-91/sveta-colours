@@ -1,0 +1,55 @@
+создай команду из разных агентов:
+веб дезайнер, фронтенд разработчик, тестер, художественный критик, коллекционер картин, маркетолог.
+Задача:
+есть сайт с картинами /Users/sveta.mordkovich/private/sveta-colours/index.html,
+его нужно сделать более привлекательным с точки зрения потенциальных покупателей.
+Агенты должны обмениваться идеями, критикой, жалобами, опытом, передавать сайт друг другу на ревью и разработку,
+пока все не будут удовлетворены.
+
+
+создай команду из разных агентов:
+OpenAI integration expert, фронтенд разработчик, тестер, image processing expert.
+Задача: Создай HTML-page с кнопкой загрузки фото. Пользователь загружает изображение и видит его
+AI (chatGPT) processes (crop, correct, normalize) + добавить watermark. User may adjust manually.
+дать название (title)
+download or save to google drive with the title: https://drive.google.com/drive/folders/1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX
+update excel https://docs.google.com/spreadsheets/d/170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI/edit?gid=1031748871#gid=1031748871:
+add new or update existing row with the same title
+AI (chatGPT) analyses image and fills in empty fields automatically. User may adjust manually.
+Агенты должны обмениваться идеями, критикой, жалобами, опытом, передавать сайт друг другу на ревью и разработку,
+пока все не будут удовлетворены.
+Ask questions one at a time so it’s convenient for me to respond.
+If there are any follow-up questions after my answer, ask them,
+and only once everything is completely clear, move on to the next question.
+
+Создай HTML-HTML-артефакт с кнопкой загрузки фото. Пользователь загружает изображение и видит его
+remove all watermarks (based on /Users/sveta.mordkovich/private/sveta-colours/docs/watermark-removal-playbook.md), добавить watermark @sveta-colours
+дать название (title)
+download or save to google drive with the title: https://drive.google.com/drive/folders/1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX
+update excel https://docs.google.com/spreadsheets/d/170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI/edit?gid=1031748871#gid=1031748871:
+add new or update existing row with the same title (logic bases on /Users/sveta.mordkovich/private/sveta-colours/tools/photo_manager.html)
+Claude analyses image and fills in empty fields automatically. User may adjust manually.
+
+Создай HTML-артефакт с кнопкой загрузки фото. Пользователь загружает изображение и видит его
+добавить watermark @sveta-colours
+дать название (title)
+save image to google drive with the title: https://drive.google.com/drive/folders/1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX
+update excel https://docs.google.com/spreadsheets/d/170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI:
+if the image is new (no row with the same title in sheets): add new row,
+Claude-in-Claude analyses image, suggests description, interactivelly discuss it, fills in empty fields automatically. User may adjust manually.
+if row with the same title exists - update existing row.
+
+
+  ┌─────┬───────────────────────────┬─────────────────────────────────────────────────┐
+  │  #  │           Агент           │                  Чем уникален                   │
+  ├─────┼───────────────────────────┼─────────────────────────────────────────────────┤
+  │ 1   │ AI integration manager    │ Исследует AI-провайдеров под "no extra payment" │
+  ├─────┼───────────────────────────┼─────────────────────────────────────────────────┤
+  │ 2   │ Google integration expert │ Drive/Sheets/OAuth, scopes, дубликаты по title  │
+  ├─────┼───────────────────────────┼─────────────────────────────────────────────────┤
+  │ 3   │ Frontend developer        │ UX, a11y, разметка, error states                │
+  ├─────┼───────────────────────────┼─────────────────────────────────────────────────┤
+  │ 4   │ Tester (QA)               │ Сценарии, edge cases, баги с repro              │
+  ├─────┼───────────────────────────┼─────────────────────────────────────────────────┤
+  │ 5   │ Image processing expert   │ Качество crop/perspective/normalize/watermark   │
+  └─────┴───────────────────────────┴─────────────────────────────────────────────────┘
