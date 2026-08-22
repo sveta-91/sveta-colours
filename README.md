@@ -13,13 +13,22 @@ docs/
   roadmap.md                     — image pipeline implementation roadmap
   photo-manager-setup.md         — one-time Google setup + acceptance checklist
   portfolio-playbook.md          — how to build a similar site from scratch
+  watermark-removal-playbook.md  — techniques for clearing watermarks off artwork photos
   superpowers/                   — design/spec docs and rewrite plans
 scripts/
+  audit_gallery.py               — read-only pre-deploy audit of the gallery sheet data
+  verify_site.py                 — parameterized Selenium UI verification
+  dev.sh                         — start the local static server for the photo manager
   templates/                     — reusable Selenium verify templates
 tools/
   photo_manager.html             — local HTML page for processing photos end-to-end
   image_pipeline/                — Python pipeline (download → process → upload)
   favicon/                       — favicon generation scripts (palette sampling + final render)
+.claude/
+  skills/publish-painting/       — the per-painting publishing workflow (canonical spec)
+  skills/sveta-writing/          — voice spec for site copy + bilingual prompt-reading rule
+  brainstorm-panel/roster.md     — confirmed panel roster + standing rules
+  brainstorm-panel/log.md        — per-panel retrospectives
 CLAUDE.md                        — project instructions for Claude Code agents
 ```
 
