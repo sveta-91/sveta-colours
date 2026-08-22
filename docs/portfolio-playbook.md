@@ -303,6 +303,17 @@ See `scripts/templates/selenium_verify.py`. The pattern:
 - **`save_screenshot` captures the viewport only**, not the full page. For
   full-page screenshots, use Chrome's DevTools protocol via
   `driver.execute_cdp_cmd("Page.captureScreenshot", {"captureBeyondViewport": True})`.
+- **The gallery boots asynchronously.** `loadFromSheet()` fetches the published
+  CSV after first paint, so the page renders "Loading paintings…" before any
+  card exists. Waiting on `.painting-card` happens to work only because the
+  card can't appear until the fetch resolves — but any wait keyed to a
+  *non-card* selector (chapter headings, the collection header, the hero) can
+  fire against the pre-data DOM and measure nothing. Poll until the loading
+  text is gone, then wait for the selector.
+- **Favicons are not verifiable by Selenium at all.** They live in the browser
+  tab — browser chrome, not the viewport — so no screenshot can show one. Use
+  `curl` against `/icons/favicon*.{svg,png}` and grep the served HTML for the
+  `<link rel="…icon">` tags instead.
 
 ---
 
