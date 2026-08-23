@@ -317,6 +317,37 @@ See `scripts/templates/selenium_verify.py`. The pattern:
 
 ---
 
+## Spec-vs-renderer drift
+
+The most expensive class of bug here isn't a crash — it's a rule agreed in one
+place and silently contradicted in another, where nothing fails and nobody
+looks.
+
+**The instance (2026-08-23).** The voice spec locks painting descriptions at
+2–4 sentences, three being the sweet spot, with the closing sentence carrying
+the hedge. The modal's `truncateDescription()` returned *"first 2 sentences OR
+240 chars, whichever is **shorter**"*. The sentence rule therefore won every
+time, and the modal amputated the last sentence of **20 of the 21 live
+descriptions** — precisely the sentence the spec cares most about. Only the one
+2-sentence description ever displayed in full. It shipped that way for months
+and was found by the artist noticing an ellipsis, not by any check.
+
+**Why nothing caught it.** `audit_gallery.py` validates the *data* and the data
+was fine. The renderer was fine in isolation too. The defect existed only in the
+disagreement between them, and no artifact owned that relationship.
+
+**The rule.** When a spec fixes a shape for content — length, sentence count,
+structure — the renderer must not impose a second, tighter limit of its own. If
+it needs a cap at all, make it a guard set well outside the spec's range
+(`DESC_MAX_CHARS = 400` against a 60-word spec) and say so in a comment that
+names the spec. Any cap inside the spec's range is a silent content editor.
+
+**Check it this way:** run the spec's own bounds against live data through the
+renderer's function, not by reading the code. Twenty of twenty-one is obvious in
+one line of output and invisible on inspection.
+
+---
+
 ## Pitfalls that cost real time
 
 A flat list, ordered by how long the fix took.
