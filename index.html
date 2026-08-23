@@ -1973,24 +1973,23 @@ function formatDimensions(p) {
 
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
-/* Hard-cap a description to keep the modal scannable.
-   Returns the FIRST 2 sentences OR a 240-char prefix — whichever is
-   shorter — with a trailing ellipsis when truncation occurred. */
+/* Safety cap only — descriptions are meant to show in full.
+   The old rule (first 2 sentences OR 240 chars, whichever is SHORTER) cut
+   20 of 21 live descriptions, because the voice spec targets 2-4 sentences
+   with three as the sweet spot — so the rule amputated the closing sentence
+   of nearly every one, which is exactly where the hedge lands. The spec
+   already hard-caps length at 60 words (~330 chars), so DESC_MAX_CHARS is
+   just a guard against a pathological sheet entry, not a design choice.
+   See .claude/skills/sveta-writing/SKILL.md ("Length"). */
+const DESC_MAX_CHARS = 400;
 function truncateDescription(text) {
   if (!text) return '';
   const clean = String(text).trim();
-  if (!clean) return '';
-  // Split into sentences (keep terminator). Quick, language-agnostic-ish.
-  const sentences = clean.match(/[^.!?]+[.!?]+(\s+|$)|[^.!?]+$/g) || [clean];
-  const twoSent = sentences.slice(0, 2).join('').trim();
-  const byChars = clean.length > 240 ? clean.slice(0, 240).trim() + '…' : clean;
-  // Whichever is shorter wins.
-  const chosen = twoSent.length <= byChars.length ? twoSent : byChars;
-  // Append ellipsis if we actually trimmed and didn't already.
-  if (chosen.length < clean.length && !/[…]$/.test(chosen)) {
-    return chosen.replace(/[.!?]?\s*$/, '') + '…';
-  }
-  return chosen;
+  if (!clean || clean.length <= DESC_MAX_CHARS) return clean;
+  // Cut on a word boundary so we never split mid-word.
+  const cut = clean.slice(0, DESC_MAX_CHARS);
+  const lastSpace = cut.lastIndexOf(' ');
+  return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut).replace(/[.!?,;:]?\s*$/, '') + '…';
 }
 
 function paintingMeta(p) {
@@ -2226,9 +2225,8 @@ function openModal(id, opts) {
     ? `<div class="modal-price sold">Sold</div>`
     : (p.price ? `<div class="modal-price">${CURRENCY}${p.price.toLocaleString()}</div>` : '');
 
-  // Trim long descriptions to keep the modal scannable: hard-cap at the
-  // first 2 sentences OR 240 chars, whichever is shorter. Ellipsis on
-  // truncate.
+  // Descriptions display in full; truncateDescription only guards against a
+  // pathological sheet entry (> DESC_MAX_CHARS).
   const truncatedDesc = truncateDescription(p.description);
 
   const ctaHTML = p.sold

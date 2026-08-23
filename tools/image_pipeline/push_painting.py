@@ -6,6 +6,7 @@ Usage:
                           [--size "..."] [--price "..."] [--collection "..."]
                           [--orientation portrait|landscape]
                           [--hero] [--sold] [--recent N]
+                          [--crop-from top|center|bottom|left|right]
                           [--dry-run]
 
 Mirrors the Drive folder + Paintings sheet conventions. Replaces an existing
@@ -133,7 +134,8 @@ def detect_orientation(image_path: Path) -> str:
     return "landscape" if w > h else "portrait"
 
 
-def check_canvas_aspect(image_path: Path, size_str: str) -> Path:
+def check_canvas_aspect(image_path: Path, size_str: str,
+                        crop_from: str = "top") -> Path:
     """Enforce photo aspect ratio matches the painting's physical canvas.
 
     Why: gallery cards on /works lock to canvas aspect (so paintings of
@@ -142,8 +144,12 @@ def check_canvas_aspect(image_path: Path, size_str: str) -> Path:
     bars or, worse, off-grid card heights. Catch the drift at ingest.
 
     Returns the path to use for upload — either the original (within 2%
-    tolerance) or a sibling `*.canvas.<ext>` (snap-cropped centered when
-    drift is 2-5% per-side). Exits with a reshoot message above 5%.
+    tolerance) or a sibling `*.canvas.<ext>` (snap-cropped when drift is
+    2-5% per-side). Exits with a reshoot message above 5%.
+
+    `crop_from` picks the edge the snap-crop eats. Default "top": a height
+    trim comes entirely off the top, because the signature lives on the
+    bottom edge. Width trims are symmetric unless "left"/"right" is given.
     """
     if not size_str:
         return image_path
@@ -191,20 +197,57 @@ def check_canvas_aspect(image_path: Path, size_str: str) -> Path:
             f"tighter in Grok, or reshoot."
         )
 
+    # WHERE the pixels come off matters as much as how many.
+    #
+    # Height trims default to taking the whole bite off the TOP. Sveta signs
+    # the bottom edge — "SM 2025" — and a symmetric crop puts half the bite
+    # straight through it: on Waiting For Rain (2026-08-23) a 48px bottom trim
+    # all but erased the signature, while the 95px it needed off the top was
+    # uniform sky. Bottom edge = signature, top edge = usually sky. Bias up.
+    #
+    # Width trims stay symmetric: she signs bottom-LEFT on some paintings and
+    # bottom-RIGHT on others, so neither side is reliably safe and centring is
+    # the least-bad default. Override with --crop-from when it isn't.
+    #
+    # trim_pct keeps its symmetric-equivalent meaning above, so the 5%
+    # accept/reject boundary is exactly what it always was — only the crop
+    # position changed.
     if photo_aspect > canvas_aspect:
-        x0 = (w_px - new_w) // 2
+        removed = w_px - new_w
+        if crop_from == "left":
+            x0 = removed
+        elif crop_from == "right":
+            x0 = 0
+        else:
+            x0 = removed // 2
         cropped = img[:, x0:x0 + new_w]
+        edge = (f"{removed}px off the left" if crop_from == "left"
+                else f"{removed}px off the right" if crop_from == "right"
+                else f"{removed}px split L/R")
     else:
-        y0 = (h_px - new_h) // 2
+        removed = h_px - new_h
+        if crop_from == "bottom":
+            y0 = 0
+        elif crop_from == "center":
+            y0 = removed // 2
+        else:                      # "top" — the default, protects the signature
+            y0 = removed
         cropped = img[y0:y0 + new_h, :]
+        edge = (f"{removed}px off the bottom" if crop_from == "bottom"
+                else f"{removed}px split T/B" if crop_from == "center"
+                else f"{removed}px off the top")
 
     out_path = image_path.parent / f"{image_path.stem}.canvas{image_path.suffix}"
     if not cv2.imwrite(str(out_path), cropped):
         sys.exit(f"Failed to write snap-cropped image: {out_path}")
     print(
         f"aspect snap:    photo {photo_aspect:.3f} → canvas "
-        f"{canvas_aspect:.3f} ({delta_pct*100:.1f}% off; cropped "
-        f"{trim_pct*100:.1f}% per side → {out_path.name})"
+        f"{canvas_aspect:.3f} ({delta_pct*100:.1f}% off; {edge} "
+        f"→ {out_path.name})"
+    )
+    print(
+        "                check the cropped edge before publishing — "
+        "verify the signature survived"
     )
     return out_path
 
@@ -380,6 +423,13 @@ def main() -> int:
                    help="Set hero=TRUE. Without this flag: '' for new, preserved for existing.")
     p.add_argument("--recent", default=None,
                    help="Set recent position '1'..'6'. Use empty string to clear.")
+    p.add_argument("--crop-from",
+                   choices=["top", "center", "bottom", "left", "right"],
+                   default="top",
+                   help="Which edge the aspect snap-crop takes pixels from. "
+                        "Default 'top': height trims come off the top, "
+                        "protecting the signature on the bottom edge. "
+                        "Width trims are symmetric unless left/right given.")
     p.add_argument("--dry-run", action="store_true")
     args = p.parse_args()
 
@@ -405,14 +455,23 @@ def main() -> int:
     print(f"dry-run:        {args.dry_run}")
 
     try:
-        image_for_upload = check_canvas_aspect(args.image, args.size or "")
-        file_id = upload_or_replace(drive, image_for_upload, name, args.dry_run)
-        print(f"drive file id:  {file_id}")
-
+        # Read the sheet BEFORE uploading: on a re-push the canvas size lives
+        # in the existing row, not on the command line. Checking against
+        # `args.size` alone silently skipped the aspect gate for every update
+        # — exactly the case it was added for (a replacement photo shot at a
+        # different aspect than the canvas). Fall back to the row's `size`.
         header, rows = read_sheet(sheets)
         header = ensure_header(sheets, header, args.dry_run)
         found_idx, existing = find_match(rows, args.title)
         old_image_id = existing.get("image", "").strip()
+
+        size_for_check = args.size or existing.get("size", "")
+        if size_for_check and not args.size:
+            print(f"canvas size:    {size_for_check} (from sheet row)")
+        image_for_upload = check_canvas_aspect(args.image, size_for_check,
+                                              args.crop_from)
+        file_id = upload_or_replace(drive, image_for_upload, name, args.dry_run)
+        print(f"drive file id:  {file_id}")
 
         row_values = build_row(args, header, file_id, existing, orientation_auto)
         action = write_row(sheets, row_values, header, found_idx,
