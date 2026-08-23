@@ -33,6 +33,7 @@ import sys
 from pathlib import Path
 
 import cv2
+from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -71,9 +72,21 @@ def get_user_creds() -> Credentials:
     if TOKEN_PATH.exists():
         creds = Credentials.from_authorized_user_file(str(TOKEN_PATH), SCOPES)
     if not creds or not creds.valid:
+        refreshed = False
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+                refreshed = True
+            except RefreshError as exc:
+                # An unpublished ("Testing") OAuth consent screen expires refresh
+                # tokens after 7 days, so a cached token goes stale between
+                # publishing sessions and Google answers 'invalid_grant'. That's
+                # recoverable — drop the dead token and re-consent in the browser
+                # instead of dying with a traceback.
+                print(f"cached token rejected ({exc.args[0]}) — re-authenticating")
+                TOKEN_PATH.unlink(missing_ok=True)
+                creds = None
+        if not refreshed:
             if not OAUTH_CLIENT_PATH.exists():
                 sys.exit(f"OAuth client file not found: {OAUTH_CLIENT_PATH}")
             flow = InstalledAppFlow.from_client_secrets_file(

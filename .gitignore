@@ -10,3 +10,7 @@ tools/image_pipeline/push-painting-token.json
 tools/image_pipeline/tmp/
 tools/image_pipeline/output/
 tools/image_pipeline/logs/
+
+# Local working files
+.DS_Store
+new-paintings/
