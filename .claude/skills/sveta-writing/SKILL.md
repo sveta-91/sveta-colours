@@ -136,6 +136,41 @@ Two shapes are OK: a choice she made (*kept the wood grain showing, moved the ja
 
 If a draft says more than this, cut.
 
+### What she actually corrects for
+
+Three panels and every logged correction point the same way. Read
+[`corrections.md`](corrections.md) for the evidence; this is the summary.
+
+**1. She corrects the SUBJECT, never the prose.** Not once has she said a word
+was wrong. Every correction has been *"you described the wrong thing."* The
+funnels in *Vancouver*, the woman "looking" instead of smelling in *Warkworth* —
+both drafts were clean by every rule in this file and both were still wrong.
+
+> **So: settle what the painting is about before writing a line.** If you
+> haven't been told, ask — in one plain question, in Russian if that's easier
+> for her. A rule-compliant description of the wrong subject is a total loss;
+> a rough description of the right one is fixable.
+
+**2. Her own version is always shorter, because it deletes the explanation.**
+Her *Vancouver* went 45 → 26 words by cutting everything that accounted for
+itself. She kept the image and dropped the reasoning. When a draft feels thin,
+the fix is a truer detail, never a clause that explains the detail you have.
+
+**3. She won't be told how it felt.** *"not really, I want to express my
+temperament and my feelings of the moment, may be not calm and not warm."*
+The mood may be unpleasant; that's allowed. Name the thing, let the feeling be
+inferred, and hedge the meaning rather than asserting it.
+
+**4. Her Russian is the instruction; her English is the summary.** When both
+appear, the Russian is operative. Russian asides are content, not commentary.
+Идиомы читай как идиомы: *«красивую фразу»* means *make it well-made*, not
+*use the word beautiful*.
+
+**5. Verify the object at full resolution.** Two `FACTUAL-WRONG` entries come
+from describing a thumbnail — "deck chairs" that were funnels, "portholes" that
+were lifeboats. Open the image at full size and name only what you can actually
+see.
+
 ### The pre-publish test
 
 Before any description ships, all three must pass:
@@ -148,7 +183,39 @@ If any test fails, rewrite — don't loosen the test.
 
 ---
 
-## 3. Scope — when this skill applies
+---
+
+## 3. Self-correction protocol
+
+This skill is designed to get less wrong over time. The mechanism is
+[`corrections.md`](corrections.md) — an append-only log of every correction she
+has made, with a promotion rule.
+
+**Your obligations, in order:**
+
+1. **Before drafting** — read `corrections.md`. The category index at the top is
+   the short version; it takes a few seconds.
+2. **After any correction from Sveta on user-facing text** — append an entry in
+   the documented format, **in the same turn**. Quote her verbatim, in her own
+   language. Do not translate the Russian away; the wording is the data.
+3. **Then check the count for that category.** At 2 it becomes a candidate — flag
+   it while drafting. At 3 it becomes a rule: write it into this file's body,
+   cite the dates, and leave the entries in the log.
+4. **Tighten freely, loosen only on her word.** A correction that would let
+   drafts do *more* is not self-promoting — she has to say it, as she did on
+   2026-08-22 with the word floor. Her approving something is not permission;
+   she approves things she'd still rather not have.
+5. **When a rule and her instruction conflict, she wins** — then log the conflict
+   as a `RULE-CHANGE` entry so the rule gets fixed rather than quietly broken
+   again next time.
+
+The failure this prevents: re-deriving the same lesson every few months because
+it lived in a session transcript that no longer exists. Sessions from 2026-06-08
+and 2026-06-10 are already gone; what survived is what got written down.
+
+---
+
+## 4. Scope — when this skill applies
 
 **In scope (site-visible text):**
 
@@ -170,16 +237,17 @@ The bilingual reading rule still applies in the out-of-scope contexts; the voice
 
 ---
 
-## 4. The bar
+## 5. The bar
 
 > Any buyer reads any description and recognizes the same voice as the About statement. Each description is anchored in *this specific painting*, not generic. Sveta says "yes, this is me" with no edits she'd un-do within a week.
 
 ---
 
-## 5. Evolution log
+## 6. Evolution log
 
 Sveta asked for this skill to be **iterative — adjust by the way.** Append a dated note when something material changes.
 
 - **2026-06-10 — v1.** Created. Bilingual reading rule + voice anchor.
+- **2026-08-22 — v1.3.** Made the skill self-correcting. Added `corrections.md` (append-only log + 1/2/3 promotion protocol, seeded with 9 entries mined from the panel log, memory, and the 2026-08-22 session), a "What she actually corrects for" section, and the self-correction protocol. Headline finding from the mining: **every correction she has ever made is about the subject, not the prose** — no rule in this file would have caught any of them.
 - **2026-08-22 — v1.2.** Lower word bound relaxed: the 32-word floor is waived for descriptions Sveta writes herself (her ruling: *«нижняя граница снимается, когда текст пишу я»*). Prompted by *Vancouver* — her own 26-word text was stronger than the 45-word draft it replaced, precisely because it doesn't explain. `scripts/audit_gallery.py` mirrors this via `SVETA_AUTHORED`; add a title there when she supplies the text.
 - **2026-06-10 — v1.1.** Voice spec locked from R2 director synthesis of the paintings-descriptions panel. Key rulings: 32–55 word range with 60 ceiling; em-dash cap 2 (typical 1); required-ingredients restructured into (A) small thing + (B) hedged lyrical + (C) one of three About-patterns rotating; "from the easel" voice allowed ~1 in 5, fact-not-feeling; *beauty* added to hard bans; memory anchor demoted from required to encouraged. 5 sample descriptions drafted; awaiting Sveta's review of Morning Coffee outdoor-vs-window question.
