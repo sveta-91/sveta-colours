@@ -3674,9 +3674,12 @@ C4. Sold cards drop the price entirely (art-critic note: a
     where it informs.
 
 MODAL
-M1. Description hard-capped to first 2 sentences OR 240 chars
-    (whichever is shorter) via truncateDescription(). Ellipsis
-    when trimmed.
+M1. Description renders IN FULL. truncateDescription() is a
+    safety guard only (DESC_MAX_CHARS = 400, word-boundary cut,
+    ellipsis when trimmed). The earlier "first 2 sentences OR
+    240 chars, whichever is shorter" rule was removed 2026-08-23:
+    it cut 20 of 21 live descriptions, always dropping the
+    closing sentence where the voice spec puts the hedge.
 M2. Meta table split: primary fields (Size, Medium, Year,
     Signed) always visible; secondary fields (Framing, Ships
     from, Authenticity) collapsed into a <details>Details</>
