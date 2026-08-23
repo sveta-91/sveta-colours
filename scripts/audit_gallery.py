@@ -78,6 +78,16 @@ RECENT_MIN, RECENT_MAX = 1, 6
 # ("Length": 32-55 words, hard ceiling 60). The audit uses the outer bounds.
 DESC_MIN_WORDS, DESC_MAX_WORDS = 32, 60
 
+# Titles whose description Sveta wrote herself. The 32-word floor exists to
+# stop a drafted description from reading like a caption — it has no business
+# policing her own writing, which is the source the spec was derived FROM
+# (ruling 2026-08-22: "нижняя граница снимается, когда текст пишу я").
+# The 60-word ceiling still applies to everyone. Add a title here whenever she
+# supplies the text; match is case-insensitive.
+SVETA_AUTHORED = {
+    "vancouver",
+}
+
 # Em-dash cap, from SKILL.md "Sentence shapes": 1-2 per description, never 3.
 MAX_EM_DASHES = 2
 
@@ -488,11 +498,19 @@ def check_description(label: str, desc: str, sheet_row: int) -> list[Finding]:
     out: list[Finding] = []
 
     wc = word_count(desc)
-    if wc < DESC_MIN_WORDS or wc > DESC_MAX_WORDS:
+    # The floor is waived for descriptions Sveta wrote herself; the ceiling
+    # is not. See SVETA_AUTHORED.
+    sveta_wrote_it = label.strip().lower() in SVETA_AUTHORED
+    floor = 0 if sveta_wrote_it else DESC_MIN_WORDS
+    if wc < floor or wc > DESC_MAX_WORDS:
+        target = (
+            f"at most {DESC_MAX_WORDS} (floor waived — Sveta's own text)"
+            if sveta_wrote_it
+            else f"{DESC_MIN_WORDS}-{DESC_MAX_WORDS}"
+        )
         out.append(Finding(
             "INFO", "desc-length", label, "description",
-            f"{wc} words — sveta-writing target is "
-            f"{DESC_MIN_WORDS}-{DESC_MAX_WORDS}",
+            f"{wc} words — sveta-writing target is {target}",
             sheet_row,
         ))
 

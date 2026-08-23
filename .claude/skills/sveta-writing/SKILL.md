@@ -60,6 +60,7 @@ If a draft doesn't sound like the same person wrote it, the draft is wrong. Not 
 #### Length
 
 - **32–55 words per description. Hard ceiling 60.**
+- **The 32-word floor applies to drafted text only — it is waived whenever Sveta writes the description herself.** The floor exists to stop a draft from reading like a caption; it has no authority over the voice it was derived from. Her own text can be as short as it wants. The 60-word ceiling still applies.
 - **2–4 sentences; three is the sweet spot.** Two when the painting is small and spare. Four only when the fourth is half a clause.
 - Below 32 words you can't fit a concrete-plus-lyrical pair AND a hedge without reading captioned. Past 60, the buyer feels sold to.
 
@@ -180,4 +181,5 @@ The bilingual reading rule still applies in the out-of-scope contexts; the voice
 Sveta asked for this skill to be **iterative — adjust by the way.** Append a dated note when something material changes.
 
 - **2026-06-10 — v1.** Created. Bilingual reading rule + voice anchor.
+- **2026-08-22 — v1.2.** Lower word bound relaxed: the 32-word floor is waived for descriptions Sveta writes herself (her ruling: *«нижняя граница снимается, когда текст пишу я»*). Prompted by *Vancouver* — her own 26-word text was stronger than the 45-word draft it replaced, precisely because it doesn't explain. `scripts/audit_gallery.py` mirrors this via `SVETA_AUTHORED`; add a title there when she supplies the text.
 - **2026-06-10 — v1.1.** Voice spec locked from R2 director synthesis of the paintings-descriptions panel. Key rulings: 32–55 word range with 60 ceiling; em-dash cap 2 (typical 1); required-ingredients restructured into (A) small thing + (B) hedged lyrical + (C) one of three About-patterns rotating; "from the easel" voice allowed ~1 in 5, fact-not-feeling; *beauty* added to hard bans; memory anchor demoted from required to encouraged. 5 sample descriptions drafted; awaiting Sveta's review of Morning Coffee outdoor-vs-window question.
