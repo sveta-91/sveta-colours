@@ -256,12 +256,37 @@ Other rules:
 Add `transition: none !important` to the focus rule. The fade is
 imperceptible anyway.
 
-### Hash routing doesn't deep-link on first load
+### Routing: every page has a hash URL
 
-Our site renders SPA-style with `showPage(name)`. Loading `/#works` directly
-shows the home page, then the hash handler fires. In Selenium tests, this
-means waiting for `.hang-chapter` after `showPage('paintings')`, **not**
-just hitting the URL.
+`showPage(page)` pushes a hash; a single `popstate` listener drives both pages
+and the painting modal; boot reads the hash before the first `render()`.
+
+| Page key | URL |
+| --- | --- |
+| `home` | no hash |
+| `paintings` | `#paintings` (legacy `#works` still resolves) |
+| `collections` | `#collections` |
+| `collection:<Name>` | `#collections/<slug>` (`Big City` → `big-city`) |
+| `about`, `faq`, `postcards`, `past` | `#<page>` |
+| painting modal | `#painting/<id>` — layered on top of whatever page is showing |
+
+Traps, each one hit while building it:
+
+- **Unknown hashes must be ignored, not routed home.** `pageFromHash()` returns
+  `null` for `#main` (the skip link) and anything else it doesn't know.
+- **Never `history.back()` and then `pushState` in the same tick.** `back()` is
+  async and lands *after* the push, undoing it. The modal's collection chips use
+  `closeModal(true)` + `showPage(…, { replace: true })` to swap the modal entry
+  for the collection page instead.
+- **The collection sub-tab row is a `div role="navigation"`, not `<nav>`.** The
+  global `nav { position: fixed }` rule pins any `<nav>` over the header.
+- An unknown collection slug falls back to the Collections overview, so a
+  renamed collection never 404s into a blank page.
+
+Primary nav: Home · Paintings · Collections · (Postcards, hidden until a
+watercolour exists) · About · FAQ. Collections pages carry a sub-tab row:
+Overview · one tab per collection with its painting count. It wraps on phones
+instead of scrolling sideways, so no tab is ever hidden.
 
 ### Modal class names
 
@@ -284,8 +309,9 @@ See `scripts/templates/selenium_verify.py`. The pattern:
 1. Open the deployed URL (GitHub Pages auto-deploys on push to main, takes
    ~30s).
 2. Wait for the SPA root element.
-3. Navigate via `driver.execute_script("showPage('paintings');")` — don't
-   trust hash routing on first load.
+3. Load the page's URL directly (`/#collections/flowers`), or drive it with
+   `showPage('paintings')`. Load `about:blank` first — a `get()` that only
+   changes the hash is a same-document navigation, not a reload.
 4. Wait for the page-specific selector (`.hang-chapter`, `.modal-overlay.open`).
 5. Sleep ~2s for masonry compute + image refinement.
 6. Use `execute_script` to dump geometry (`getBoundingClientRect`) for every

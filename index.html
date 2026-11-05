@@ -1237,6 +1237,55 @@ button.hero-image-wrap {
   line-height: 1.6;
 }
 
+/* --- Collection sub-tabs: Overview · Big City · Flowers · ... ---
+   Same type as the primary nav (0.84rem, 0.04em, underline = active) so it
+   reads as a second level of the same navigation. A <div role=navigation>,
+   not <nav>: the global `nav {position:fixed}` rule would pin it over the
+   header. Wraps to a second line on phones rather than hiding a tab behind
+   a sideways scroll. */
+.subtabs {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+.subtabs ul {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  border-bottom: 1px solid var(--hairline);
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+.subtabs a {
+  display: inline-block;
+  position: relative;
+  padding: 0.9rem 0 0.85rem;
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: color var(--transition);
+}
+.subtabs a:hover { color: var(--text); }
+.subtabs a.active { color: var(--text); }
+.subtabs a.active::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: var(--text);
+}
+.subtabs .n {
+  margin-left: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 768px) {
+  .subtabs { padding: 0 1.5rem; }
+  .subtabs ul { column-gap: 1.5rem; row-gap: 0; }
+}
+
 .modal-collections {
   margin-top: 1rem;
   display: flex;
@@ -1618,7 +1667,9 @@ body.cursor-hide * { cursor: none !important; }
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="navLinks">
-      <li><a href="#works" data-page="works" onclick="event.preventDefault(); showPage('paintings'); closeMenu();">Works</a></li>
+      <li><a href="#home" data-page="home" onclick="event.preventDefault(); showPage('home'); closeMenu();">Home</a></li>
+      <li><a href="#paintings" data-page="paintings" onclick="event.preventDefault(); showPage('paintings'); closeMenu();">Paintings</a></li>
+      <li><a href="#collections" data-page="collections" onclick="event.preventDefault(); showPage('collections'); closeMenu();">Collections</a></li>
       <li><a href="#postcards" data-page="postcards" onclick="event.preventDefault(); showPage('postcards'); closeMenu();">Postcards</a></li>
       <li><a href="#about" data-page="about" onclick="event.preventDefault(); showPage('about'); closeMenu();">About</a></li>
       <li><a href="#faq" data-page="faq" onclick="event.preventDefault(); showPage('faq'); closeMenu();">FAQ</a></li>
@@ -1893,6 +1944,7 @@ async function loadFromSheet() {
   assignCatalogNumbers();
   injectPaintingsLD();
   togglePostcardsNav();
+  currentPage = pageFromHash(window.location.hash) || 'home';
   render();
   hydrateFromHash();
 }
@@ -1918,9 +1970,61 @@ function togglePostcardsNav() {
 
 let currentPage = 'home';
 
-function showPage(page) {
+/* ROUTING — every page has a hash URL so reload, share and Back work.
+   home → no hash · paintings → #paintings (legacy #works accepted)
+   collections → #collections · collection:<Name> → #collections/<slug>
+   about/faq/postcards/past → #<page>. #painting/N stays the modal's.
+   Unknown hashes (#main skip link, etc.) are ignored, never routed home. */
+const SIMPLE_ROUTES = ['paintings', 'collections', 'postcards', 'about', 'faq', 'past'];
+
+function slugify(name) {
+  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function collectionNameOf(page) {
+  let name = page.split(':').slice(1).join(':');
+  try { name = decodeURIComponent(name); } catch (e) { /* ignore */ }
+  return name;
+}
+
+function hashForPage(page) {
+  if (page === 'home') return '';
+  if (page.startsWith('collection:')) return '#collections/' + slugify(collectionNameOf(page));
+  return '#' + page;
+}
+
+// Returns a page key for the current hash, or null when the hash isn't a page
+// route (modal hash, skip link, garbage) and the current page should stay.
+function pageFromHash(hash) {
+  const h = (hash || '').replace(/^#\/?/, '');
+  if (h === '' || h === 'home') return 'home';
+  if (h === 'works') return 'paintings';
+  if (SIMPLE_ROUTES.includes(h)) return h;
+  const m = h.match(/^collections\/(.+)$/);
+  if (m) {
+    const name = getAllCollections().find(n => slugify(n) === m[1]);
+    return name ? 'collection:' + encodeURIComponent(name) : 'collections';
+  }
+  return null;
+}
+
+function pageURL(page) {
+  return window.location.pathname + window.location.search + hashForPage(page);
+}
+
+function showPage(page, opts) {
+  opts = opts || {};
   currentPage = page;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!opts.fromHistory) {
+    try {
+      const url = pageURL(page);
+      if (url !== window.location.pathname + window.location.search + window.location.hash) {
+        if (opts.replace) history.replaceState({ page }, '', url);
+        else history.pushState({ page }, '', url);
+      }
+    } catch (e) { /* non-fatal */ }
+  }
+  window.scrollTo({ top: 0, behavior: opts.fromHistory ? 'auto' : 'smooth' });
   render();
 }
 
@@ -2241,7 +2345,7 @@ function openModal(id, opts) {
 
   const collectionsHTML = (p.collections || []).length
     ? `<div class="modal-collections">${(p.collections || []).map(c =>
-        `<button class="chip" type="button" onclick="closeModal();showPage('collection:${encodeURIComponent(c)}')">${c}</button>`
+        `<button class="chip" type="button" onclick="closeModal(true);showPage('collection:${encodeURIComponent(c)}', { replace: true })">${c}</button>`
       ).join('')}</div>`
     : '';
 
@@ -2349,7 +2453,7 @@ function closeModal(fromPopstate) {
       if (history.state && history.state.paintingId) {
         history.back();
       } else if (/#painting\//.test(window.location.hash)) {
-        history.replaceState({}, '', window.location.pathname + window.location.search);
+        history.replaceState({ page: currentPage }, '', pageURL(currentPage));
       }
     } catch (e) { /* non-fatal */ }
   }
@@ -2372,6 +2476,8 @@ window.addEventListener('popstate', () => {
     }
   }
   closeModal(true);
+  const page = pageFromHash(window.location.hash);
+  if (page && page !== currentPage) showPage(page, { fromHistory: true });
 });
 
 // Direct-link arrival: if the page loads with #painting/N, open that modal
@@ -2617,7 +2723,7 @@ function renderHero() {
           </div>` : ''}
           <p class="hero-tagline">Paintings of light, weather, and quiet places &mdash; acrylic and watercolor, made slowly.</p>
           <div class="hero-cta-row">
-            <a href="#works" class="link link-arrow link-accent" onclick="event.preventDefault(); showPage('paintings');">View available paintings</a>
+            <a href="#paintings" class="link link-arrow link-accent" onclick="event.preventDefault(); showPage('paintings');">View available paintings</a>
           </div>
         </div>
       </div>
@@ -2668,7 +2774,7 @@ function renderHome() {
           ${featured.map(cardHTML).join('')}
         </div>
         <div style="margin-top: 2rem; text-align: center;">
-          <a href="#works" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all works</a>
+          <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all paintings</a>
         </div>
       </div>
     </section>
@@ -2869,7 +2975,7 @@ function renderPaintings() {
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>Works</h1>
+      <h1>Paintings</h1>
       <p>Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.</p>
     </div>
     ${body}
@@ -2902,6 +3008,21 @@ function renderPostcards() {
   `;
 }
 
+function renderCollectionTabs(activeName) {
+  const names = getAllCollections();
+  if (!names.length) return '';
+  const tab = (label, page, active, count) =>
+    `<li><a href="${hashForPage(page)}"${active ? ' class="active" aria-current="page"' : ''} onclick="event.preventDefault(); showPage('${page}');">${label}${count != null ? `<span class="n">${count}</span>` : ''}</a></li>`;
+  return `
+    <div class="subtabs" role="navigation" aria-label="Collections">
+      <ul>
+        ${tab('Overview', 'collections', !activeName)}
+        ${names.map(name => tab(name, 'collection:' + encodeURIComponent(name), name === activeName,
+            PAINTINGS.filter(p => (p.collections || []).includes(name)).length)).join('')}
+      </ul>
+    </div>`;
+}
+
 function renderCollections() {
   const names = getAllCollections();
   return `
@@ -2910,10 +3031,11 @@ function renderCollections() {
       <h1>Collections</h1>
       <p>Paintings grouped by mood, light, and atmosphere.</p>
     </div>
+    ${renderCollectionTabs(null)}
     <section style="padding-top: 0;">
       <div class="section-inner">
         <h2 class="visually-hidden">All collections</h2>
-        <div class="category-grid" style="border-top: 1px solid var(--hairline);">
+        <div class="category-grid">
           ${names.length ? names.map(name => {
             const count = PAINTINGS.filter(p => (p.collections || []).includes(name)).length;
             const safe = encodeURIComponent(name);
@@ -2937,17 +3059,17 @@ function renderCollectionDetail(name) {
   const items = PAINTINGS.filter(p => (p.collections || []).includes(name));
   return `
     <div class="collection-header">
-      <a href="#collections" class="back-link" onclick="event.preventDefault(); showPage('collections');">&larr; All collections</a>
       <h1>${name}</h1>
       <p>${items.length} painting${items.length !== 1 ? 's' : ''} in this collection.</p>
     </div>
-    <section style="padding-top: 1rem;">
+    ${renderCollectionTabs(name)}
+    <section style="padding-top: 2.5rem;">
       <div class="section-inner">
         <div class="gallery-grid" data-masonry>
           ${items.length ? items.map(cardHTML).join('') : `
             <div style="text-align:center;padding:2.5rem 1rem;grid-column:1/-1;">
               <p style="color:var(--text-muted);font-family:var(--font-display);font-style:italic;margin-bottom:1rem;">No paintings in this collection yet.</p>
-              <a href="#works" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all available works &rarr;</a>
+              <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all paintings &rarr;</a>
             </div>`}
         </div>
       </div>
@@ -3066,7 +3188,7 @@ function renderPastWork() {
 function pageTitleFor(page) {
   const SUFFIX = 'Sveta Colours';
   if (page === 'home')        return `${SUFFIX} — Original Paintings`;
-  if (page === 'paintings')   return `Works · ${SUFFIX}`;
+  if (page === 'paintings')   return `Paintings · ${SUFFIX}`;
   if (page === 'postcards')   return `Postcards · ${SUFFIX}`;
   if (page === 'collections') return `Collections · ${SUFFIX}`;
   if (page === 'about')       return `About · ${SUFFIX}`;
@@ -3115,15 +3237,17 @@ function render() {
   renderFooter();
 
   // Update active nav link
-  document.querySelectorAll('nav .nav-links a').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('nav .nav-links a').forEach(a => { a.classList.remove('active'); a.removeAttribute('aria-current'); });
   let navKey = '';
-  if (currentPage === 'paintings' || currentPage === 'past' || currentPage.startsWith('collection:') || currentPage === 'collections') navKey = 'works';
+  if (currentPage === 'home') navKey = 'home';
+  else if (currentPage === 'paintings' || currentPage === 'past') navKey = 'paintings';
+  else if (currentPage === 'collections' || currentPage.startsWith('collection:')) navKey = 'collections';
   else if (currentPage === 'postcards') navKey = 'postcards';
   else if (currentPage === 'about') navKey = 'about';
   else if (currentPage === 'faq') navKey = 'faq';
   if (navKey) {
     const link = document.querySelector(`nav .nav-links a[data-page="${navKey}"]`);
-    if (link) link.classList.add('active');
+    if (link) { link.classList.add('active'); link.setAttribute('aria-current', 'page'); }
   }
 
   requestAnimationFrame(() => {
@@ -3202,7 +3326,7 @@ function renderFooter() {
         <div class="footer-col">
           <h4>Browse</h4>
           <ul>
-            <li><a href="#works" onclick="event.preventDefault(); showPage('paintings');">Works</a></li>
+            <li><a href="#paintings" onclick="event.preventDefault(); showPage('paintings');">Paintings</a></li>
             <li><a href="#postcards" onclick="event.preventDefault(); showPage('postcards');">Postcards</a></li>
             <li><a href="#collections" onclick="event.preventDefault(); showPage('collections');">Collections</a></li>
             <li><a href="#past" onclick="event.preventDefault(); showPage('past');">Past Work</a></li>
@@ -3343,7 +3467,7 @@ function initMobileCTA() {
 initCustomCursor();
 initMobileCTA();
 if (SHEET_CSV_URL) loadFromSheet();
-else { assignCatalogNumbers(); injectPaintingsLD(); togglePostcardsNav(); render(); hydrateFromHash(); }
+else { assignCatalogNumbers(); injectPaintingsLD(); togglePostcardsNav(); currentPage = pageFromHash(window.location.hash) || 'home'; render(); hydrateFromHash(); }
 </script>
 
 <!--
@@ -3544,7 +3668,7 @@ T11. sheetRowToPainting: sold is now determined ONLY by the
      gone.
 T12. Hero pickup logic: featured → first available → first
      painting overall.
-T13. All href="#" replaced with href="#works" / "#about" / etc
+T13. All href="#" replaced with href="#paintings" / "#about" / etc
      and onclick handlers explicitly call event.preventDefault().
      Right-click "open in new tab" lands somewhere sensible.
 T14. closeModal() checks lastFocusedElement.isConnected before
