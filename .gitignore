@@ -1,5 +1,9 @@
 __pycache__/
 .idea/
+.venv/
+
+# Claude Code personal overrides (permissions, sandbox exclusions)
+.claude/settings.local.json
 
 # Image pipeline — local-only files
 tools/image_pipeline/config.json

@@ -28,10 +28,16 @@ watermark removal, and publishing to the portfolio (Drive + Paintings sheet).
 ```bash
 cd tools/image_pipeline
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install --only-binary cryptography -r requirements.txt
 cp config.example.json config.json
 # Fill in Drive folder IDs in config.json
 ```
+
+`--only-binary cryptography`: on the macOS system Python (3.9, x86_64) the newest
+`cryptography` ships no wheel, so a plain install tries to compile it from Rust
+and fails on missing OpenSSL headers. The flag makes pip pick the newest version
+that has a prebuilt wheel. `selenium` is in `requirements.txt` for the UI
+verify scripts (`scripts/verify_site.py`). `.venv/` is gitignored.
 
 You need:
 - `service-account-key.json` (download from GCP) — used by `run_pipeline.py` reads

@@ -7,3 +7,4 @@ pillow-heif
 opencv-python
 numpy
 flask
+selenium
