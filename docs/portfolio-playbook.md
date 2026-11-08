@@ -318,6 +318,18 @@ Local Selenium runs can show every Drive image broken: `lh3.googleusercontent.co
 sometimes refuses requests from a `localhost` page. Confirm image loading
 against the deployed site before calling it a bug.
 
+### AI chat needs a proxy, never a key in the page
+
+The site has no server, so an OpenAI key in `index.html` would be public.
+The chat widget (`initChat()`) posts to a Cloudflare Worker (`worker/`) that
+holds the key, builds the system prompt from studio facts plus the live sheet
+CSV, and forwards to OpenAI. The conversation lives in the visitor's
+`sessionStorage` and is sent whole each turn, and the Worker stores nothing.
+`CHAT_ENDPOINT_PROD = ''` hides the widget completely, which is the safe default
+until the Worker is deployed. On localhost, `?chat=<url>` points the widget at a
+test Worker. The panel is a `div`, not a `<section>`, because the global
+`section` padding blew up its layout.
+
 ### Modal class names
 
 Modal element is `.modal-overlay.open`, not `.modal.open`. We wrote two

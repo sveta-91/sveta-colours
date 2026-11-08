@@ -1771,6 +1771,82 @@ body.cursor-hide * { cursor: none !important; }
   font-size: 0.85rem;
 }
 .skip-link:focus { top: 0; }
+
+/* ========================================================
+   AI CHAT — floating button + panel. Hidden entirely until a
+   CHAT_ENDPOINT is configured (JS removes [hidden]).
+   ======================================================== */
+.chat-launch {
+  position: fixed; right: 24px; bottom: 24px; z-index: 150;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  background: var(--accent); color: var(--paper);
+  border: 0; border-radius: 999px;
+  font-family: var(--font-display); font-style: italic; font-size: 1rem;
+  box-shadow: 0 6px 20px rgba(20, 19, 15, 0.18);
+  cursor: pointer;
+}
+.chat-launch:hover { background: var(--accent-hover); }
+.chat-launch[aria-expanded="true"] { display: none; }
+.chat-panel {
+  position: fixed; right: 24px; bottom: 24px; z-index: 150;
+  width: min(380px, calc(100vw - 32px));
+  height: min(560px, calc(100vh - 48px));
+  display: flex; flex-direction: column;
+  background: var(--paper); color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(20, 19, 15, 0.22);
+  overflow: hidden;
+}
+.chat-panel[hidden], .chat-launch[hidden] { display: none; }
+.chat-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+  padding: 0.85rem 1rem; border-bottom: 1px solid var(--hairline);
+}
+.chat-head h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
+.chat-head-actions { display: flex; gap: 0.25rem; flex-shrink: 0; white-space: nowrap; }
+.chat-head button {
+  background: none; border: 0; color: var(--text-muted); cursor: pointer;
+  font: inherit; font-size: 0.85rem; padding: 0.3rem 0.5rem; border-radius: 6px;
+}
+.chat-head button:hover { color: var(--text); background: var(--surface-alt); }
+.chat-note {
+  margin: 0; padding: 0.6rem 1rem; font-size: 0.78rem; color: var(--text-muted);
+  background: var(--surface); border-bottom: 1px solid var(--hairline);
+}
+.chat-note a { color: inherit; }
+.chat-log {
+  flex: 1; overflow-y: auto; padding: 1rem;
+  display: flex; flex-direction: column; gap: 0.6rem;
+}
+.chat-msg {
+  max-width: 85%; padding: 0.55rem 0.8rem; border-radius: 12px;
+  font-size: 0.92rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.chat-msg.assistant { align-self: flex-start; background: var(--surface-alt); }
+.chat-msg.user { align-self: flex-end; background: var(--accent); color: var(--paper); }
+.chat-msg.pending { color: var(--text-muted); font-style: italic; }
+.chat-msg.error { align-self: stretch; max-width: none; background: none; color: #8A2B1F; font-size: 0.85rem; }
+.chat-sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.chat-form { display: flex; gap: 0.5rem; padding: 0.75rem; border-top: 1px solid var(--hairline); }
+.chat-form textarea {
+  flex: 1; resize: none; height: 2.75rem; overflow-y: hidden;
+  padding: 0.6rem 0.75rem; border: 1px solid var(--border-strong); border-radius: 10px;
+  background: #fff; color: var(--text); font: inherit; font-size: 0.92rem;
+}
+.chat-form button {
+  padding: 0 1rem; border: 0; border-radius: 10px;
+  background: var(--accent); color: var(--paper); font: inherit; font-size: 0.9rem; cursor: pointer;
+}
+.chat-form button:disabled { opacity: 0.5; cursor: default; }
+@media (max-width: 768px) {
+  /* Sit above the sticky "Write to studio" bar (56px). */
+  .chat-launch { right: 16px; bottom: 72px; }
+  .chat-panel { right: 16px; bottom: 16px; height: min(560px, calc(100vh - 32px)); }
+}
 </style>
 </head>
 <body>
@@ -1816,6 +1892,25 @@ body.cursor-hide * { cursor: none !important; }
      Hidden on /faq /about-only pages would be possible but we keep it
      site-wide for the simple mailto. -->
 <a id="mobileCTA" class="mobile-cta" aria-label="Write to studio">Write to studio</a>
+
+<!-- AI chat (shown only when CHAT_ENDPOINT is set) -->
+<button type="button" id="chatLaunch" class="chat-launch" aria-controls="chatPanel" aria-expanded="false" hidden>Ask about the paintings</button>
+<div id="chatPanel" class="chat-panel" role="dialog" aria-labelledby="chatTitle" hidden>
+  <div class="chat-head">
+    <h2 id="chatTitle">Ask about the paintings</h2>
+    <div class="chat-head-actions">
+      <button type="button" id="chatReset">Start over</button>
+      <button type="button" id="chatClose" aria-label="Close chat">Close</button>
+    </div>
+  </div>
+  <p class="chat-note" id="chatNote"></p>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
+  <form class="chat-form" id="chatForm">
+    <label for="chatInput" class="chat-sr">Your question</label>
+    <textarea id="chatInput" rows="1" maxlength="1000" placeholder="Type a question…"></textarea>
+    <button type="submit" id="chatSend">Send</button>
+  </form>
+</div>
 
 <!-- Painting JSON-LD slot (filled by JS) -->
 <script type="application/ld+json" id="paintings-ld">{}</script>
@@ -3641,9 +3736,118 @@ function initMobileCTA() {
   onScroll();
 }
 
+/* ========================================================
+   AI CHAT — talks to the Cloudflare Worker in worker/, which
+   holds the OpenAI key. The conversation is kept in this tab's
+   sessionStorage and sent whole on every turn, so the assistant
+   remembers what was said. Nothing is stored server-side.
+   CHAT_ENDPOINT empty → the chat never appears.
+   On localhost, ?chat=<url> points it at a local Worker for testing.
+   ======================================================== */
+const CHAT_ENDPOINT_PROD = '';  // e.g. 'https://sveta-colours-chat.<account>.workers.dev/chat'
+const CHAT_ENDPOINT = (() => {
+  const local = ['localhost', '127.0.0.1'].includes(location.hostname);
+  const override = local ? new URLSearchParams(location.search).get('chat') : null;
+  return override || CHAT_ENDPOINT_PROD;
+})();
+const CHAT_STORE = 'sc-chat-v1';
+const CHAT_KEEP = 40;  // messages kept in the tab; the Worker sends the last 20 to the model
+const CHAT_GREETING = 'Hi. Ask me about any painting, sizes, prices, shipping or commissions.';
+
+function initChat() {
+  if (!CHAT_ENDPOINT) return;
+  const launch = document.getElementById('chatLaunch');
+  const panel = document.getElementById('chatPanel');
+  const log = document.getElementById('chatLog');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('chatInput');
+  const send = document.getElementById('chatSend');
+  const note = document.getElementById('chatNote');
+  if (!launch || !panel) return;
+
+  note.innerHTML = `An AI assistant answers here, not Sveta, and it can be wrong. To buy or commission, write to <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.`;
+
+  let history = [];
+  try { history = JSON.parse(sessionStorage.getItem(CHAT_STORE) || '[]'); } catch (e) { history = []; }
+  if (!Array.isArray(history)) history = [];
+  let busy = false;
+
+  const save = () => {
+    history = history.slice(-CHAT_KEEP);
+    try { sessionStorage.setItem(CHAT_STORE, JSON.stringify(history)); } catch (e) { /* private mode */ }
+  };
+  const bubble = (role, text, extra) => {
+    const el = document.createElement('div');
+    el.className = `chat-msg ${role}${extra ? ' ' + extra : ''}`;
+    el.textContent = text;
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;
+    return el;
+  };
+  const draw = () => {
+    log.textContent = '';
+    bubble('assistant', CHAT_GREETING);
+    history.forEach(m => bubble(m.role, m.content));
+  };
+  const open = () => {
+    panel.hidden = false;
+    launch.setAttribute('aria-expanded', 'true');
+    draw();
+    input.focus();
+  };
+  const close = () => {
+    panel.hidden = true;
+    launch.setAttribute('aria-expanded', 'false');
+    launch.focus();
+  };
+
+  launch.hidden = false;
+  launch.addEventListener('click', open);
+  document.getElementById('chatClose').addEventListener('click', close);
+  document.getElementById('chatReset').addEventListener('click', () => {
+    history = []; save(); draw(); input.focus();
+  });
+  panel.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+  });
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text || busy) return;
+    busy = true; send.disabled = true;
+    input.value = '';
+    history.push({ role: 'user', content: text }); save();
+    bubble('user', text);
+    const wait = bubble('assistant', '…', 'pending');
+    try {
+      const res = await fetch(CHAT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history }),
+      });
+      const data = await res.json().catch(() => ({}));
+      wait.remove();
+      if (!res.ok || !data.reply) throw new Error(data.error || 'The assistant is unavailable right now.');
+      history.push({ role: 'assistant', content: data.reply }); save();
+      bubble('assistant', data.reply);
+    } catch (err) {
+      wait.remove();
+      // Take the unanswered question back out so the next turn doesn't send it twice.
+      history.pop(); save();
+      input.value = text;
+      bubble('assistant', `${err.message} You can also write to ${CONTACT_EMAIL}.`, 'error');
+    } finally {
+      busy = false; send.disabled = false; input.focus();
+    }
+  });
+}
+
 // Boot
 initCustomCursor();
 initMobileCTA();
+initChat();
 if (SHEET_CSV_URL) loadFromSheet();
 else { assignCatalogNumbers(); injectPaintingsLD(); togglePostcardsNav(); currentPage = pageFromHash(window.location.hash) || 'home'; render(); hydrateFromHash(); }
 </script>
