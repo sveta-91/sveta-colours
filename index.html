@@ -318,7 +318,6 @@ section { padding: 6rem 2rem; }
   margin: 0;
 }
 .hero-title .italic { font-style: italic; color: var(--text-secondary); }
-.hero-cta-row .link { font-size: 1.05rem; }
 .hero-stat {
   margin: 0;
   font-family: var(--font-body);
@@ -620,7 +619,7 @@ button.hero-image-wrap {
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
   border-top: 1px solid var(--hairline);
 }
@@ -637,6 +636,15 @@ button.hero-image-wrap {
   gap: 0.4rem;
   min-height: 200px;
   justify-content: space-between;
+}
+/* Picture on the left (the collection's first available painting), words
+   on the right — same thumbnail rule as the rail's picture tabs. */
+.category-card { flex-direction: row; justify-content: flex-start; align-items: stretch; gap: 1.75rem; padding: 1.75rem; }
+.category-card .cat-thumb { flex: 0 0 auto; width: 128px; height: 160px; object-fit: cover; display: block; background: var(--surface-alt, #E0DBD1); }
+.category-card .cat-text { display: flex; flex-direction: column; justify-content: space-between; gap: 0.4rem; min-width: 0; padding: 0.35rem 0; }
+@media (max-width: 480px) {
+  .category-card { gap: 1.25rem; padding: 1.25rem; min-height: 0; }
+  .category-card .cat-thumb { width: 96px; height: 120px; }
 }
 
 .category-card:hover { background: var(--paper); }
@@ -1360,8 +1368,6 @@ button.hero-image-wrap {
   /* the hero owns the first screen: content centred, nothing from the
      next section peeking in half-cut at the bottom edge */
   .hero { margin-top: 0; padding-top: 3.5rem; padding-bottom: 3.5rem; min-height: 100vh; box-sizing: border-box; align-content: center; }
-  /* the rail lists the collections — no second copy on the home page */
-  .categories { display: none; }
   .collection-header { padding-top: 4.5rem; }
   /* the nav carries the tabs now — no second copy in the page */
   .coll-layout .coll-rail { display: none; }
@@ -1597,6 +1603,7 @@ footer {
 
 @media (max-width: 600px) {
   .home-recent { grid-template-columns: minmax(0, 1fr); gap: 3.5rem; }
+  .category-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 480px) {
   .category-grid { grid-template-columns: 1fr; }
@@ -1773,10 +1780,10 @@ body.cursor-hide * { cursor: none !important; }
     </button>
     <ul class="nav-links" id="navLinks">
       <li><a href="#home" data-page="home" onclick="event.preventDefault(); showPage('home'); closeMenu();">Home</a></li>
-      <li><a href="#paintings" data-page="paintings" onclick="event.preventDefault(); showPage('paintings'); closeMenu();">Paintings</a></li>
+      <li><a href="#recent" data-page="recent" onclick="event.preventDefault(); showPage('recent'); closeMenu();">Recent</a></li>
       <li><a href="#collections" data-page="collections" onclick="event.preventDefault(); showPage('collections'); closeMenu();">Collections</a></li>
       <li class="nav-coll-li"><ul class="nav-colls" id="navCollections" aria-label="Collections"></ul></li>
-      <li><a href="#postcards" data-page="postcards" onclick="event.preventDefault(); showPage('postcards'); closeMenu();">Postcards</a></li>
+      <li><a href="#paintings" data-page="paintings" onclick="event.preventDefault(); showPage('paintings'); closeMenu();">All Paintings</a></li>
       <li><a href="#about" data-page="about" onclick="event.preventDefault(); showPage('about'); closeMenu();">About</a></li>
       <li><a href="#faq" data-page="faq" onclick="event.preventDefault(); showPage('faq'); closeMenu();">FAQ</a></li>
     </ul>
@@ -2082,7 +2089,7 @@ let currentPage = 'home';
    collections → #collections · collection:<Name> → #collections/<slug>
    about/faq/postcards/past → #<page>. #painting/N stays the modal's.
    Unknown hashes (#main skip link, etc.) are ignored, never routed home. */
-const SIMPLE_ROUTES = ['paintings', 'collections', 'postcards', 'about', 'faq', 'past'];
+const SIMPLE_ROUTES = ['recent', 'paintings', 'collections', 'postcards', 'about', 'faq', 'past'];
 
 function slugify(name) {
   return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -2823,9 +2830,6 @@ function renderHero() {
     <section class="hero" aria-label="Featured painting">
       <div class="hero-text">
         <h1 class="hero-title">Paintings of light, weather, and quiet places <span class="italic">&mdash; acrylic and watercolor, made slowly.</span></h1>
-        <div class="hero-cta-row">
-          <a href="#paintings" class="link link-arrow link-accent" onclick="event.preventDefault(); showPage('paintings');">View available paintings</a>
-        </div>
         ${creditStat ? `<p class="hero-stat">${creditStat}</p>` : ''}
       </div>
       <figure class="hero-figure">
@@ -2845,29 +2849,6 @@ function renderHome() {
   return `
     ${renderHero()}
 
-    ${collections.length ? `
-    <section class="categories">
-      <div class="section-inner">
-        <div class="section-title">
-          <span class="eyebrow">By theme</span>
-          <h2>Collections</h2>
-        </div>
-        <div class="category-grid">
-          ${collections.map(name => {
-            const count = PAINTINGS.filter(p => (p.collections || []).includes(name)).length;
-            const safe = encodeURIComponent(name);
-            return `
-              <div class="category-card reveal" onclick="showPage('collection:${safe}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showPage('collection:${safe}')}">
-                <div>
-                  <h3>${name}</h3>
-                  <div class="cat-count">${count} painting${count !== 1 ? 's' : ''}</div>
-                </div>
-                <div class="cat-arrow">VIEW &rarr;</div>
-              </div>`;
-          }).join('')}
-        </div>
-      </div>
-    </section>` : ''}
 
     <section style="background: var(--bg);">
       <div class="section-inner">
@@ -2883,6 +2864,33 @@ function renderHome() {
         </div>
       </div>
     </section>
+
+    ${collections.length ? `
+    <section class="categories">
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="eyebrow">By theme</span>
+          <h2>Collections</h2>
+        </div>
+        <div class="category-grid">
+          ${collections.map(name => {
+            const count = PAINTINGS.filter(p => (p.collections || []).includes(name)).length;
+            const safe = encodeURIComponent(name);
+            return `
+              <div class="category-card reveal" onclick="showPage('collection:${safe}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showPage('collection:${safe}')}">
+                ${collectionThumb(name, 480, 'cat-thumb')}
+                <div class="cat-text">
+                  <div>
+                    <h3>${name}</h3>
+                    <div class="cat-count">${count} painting${count !== 1 ? 's' : ''}</div>
+                  </div>
+                  <div class="cat-arrow">VIEW &rarr;</div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </section>` : ''}
 
     <section>
       <div class="section-inner">
@@ -3080,10 +3088,31 @@ function renderPaintings() {
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>Paintings</h1>
+      <h1>All paintings</h1>
       <p>Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.</p>
     </div>
     ${body}
+    ${renderContactSection()}
+  `;
+}
+
+// Recent tab: the paintings the sheet's `recent` column picks (positions 1–6),
+// same order as the home row. The hero isn't excluded here — this is a list,
+// not a page that already shows it big.
+function renderRecent() {
+  const items = selectFeatured(PAINTINGS, 6, null);
+  return `
+    <div class="collection-header">
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
+      <h1>Recent</h1>
+      <p>The latest from the studio.</p>
+    </div>
+    <section><div class="section-inner">
+      <div class="gallery-grid" data-masonry>${items.map(cardHTML).join('')}</div>
+      <div style="margin-top: 2.5rem; text-align: center;">
+        <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">All paintings</a>
+      </div>
+    </div></section>
     ${renderContactSection()}
   `;
 }
@@ -3116,12 +3145,12 @@ function renderPostcards() {
 // Thumbnail for a collection's picture tab: first unsold painting with an
 // image (sold ones are still fine as a fallback — the tab is navigation,
 // not a sales pitch).
-function collectionThumb(name) {
+function collectionThumb(name, px, cls) {
   const inCol = PAINTINGS.filter(p => (p.collections || []).includes(name) && p.image);
   const p = inCol.find(x => !x.sold) || inCol[0];
   if (!p) return '';
-  const src = p.image.indexOf('lh3.googleusercontent.com') !== -1 ? `${p.image}=w160` : p.image;
-  return `<img class="thumb" src="${src}" alt="" loading="lazy" decoding="async" width="48" height="60">`;
+  const src = p.image.indexOf('lh3.googleusercontent.com') !== -1 ? `${p.image}=w${px || 160}` : p.image;
+  return `<img class="${cls || 'thumb'}" src="${src}" alt="" loading="lazy" decoding="async" width="48" height="60">`;
 }
 
 function collectionTabHTML(name, activeName) {
@@ -3173,11 +3202,14 @@ function renderCollections() {
             const safe = encodeURIComponent(name);
             return `
               <div class="category-card reveal" onclick="showPage('collection:${safe}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showPage('collection:${safe}')}">
-                <div>
-                  <h2 style="font-family:var(--font-display);font-optical-sizing:auto;font-size:1.8rem;font-weight:400;letter-spacing:-0.01em;line-height:1.05;">${name}</h2>
-                  <div class="cat-count">${count} painting${count !== 1 ? 's' : ''}</div>
+                ${collectionThumb(name, 480, 'cat-thumb')}
+                <div class="cat-text">
+                  <div>
+                    <h2 style="font-family:var(--font-display);font-optical-sizing:auto;font-size:1.8rem;font-weight:400;letter-spacing:-0.01em;line-height:1.05;">${name}</h2>
+                    <div class="cat-count">${count} painting${count !== 1 ? 's' : ''}</div>
+                  </div>
+                  <div class="cat-arrow">VIEW &rarr;</div>
                 </div>
-                <div class="cat-arrow">VIEW &rarr;</div>
               </div>`;
           }).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;padding:2rem;">No collections defined yet.</p>'}
         </div>
@@ -3320,7 +3352,8 @@ function renderPastWork() {
 function pageTitleFor(page) {
   const SUFFIX = 'Sveta Colours';
   if (page === 'home')        return `${SUFFIX} — Original Paintings`;
-  if (page === 'paintings')   return `Paintings · ${SUFFIX}`;
+  if (page === 'recent')      return `Recent · ${SUFFIX}`;
+  if (page === 'paintings')   return `All Paintings · ${SUFFIX}`;
   if (page === 'postcards')   return `Postcards · ${SUFFIX}`;
   if (page === 'collections') return `Collections · ${SUFFIX}`;
   if (page === 'about')       return `About · ${SUFFIX}`;
@@ -3342,6 +3375,7 @@ function render() {
     try { raw = decodeURIComponent(raw); } catch (e) { /* ignore */ }
     html = renderCollectionDetail(raw);
   } else switch (currentPage) {
+    case 'recent':      html = renderRecent(); break;
     case 'paintings':   html = renderPaintings(); break;
     case 'postcards':   html = renderPostcards(); break;
     case 'collections': html = renderCollections(); break;
@@ -3372,6 +3406,7 @@ function render() {
   document.querySelectorAll('nav .nav-links a').forEach(a => { a.classList.remove('active'); a.removeAttribute('aria-current'); });
   let navKey = '';
   if (currentPage === 'home') navKey = 'home';
+  else if (currentPage === 'recent') navKey = 'recent';
   else if (currentPage === 'paintings' || currentPage === 'past') navKey = 'paintings';
   else if (currentPage === 'collections' || currentPage.startsWith('collection:')) navKey = 'collections';
   else if (currentPage === 'postcards') navKey = 'postcards';
@@ -3459,9 +3494,10 @@ function renderFooter() {
         <div class="footer-col">
           <h4>Browse</h4>
           <ul>
-            <li><a href="#paintings" onclick="event.preventDefault(); showPage('paintings');">Paintings</a></li>
-            <li><a href="#postcards" onclick="event.preventDefault(); showPage('postcards');">Postcards</a></li>
+            <li><a href="#recent" onclick="event.preventDefault(); showPage('recent');">Recent</a></li>
             <li><a href="#collections" onclick="event.preventDefault(); showPage('collections');">Collections</a></li>
+            <li><a href="#paintings" onclick="event.preventDefault(); showPage('paintings');">All paintings</a></li>
+            <li><a href="#postcards" onclick="event.preventDefault(); showPage('postcards');">Postcards</a></li>
             <li><a href="#past" onclick="event.preventDefault(); showPage('past');">Past Work</a></li>
           </ul>
         </div>

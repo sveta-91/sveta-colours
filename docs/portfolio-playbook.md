@@ -267,6 +267,7 @@ and the painting modal; boot reads the hash before the first `render()`.
 | Page key | URL |
 | --- | --- |
 | `home` | no hash |
+| `recent` | `#recent` — the sheet's `recent` paintings (positions 1–6), hero included |
 | `paintings` | `#paintings` (legacy `#works` still resolves) |
 | `collections` | `#collections` |
 | `collection:<Name>` | `#collections/<slug>` (`Big City` → `big-city`) |
@@ -286,8 +287,9 @@ Traps, each one hit while building it:
 - An unknown collection slug falls back to the Collections overview, so a
   renamed collection never 404s into a blank page.
 
-Primary nav: Home · Paintings · Collections · (Postcards, hidden until a
-watercolour exists) · About · FAQ. Layout chosen 2026-11-08 from a 3-design
+Primary nav (Sveta's order, 2026-11-08): Home · Recent · Collections (+ picture
+tabs) · All Paintings · About · FAQ. Postcards is off the nav; `#postcards`
+and `#past` stay reachable by URL and from the footer. Layout chosen 2026-11-08 from a 3-design
 canvas (option D: catalogue rail + picture tabs), and it must follow the
 prototype site-wide:
 
