@@ -284,16 +284,34 @@ Traps, each one hit while building it:
   renamed collection never 404s into a blank page.
 
 Primary nav: Home · Paintings · Collections · (Postcards, hidden until a
-watercolour exists) · About · FAQ. Collections pages carry a left rail
-(`.coll-rail`, chosen 2026-11-08 from a 3-design canvas): "All collections",
-then one picture tab per collection (thumbnail of its first unsold painting,
-name, count; active = paper fill + ink outline). Sticky below the fixed nav on
-desktop; a 2×2 grid above the paintings on phones.
+watercolour exists) · About · FAQ. Layout chosen 2026-11-08 from a 3-design
+canvas (option D: catalogue rail + picture tabs), and it must follow the
+prototype site-wide:
 
-The rail costs ~270px of width, so beside it three 280/350px cards no longer
-fit in a mixed portrait+landscape row. `.coll-main` scales every card on those
-pages by the same 0.86 (240/300px), which keeps the portrait↔landscape scale
-rule intact. Don't fix this by shrinking only one orientation.
+- **Desktop ≥1025px:** the primary `<nav>` is a fixed 272px left column on
+  every page: logo, the links, one picture tab per collection nested under
+  Collections (`#navCollections`, filled by `renderNavCollections()` on every
+  `render()`), and a studio line at the bottom. `body` gets
+  `padding-left: var(--rail-w)`. The rail must fit a 1280×900 window without
+  scrolling; check this after adding a collection.
+- **769–1024px:** top bar again. Collections pages show the picture tabs
+  in-page (`.coll-rail`) to the left of the paintings.
+- **≤768px:** hamburger menu (links only). Collections pages show the tabs as
+  a 2×2 grid above the paintings, and the overview hides its text cards
+  because the grid already is the overview.
+
+A picture tab shows the collection's first unsold painting, its name and its
+count. The active tab gets a paper fill and an ink outline.
+
+The rail costs ~270px of width, so at laptop widths three 280/350px cards no
+longer fit in a mixed portrait+landscape row. Between 1025 and 1599px, every
+card is scaled by the same 0.86 (240/300px), which keeps the
+portrait↔landscape scale rule intact. Don't fix this by shrinking only one
+orientation.
+
+Local Selenium runs can show every Drive image broken: `lh3.googleusercontent.com`
+sometimes refuses requests from a `localhost` page. Confirm image loading
+against the deployed site before calling it a bug.
 
 ### Modal class names
 
