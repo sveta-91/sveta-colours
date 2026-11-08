@@ -142,8 +142,8 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
         <hr class="divider">
         <div class="field-row">
           <label for="wmOpacity">Watermark opacity</label>
-          <input type="range" id="wmOpacity" min="0" max="100" value="40" step="1">
-          <span id="wov" aria-live="off">40</span>
+          <input type="range" id="wmOpacity" min="0" max="100" value="0" step="1">
+          <span id="wov" aria-live="off">0</span>
         </div>
         <div class="field-row">
           <label for="wmText">Watermark text</label>
@@ -165,8 +165,8 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
         </div>
         <div class="field-row" id="qualityRow">
           <label for="jpegQuality">Quality</label>
-          <input id="jpegQuality" type="range" min="10" max="100" value="90">
-          <span id="qv" aria-live="off">90%</span>
+          <input id="jpegQuality" type="range" min="10" max="100" value="95">
+          <span id="qv" aria-live="off">95%</span>
         </div>
         <div class="btn-row">
           <button type="button" onclick="downloadImg()">Download</button>
@@ -184,9 +184,14 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
         <legend class="sr-only">Painting metadata</legend>
         <div class="field-row"><label for="fTitle">Title *</label><input id="fTitle" type="text" required></div>
         <div class="field-row"><label for="fDesc">Description</label><textarea id="fDesc" rows="3"></textarea></div>
-        <div class="field-row"><label for="fMedium">Medium</label><input id="fMedium" type="text" placeholder="oil on canvas"></div>
-        <div class="field-row"><label for="fSize">Size (cm)</label><input id="fSize" type="text" placeholder="40×50"></div>
-        <div class="field-row"><label for="fYear">Year</label><input id="fYear" type="text"></div>
+        <div class="field-row"><label for="fMedium">Medium</label><input id="fMedium" type="text" placeholder="acrylic"></div>
+        <div class="field-row"><label for="fSize">Size</label><input id="fSize" type="text" placeholder="16x20 in"></div>
+        <div class="field-row"><label for="fOrientation">Orientation</label>
+          <select id="fOrientation">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </div>
         <div class="field-row">
           <label for="fCollection">Collection</label>
           <input id="fCollection" type="text" list="collectionsList" placeholder="pick existing or type new">
@@ -201,8 +206,7 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
             <option value="not for sale">Not for sale</option>
           </select>
         </div>
-        <div class="field-row"><label for="fPrice">Price</label><input id="fPrice" type="text" placeholder="350 CAD"></div>
-        <div class="field-row"><label for="fNotes">Notes</label><input id="fNotes" type="text"></div>
+        <div class="field-row"><label for="fPrice">Price</label><input id="fPrice" type="text" placeholder="400"></div>
       </fieldset>
     </form>
   </section>
@@ -214,7 +218,8 @@ const DRIVE_FOLDER='1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX';
 const SHEET_ID='170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI';
 const CLIENT_ID='754552250731-hdl67ujna2lk1lataah35mnl69emi8qt.apps.googleusercontent.com';
 const SHEET_TAB='Paintings';
-const COLS=['title','medium','price','sold','size','image','description','collection','featured','date','year','notes'];
+// Must match the live `Paintings` sheet schema, in order (see CLAUDE.md).
+const COLS=['title','medium','price','sold','size','image','description','collection','orientation','hero','recent'];
 
 // Form fields that take their default from "most common non-empty value" in the
 // corresponding sheet column. fStatus is excluded because the form's status enum
@@ -224,10 +229,8 @@ const COLS=['title','medium','price','sold','size','image','description','collec
 const DEFAULT_FIELD_TO_COL = {
   fMedium: 'medium',
   fSize:   'size',
-  fYear:   'year',
   fPrice:  'price',
   fDesc:   'description',
-  fNotes:  'notes',
 };
 
 const state = {
@@ -353,13 +356,14 @@ function handleFile(file){
       dz.style.display='none';
       document.getElementById('workArea').style.display='block';
 
-      // Fresh entry — clear form, seed title from filename, year=current, then layer
-      // sheet-derived defaults: if the title matches an existing row, fill from it;
-      // otherwise fall back to most-common.
+      // Fresh entry — clear form, seed title from filename, orientation from the
+      // (already cropped) image's dimensions, then layer sheet-derived defaults:
+      // if the title matches an existing row, fill from it; otherwise most-common.
       resetForm();
       const name=file.name.replace(/\.[^.]+$/,'');
       document.getElementById('fTitle').value=name;
-      document.getElementById('fYear').value=String(new Date().getFullYear());
+      document.getElementById('fOrientation').value=
+        oriented.width>oriented.height ? 'landscape' : 'portrait';
       loadAndApplyDefaults().catch(()=>{ /* silent — defaults reload after Save */ });
 
       drawPreview();
@@ -411,8 +415,8 @@ function buildFilter(){const b=+document.getElementById('brightness').value,c=+d
 
 function drawWatermarkOnContext(c, w, h){
   const text = document.getElementById('wmText').value.trim();
-  if (!text) return;
   const op = +document.getElementById('wmOpacity').value / 100;
+  if (!text || op <= 0) return;
   const fs = Math.max(12, Math.round(w / 24));
   c.save();
   c.font = `${fs}px sans-serif`;
@@ -446,7 +450,7 @@ function resetToOriginal(){
   setupCanvasFromCanvas(state.origImg);
   ['brightness','contrast','saturation'].forEach(id=>{document.getElementById(id).value=0;});
   ['bv','cv','sv'].forEach(id=>{document.getElementById(id).textContent='0';});
-  document.getElementById('wmOpacity').value=40;document.getElementById('wov').textContent='40';
+  document.getElementById('wmOpacity').value=0;document.getElementById('wov').textContent='0';
 }
 
 // ── EXPORT ──
@@ -467,7 +471,7 @@ async function downloadImg(){
 
 // ── FORM ──
 function resetForm(){
-  for (const id of ['fTitle','fDesc','fMedium','fSize','fYear','fCollection','fPrice','fNotes']){
+  for (const id of ['fTitle','fDesc','fMedium','fSize','fCollection','fPrice']){
     const el=document.getElementById(id);
     if (el) el.value='';
   }
@@ -497,7 +501,7 @@ async function loadAndApplyDefaults(){
 }
 
 async function fetchAllRows(token){
-  const lastCol = String.fromCharCode(64 + COLS.length); // 'L' for 12 columns
+  const lastCol = String.fromCharCode(64 + COLS.length); // 'K' for 11 columns
   const res = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:${lastCol}`,
     { headers: { Authorization: 'Bearer ' + token } }
@@ -533,8 +537,6 @@ const COL_TO_FIELD = {
   price:       'fPrice',
   size:        'fSize',
   collection:  'fCollection',
-  year:        'fYear',
-  notes:       'fNotes',
 };
 
 function fillFromRow(row){
@@ -684,9 +686,11 @@ function normalizeTitle(s) {
 }
 
 async function upsertSheetRow(token, driveFileId) {
-  // 1) Read existing A:F so we know both the dedup target (col A) and any prior file ID (col F).
+  // 1) Read the full row width so we have the dedup target (col A), the prior file ID
+  //    (col F), and every existing value to preserve on update.
+  const lastCol = String.fromCharCode(64 + COLS.length);
   const readRes = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:F`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:${lastCol}`,
     { headers: { Authorization: 'Bearer ' + token } }
   );
   if (!readRes.ok) throw new Error('Sheets read failed: ' + readRes.status);
@@ -703,12 +707,9 @@ async function upsertSheetRow(token, driveFileId) {
     if (!headRes.ok) throw new Error('Sheets header init failed: ' + headRes.status);
   }
 
-  // 3) Compose row from form fields
+  // 3) Find existing row by normalized title in column A; capture old Drive file ID from column F.
   const title = document.getElementById('fTitle').value;
   const normTitle = normalizeTitle(title);
-  const row = COLS.map(col => sanitizeCell(getCellForCol(col, driveFileId)));
-
-  // 4) Find existing row by normalized title in column A; capture old Drive file ID from column F.
   let foundIdx = -1;
   let oldFileId = '';
   for (let i = 1; i < rows.length; i++) {
@@ -718,6 +719,12 @@ async function upsertSheetRow(token, driveFileId) {
       break;
     }
   }
+
+  // 4) Compose the row. Same rule as push_painting.py: on an existing row, any column
+  //    the form leaves empty keeps its current sheet value (hero/recent are never in
+  //    the form, so manual sheet edits survive a re-save).
+  const existing = foundIdx >= 0 ? (rows[foundIdx] || []) : [];
+  const row = composeRow(driveFileId, existing);
 
   if (foundIdx >= 0) {
     const rowNum = foundIdx + 1;
@@ -754,23 +761,34 @@ async function deleteDriveFile(token, fileId) {
   }
 }
 
+// Form value for a column, or '' when the form doesn't set it (→ preserved / blank).
 function getCellForCol(col, driveFileId) {
   const status = (document.getElementById('fStatus').value || '').toLowerCase();
   const m = {
     'title': document.getElementById('fTitle').value,
     'medium': document.getElementById('fMedium').value,
     'price': document.getElementById('fPrice').value,
-    'sold': status === 'sold' ? 'yes' : 'no',
+    // Blank status = "don't touch": preserved on update, 'no' for a new row (below).
+    'sold': status === 'sold' ? 'yes' : status ? 'no' : '',
     'size': document.getElementById('fSize').value,
     'image': driveFileId,
     'description': document.getElementById('fDesc').value,
     'collection': document.getElementById('fCollection').value,
-    'featured': '', // manual flag — left blank for Sveta to set yes/no in the sheet
-    'date': new Date().toISOString().slice(0, 10),
-    'year': document.getElementById('fYear').value,
-    'notes': document.getElementById('fNotes').value,
+    'orientation': document.getElementById('fOrientation').value,
+    'hero': '',    // manual sheet flag (TRUE / empty), exactly one painting at a time
+    'recent': '',  // manual sheet field: carousel position 1–6
   };
   return m[col] || '';
+}
+
+function composeRow(driveFileId, existing) {
+  return COLS.map((col, i) => {
+    const v = sanitizeCell(getCellForCol(col, driveFileId));
+    if (v) return v;
+    const prev = sanitizeCell(existing[i]);
+    if (prev) return prev;
+    return col === 'sold' ? 'no' : '';
+  });
 }
 </script>
 </body>

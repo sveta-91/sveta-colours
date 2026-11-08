@@ -44,7 +44,7 @@ things she'd still rather not have.
 
 | category | count | status | one-line rule |
 | --- | --- | --- | --- |
-| `WRONG-SUBJECT` | 3 | **rule** | The draft described the wrong thing. Ask what she wanted to show before polishing anything. |
+| `WRONG-SUBJECT` | 4 | **rule** | The draft described the wrong thing. Ask what she wanted to show before polishing anything. |
 | `FACTUAL-WRONG` | 3 | **rule** | I named an object that isn't there. Verify at full resolution; never describe from a thumbnail. |
 | `CUT-EXPLANATION` | 2 | candidate | Her version is shorter because it deletes the part that explains. Explanation is the default failure. |
 | `MOOD-PRESCRIBED` | 2 | candidate | I assigned a feeling. She wants the thing named, not the mood assigned. |
@@ -55,6 +55,12 @@ things she'd still rather not have.
 ---
 
 ## Entries
+
+### 2026-11-08 — IMG_0108 (Vancouver lagoon, skyline) — `WRONG-SUBJECT`
+- **I wrote:** (Codex draft) "The towers rise behind the trees. A little orange mark on the far bank has a thinner one below it, and the blue edges of the buildings break into strips in the water…"
+- **She said:** *"Description should be about touch of sun on the rocks without naming colors."* Kept: *"Across the water, the towers stand under all that cloud. The city looks a little less permanent from here — or perhaps it's just the stones so close."*
+- **She meant:** The subject is the light landing on the foreground rocks, not the skyline details. Colours are for the eye, not the text. Location is Vancouver (supplied by her; neither model could tell).
+- **Fix applied:** New opening sentence about sun on the rocks, no colour words; her chosen two sentences kept verbatim, including "or perhaps".
 
 ### 2026-08-22 — Vancouver — `WRONG-SUBJECT` + `FACTUAL-WRONG`
 - **I wrote:** "Everything here is grey-blue except the two red funnels and a line of gold pinpricks along the hull — portholes, lit in the middle of the afternoon."
