@@ -1357,9 +1357,10 @@ button.hero-image-wrap {
     background: var(--bg);
     backdrop-filter: none; -webkit-backdrop-filter: none;
     overflow-y: auto;
-    scrollbar-width: none; /* scrolls only on very short windows; no gutter */
+    /* Visible (thin) scrollbar: on a very short window the rail must stay
+       reachable — a hidden one left FAQ cut off at ~610px tall. */
+    scrollbar-width: thin;
   }
-  nav::-webkit-scrollbar { display: none; }
   nav .nav-inner {
     height: auto; min-height: 100%;
     max-width: none;
@@ -1383,11 +1384,25 @@ button.hero-image-wrap {
   nav .nav-links a.coll-tab.active::after { display: none; }
   .nav-note { display: block; margin-top: auto; font-size: 0.75rem; line-height: 1.6; color: var(--text-muted); }
 
-  .hero { margin-top: 0; }
+  /* the top bar used to give the hero painting 68px of air above it */
+  .hero { margin-top: 0; padding-top: 2.5rem; }
   .collection-header { padding-top: 4.5rem; }
   /* the nav carries the tabs now — no second copy in the page */
   .coll-layout .coll-rail { display: none; }
   .coll-layout { display: block; }
+}
+/* Short windows (laptops with toolbars, ≤820px tall): compact rail so the
+   whole thing — logo to studio line — fits without scrolling down to ~520px.
+   Picture tabs go to one line: small thumb, name, count. */
+@media (min-width: 1025px) and (max-height: 820px) {
+  nav .nav-inner { padding: 1.4rem 1.5rem 1.1rem; gap: 1.1rem; }
+  nav .nav-links { gap: 0.45rem; }
+  .nav-colls { gap: 0.3rem; margin: 0.15rem 0 0.2rem; }
+  nav .coll-tab { padding: 0.3rem 0.45rem; gap: 0.6rem; }
+  nav .coll-tab .thumb { width: 28px; height: 35px; }
+  nav .coll-tab .label { flex-direction: row; align-items: baseline; gap: 0.45rem; }
+  nav .coll-tab .name { font-size: 0.98rem; }
+  .hero { padding-top: 1.5rem; }
 }
 /* With the rail, the content column at common laptop widths is ~940px:
    scale cards uniformly (same 0.86 as beside the in-page rail) so mixed
