@@ -278,15 +278,22 @@ Traps, each one hit while building it:
   async and lands *after* the push, undoing it. The modal's collection chips use
   `closeModal(true)` + `showPage(…, { replace: true })` to swap the modal entry
   for the collection page instead.
-- **The collection sub-tab row is a `div role="navigation"`, not `<nav>`.** The
+- **The collection rail is a `div role="navigation"`, not `<nav>`.** The
   global `nav { position: fixed }` rule pins any `<nav>` over the header.
 - An unknown collection slug falls back to the Collections overview, so a
   renamed collection never 404s into a blank page.
 
 Primary nav: Home · Paintings · Collections · (Postcards, hidden until a
-watercolour exists) · About · FAQ. Collections pages carry a sub-tab row:
-Overview · one tab per collection with its painting count. It wraps on phones
-instead of scrolling sideways, so no tab is ever hidden.
+watercolour exists) · About · FAQ. Collections pages carry a left rail
+(`.coll-rail`, chosen 2026-11-08 from a 3-design canvas): "All collections",
+then one picture tab per collection (thumbnail of its first unsold painting,
+name, count; active = paper fill + ink outline). Sticky below the fixed nav on
+desktop; a 2×2 grid above the paintings on phones.
+
+The rail costs ~270px of width, so beside it three 280/350px cards no longer
+fit in a mixed portrait+landscape row. `.coll-main` scales every card on those
+pages by the same 0.86 (240/300px), which keeps the portrait↔landscape scale
+rule intact. Don't fix this by shrinking only one orientation.
 
 ### Modal class names
 

@@ -1237,53 +1237,102 @@ button.hero-image-wrap {
   line-height: 1.6;
 }
 
-/* --- Collection sub-tabs: Overview · Big City · Flowers · ... ---
-   Same type as the primary nav (0.84rem, 0.04em, underline = active) so it
-   reads as a second level of the same navigation. A <div role=navigation>,
-   not <nav>: the global `nav {position:fixed}` rule would pin it over the
-   header. Wraps to a second line on phones rather than hiding a tab behind
-   a sideways scroll. */
-.subtabs {
+/* --- Collection rail: picture tabs on the left of every Collections page ---
+   Chosen 2026-11-08 from the tab-design canvas (option D: B's side rail +
+   C's picture tabs). Each tab = a thumbnail of one painting in the
+   collection + name + count; active = paper fill + 1.5px ink outline.
+   A <div role=navigation>, not <nav>: the global `nav {position:fixed}`
+   rule would pin it over the header. Rail is 220px so three 280px cards
+   still fit beside it at the 1280px max width. Sticky below the fixed
+   primary nav on desktop; on phones it becomes a 2×2 grid above the
+   paintings. */
+.coll-layout {
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 0 2rem;
-}
-.subtabs ul {
+  padding: 0 2rem 6rem;
   display: flex;
-  gap: 2rem;
-  list-style: none;
-  border-bottom: 1px solid var(--hairline);
-  flex-wrap: wrap;
-  row-gap: 0;
+  gap: 3rem;
+  align-items: flex-start;
 }
-.subtabs a {
+.coll-rail {
+  flex: 0 0 220px;
+  position: sticky;
+  top: 96px;
+}
+.coll-main { flex: 1 1 auto; min-width: 0; }
+/* Beside the rail the column is ~930px — too narrow for portrait+portrait+
+   landscape at 280/350px. Scale every card on these pages by the same 0.86
+   (240/300px) so the 4:5 portrait↔landscape scale rule still holds and
+   rows keep three paintings. Phones keep the full-width override below 600px. */
+@media (min-width: 601px) {
+  .coll-main .gallery-grid { column-gap: 2.25rem; }
+  .coll-main .painting-card { flex-basis: 240px; }
+  .coll-main .painting-card[data-orientation="landscape"] { flex-basis: 300px; }
+  /* Overview: 2×2 instead of a lopsided 3+1 beside the rail */
+  .coll-main .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.coll-all {
   display: inline-block;
   position: relative;
-  padding: 0.9rem 0 0.85rem;
+  padding: 0.2rem 0 0.5rem;
+  margin-bottom: 0.9rem;
   font-size: 0.84rem;
   letter-spacing: 0.04em;
   color: var(--text-secondary);
-  white-space: nowrap;
   transition: color var(--transition);
 }
-.subtabs a:hover { color: var(--text); }
-.subtabs a.active { color: var(--text); }
-.subtabs a.active::after {
+.coll-all:hover, .coll-all.active { color: var(--text); }
+.coll-all.active::after {
   content: '';
   position: absolute;
   left: 0; right: 0; bottom: 0;
   height: 1px;
   background: var(--text);
 }
-.subtabs .n {
-  margin-left: 0.35rem;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
+.coll-tabs {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
+.coll-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: border-color var(--transition), background var(--transition);
+}
+.coll-tab:hover { border-color: var(--border-strong); }
+.coll-tab.active {
+  background: var(--paper);
+  border-color: var(--text);
+  box-shadow: inset 0 0 0 0.5px var(--text);
+}
+.coll-tab .thumb {
+  width: 48px;
+  height: 60px;
+  flex: none;
+  object-fit: cover;
+  display: block;
+  background: var(--surface-alt);
+}
+.coll-tab .label { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.coll-tab .name {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: 1.1rem;
+  line-height: 1.15;
+}
+.coll-tab .n { font-size: 0.75rem; color: var(--text-muted); }
 @media (max-width: 768px) {
-  .subtabs { padding: 0 1.5rem; }
-  .subtabs ul { column-gap: 1.5rem; row-gap: 0; }
+  .coll-layout { flex-direction: column; padding: 0 1.5rem 4rem; gap: 2.5rem; }
+  .coll-rail { position: static; flex: none; width: 100%; }
+  .coll-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+  .coll-tab { gap: 0.65rem; padding: 0.45rem; }
+  .coll-tab .thumb { width: 40px; height: 50px; }
+  .coll-tab .name { font-size: 1rem; }
 }
 
 .modal-collections {
@@ -3008,18 +3057,33 @@ function renderPostcards() {
   `;
 }
 
-function renderCollectionTabs(activeName) {
+// Thumbnail for a collection's picture tab: first unsold painting with an
+// image (sold ones are still fine as a fallback — the tab is navigation,
+// not a sales pitch).
+function collectionThumb(name) {
+  const inCol = PAINTINGS.filter(p => (p.collections || []).includes(name) && p.image);
+  const p = inCol.find(x => !x.sold) || inCol[0];
+  if (!p) return '';
+  const src = p.image.indexOf('lh3.googleusercontent.com') !== -1 ? `${p.image}=w160` : p.image;
+  return `<img class="thumb" src="${src}" alt="" loading="lazy" decoding="async" width="48" height="60">`;
+}
+
+function renderCollectionRail(activeName) {
   const names = getAllCollections();
   if (!names.length) return '';
-  const tab = (label, page, active, count) =>
-    `<li><a href="${hashForPage(page)}"${active ? ' class="active" aria-current="page"' : ''} onclick="event.preventDefault(); showPage('${page}');">${label}${count != null ? `<span class="n">${count}</span>` : ''}</a></li>`;
+  const tab = name => {
+    const page = 'collection:' + encodeURIComponent(name);
+    const count = PAINTINGS.filter(p => (p.collections || []).includes(name)).length;
+    const active = name === activeName;
+    return `<li><a class="coll-tab${active ? ' active' : ''}" href="${hashForPage(page)}"${active ? ' aria-current="page"' : ''} onclick="event.preventDefault(); showPage('${page}');">
+      ${collectionThumb(name) || '<span class="thumb" aria-hidden="true"></span>'}
+      <span class="label"><span class="name">${name}</span><span class="n">${count} painting${count !== 1 ? 's' : ''}</span></span>
+    </a></li>`;
+  };
   return `
-    <div class="subtabs" role="navigation" aria-label="Collections">
-      <ul>
-        ${tab('Overview', 'collections', !activeName)}
-        ${names.map(name => tab(name, 'collection:' + encodeURIComponent(name), name === activeName,
-            PAINTINGS.filter(p => (p.collections || []).includes(name)).length)).join('')}
-      </ul>
+    <div class="coll-rail" role="navigation" aria-label="Collections">
+      <a class="coll-all${activeName ? '' : ' active'}" href="${hashForPage('collections')}"${activeName ? '' : ' aria-current="page"'} onclick="event.preventDefault(); showPage('collections');">All collections</a>
+      <ul class="coll-tabs">${names.map(tab).join('')}</ul>
     </div>`;
 }
 
@@ -3031,9 +3095,9 @@ function renderCollections() {
       <h1>Collections</h1>
       <p>Paintings grouped by mood, light, and atmosphere.</p>
     </div>
-    ${renderCollectionTabs(null)}
-    <section style="padding-top: 0;">
-      <div class="section-inner">
+    <div class="coll-layout">
+      ${renderCollectionRail(null)}
+      <div class="coll-main">
         <h2 class="visually-hidden">All collections</h2>
         <div class="category-grid">
           ${names.length ? names.map(name => {
@@ -3050,7 +3114,7 @@ function renderCollections() {
           }).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;padding:2rem;">No collections defined yet.</p>'}
         </div>
       </div>
-    </section>
+    </div>
     ${renderContactSection()}
   `;
 }
@@ -3062,9 +3126,9 @@ function renderCollectionDetail(name) {
       <h1>${name}</h1>
       <p>${items.length} painting${items.length !== 1 ? 's' : ''} in this collection.</p>
     </div>
-    ${renderCollectionTabs(name)}
-    <section style="padding-top: 2.5rem;">
-      <div class="section-inner">
+    <div class="coll-layout">
+      ${renderCollectionRail(name)}
+      <div class="coll-main">
         <div class="gallery-grid" data-masonry>
           ${items.length ? items.map(cardHTML).join('') : `
             <div style="text-align:center;padding:2.5rem 1rem;grid-column:1/-1;">
@@ -3073,7 +3137,7 @@ function renderCollectionDetail(name) {
             </div>`}
         </div>
       </div>
-    </section>
+    </div>
     ${renderContactSection()}
   `;
 }
