@@ -1,7 +1,7 @@
 создай команду из разных агентов:
 веб дезайнер, фронтенд разработчик, тестер, художественный критик, коллекционер картин, маркетолог.
 Задача:
-есть сайт с картинами /Users/sveta.mordkovich/private/sveta-colours/index.html,
+есть сайт с картинами /Users/sveta/IdeaProjects/sveta-colours/index.html,
 его нужно сделать более привлекательным с точки зрения потенциальных покупателей.
 Агенты должны обмениваться идеями, критикой, жалобами, опытом, передавать сайт друг другу на ревью и разработку,
 пока все не будут удовлетворены.
@@ -23,11 +23,11 @@ If there are any follow-up questions after my answer, ask them,
 and only once everything is completely clear, move on to the next question.
 
 Создай HTML-HTML-артефакт с кнопкой загрузки фото. Пользователь загружает изображение и видит его
-remove all watermarks (based on /Users/sveta.mordkovich/private/sveta-colours/docs/watermark-removal-playbook.md), добавить watermark @sveta-colours
+remove all watermarks (based on /Users/sveta/IdeaProjects/sveta-colours/docs/watermark-removal-playbook.md), добавить watermark @sveta-colours
 дать название (title)
 download or save to google drive with the title: https://drive.google.com/drive/folders/1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX
 update excel https://docs.google.com/spreadsheets/d/170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI/edit?gid=1031748871#gid=1031748871:
-add new or update existing row with the same title (logic bases on /Users/sveta.mordkovich/private/sveta-colours/tools/photo_manager.html)
+add new or update existing row with the same title (logic bases on /Users/sveta/IdeaProjects/sveta-colours/tools/photo_manager.html)
 Claude analyses image and fills in empty fields automatically. User may adjust manually.
 
 Создай HTML-артефакт с кнопкой загрузки фото. Пользователь загружает изображение и видит его

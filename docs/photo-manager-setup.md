@@ -17,7 +17,7 @@
 The photo manager needs **two** local servers: the static file server (port 8000) that serves the HTML, and the Python backend (port 8001) that runs the Hough-based perspective/crop detection. `scripts/dev.sh` starts both in one command and cleans them up together on Ctrl-C.
 
 ```bash
-cd /Users/sveta.mordkovich/private/sveta-colours
+cd /Users/sveta/IdeaProjects/sveta-colours
 ./scripts/dev.sh
 ```
 

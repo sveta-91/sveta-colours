@@ -11,7 +11,7 @@ phone photo onto the portfolio site (Google Drive image + a row in the
 `tools/image_pipeline/README.md` or with memory, fix this file.
 
 **All commands run from `tools/image_pipeline/`.** Use the venv interpreter by
-absolute path — `/Users/sveta.mordkovich/private/sveta-colours/tools/image_pipeline/.venv/bin/python` —
+absolute path — `/Users/sveta/IdeaProjects/sveta-colours/tools/image_pipeline/.venv/bin/python` —
 not `source .venv/bin/activate && python`. One command per Bash call, no `&&`
 chaining (keeps auto mode free of permission popups).
 
@@ -69,7 +69,7 @@ axis. Most of the time it returns a clean rectangle. Check the dimensions
 first; only run this when you see the padding.
 
 ```bash
-/Users/sveta.mordkovich/private/sveta-colours/tools/image_pipeline/.venv/bin/python \
+/Users/sveta/IdeaProjects/sveta-colours/tools/image_pipeline/.venv/bin/python \
   trim_borders.py \
   ~/Downloads/<grok-output>.jpg \
   ~/Downloads/<title>-trimmed.jpeg
@@ -117,7 +117,7 @@ step 4.
 ## 4. Push to Drive + sheet
 
 ```bash
-/Users/sveta.mordkovich/private/sveta-colours/tools/image_pipeline/.venv/bin/python \
+/Users/sveta/IdeaProjects/sveta-colours/tools/image_pipeline/.venv/bin/python \
   push_painting.py \
   ~/Downloads/<title>.jpeg \
   --title "..." \
