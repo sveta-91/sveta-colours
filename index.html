@@ -1327,7 +1327,12 @@ button.hero-image-wrap {
 }
 .coll-tab .n { font-size: 0.75rem; color: var(--text-muted); }
 @media (max-width: 768px) {
-  .coll-layout { flex-direction: column; padding: 0 1.5rem 4rem; gap: 2.5rem; }
+  /* stretch, not flex-start: in a column flex, flex-start shrinks
+     .coll-main to its content and the overview grid renders half-width */
+  .coll-layout { flex-direction: column; align-items: stretch; padding: 0 1.5rem 1rem; gap: 2.5rem; }
+  /* On phones the 2×2 rail already IS the overview — the text cards
+     below it would repeat the same four links one screen further down. */
+  .coll-main .category-grid { display: none; }
   .coll-rail { position: static; flex: none; width: 100%; }
   .coll-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
   .coll-tab { gap: 0.65rem; padding: 0.45rem; }
