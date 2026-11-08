@@ -186,20 +186,23 @@ Accept this — it's the cost of transposed-dimension symmetry.
 This forces a portrait painting into a landscape band and crops the top and
 bottom. We hit this and it looked terrible.
 
-**Do** this:
+**Do** this (home design 1, "Statement", 2026-11): the hero is a two-column
+grid — the tagline as the `h1` on the left, the painting on the right.
 ```css
 .hero-image-wrap {
-  width: auto;
-  height: 72vh;
+  width: min(600px, 33vw, calc((100vh - 13rem) * var(--hero-ratio, 4/5)));
   max-width: 100%;
-  min-height: 380px;
   aspect-ratio: var(--hero-ratio, 4/5);
-  margin: 0 auto;
 }
 .hero-image-wrap img { object-fit: contain; }
 ```
 Then set `--hero-ratio` per-painting from the natural image dimensions.
-The hero scales to the painting's actual aspect, never crops.
+The hero scales to the painting's actual aspect, never crops, and the height
+term keeps painting + caption above the fold on short laptop windows
+(verified 1280×800 to 1920×1080). At ≤1024px the grid stacks — words first,
+then the painting at `min(100%, 72vh × ratio)`. The caption is
+title · medium · size (inches). With the desktop rail the home page hides
+its Collections block (the rail lists them); below 1025px it stays.
 
 ### Sold paintings
 

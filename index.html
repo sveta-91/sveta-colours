@@ -293,41 +293,62 @@ section { padding: 6rem 2rem; }
   flex-shrink: 0;
 }
 
-/* --- Hero (editorial full-bleed) --- */
+/* --- Hero: "Statement" (home design 1) ---
+   Words on the left, the featured painting on the right, both above the
+   fold. The tagline is the headline; the name lives in the nav. */
 .hero {
-  padding: 0;
   position: relative;
-  margin-top: 68px;
+  margin: 68px auto 0;
+  max-width: 1440px;
+  padding: 3.5rem clamp(1.5rem, 4vw, 6rem) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(2.5rem, 4.5vw, 5.5rem);
+  align-items: center;
 }
+.hero-text { display: flex; flex-direction: column; gap: 1.75rem; min-width: 0; }
+.hero-title {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: clamp(2.3rem, 3.9vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+}
+.hero-title .italic { font-style: italic; color: var(--text-secondary); }
+.hero-cta-row .link { font-size: 1.05rem; }
+.hero-stat {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.hero-figure { margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
 
-/* Hero takes the shape of the painting itself.
-   We constrain HEIGHT (not max-height) and let aspect-ratio derive width,
-   so a portrait painting renders tall-and-narrow centered, with page-bg
-   margins on the sides, instead of being cropped landscape. max-width:100%
-   prevents overflow on narrow viewports (mobile portrait paintings then
-   become width-bounded, aspect-ratio recomputes height). object-fit:contain
-   is the safety net: even if box and ratio ever desync, the painting is
-   never cropped. Background is page-bg so the margins read as page, not
-   as a tinted frame around the work. */
+/* The painting box takes the painting's own shape (--hero-ratio, from the
+   sheet's size, refined from the image after load). Width is the smallest
+   of: 600px, a third of the window, and whatever keeps the full height
+   on screen — so it never pushes below the fold on short windows.
+   object-fit:contain is the safety net: the painting is never cropped. */
 .hero-image-wrap {
-  width: auto;
-  height: 72vh;
+  width: min(600px, 33vw, calc((100vh - 13rem) * var(--hero-ratio, 4/5)));
   max-width: 100%;
-  min-height: 380px;
   aspect-ratio: var(--hero-ratio, 4/5);
   background: var(--bg);
   position: relative;
   overflow: hidden;
-  margin: 0 auto;
+  margin: 0;
 }
-
 .hero-image-wrap img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   object-position: center;
 }
-
 /* Hero rendered as an interactive button when a painting is present;
    strip default button chrome so it visually matches the painting frame. */
 button.hero-image-wrap {
@@ -339,7 +360,6 @@ button.hero-image-wrap {
   text-align: inherit;
   cursor: pointer;
 }
-
 .hero-image-wrap .hero-placeholder {
   width: 100%;
   height: 100%;
@@ -348,72 +368,24 @@ button.hero-image-wrap {
   justify-content: center;
   background: linear-gradient(160deg, #d6cfc1, #bfb6a4);
 }
-
-.hero-meta {
-  max-width: var(--max-w);
-  margin: 0 auto;
-  padding: 2.5rem 2rem 4.5rem;
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 3rem;
-  align-items: end;
-}
-
-.hero-title {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-variation-settings: "opsz" 144;
-  font-size: clamp(3.4rem, 9vw, 8rem);
-  font-weight: 400;
-  line-height: 0.92;
-  letter-spacing: -0.035em;
-  color: var(--text);
-  margin: 0;
-}
-
-.hero-title em,
-.hero-title .italic {
-  font-style: italic;
-  color: var(--text-secondary);
-}
-
-.hero-side {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  padding-bottom: 0.5rem;
-}
-
 .hero-credit {
   font-family: var(--font-body);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
   line-height: 1.6;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
 }
-
 .hero-credit .sep { margin: 0 0.5rem; color: var(--text-faint); }
-/* Social-proof line sits under the painting credit. Same uppercase rhythm
-   so they read as one block, but de-emphasized so the painting credit
-   leads visually. */
-.hero-credit .hero-credit-stat { color: var(--text-faint); }
 
-.hero-tagline {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.15rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-  max-width: 36ch;
+/* Recent paintings on the home page: one row of four beside the rail. */
+.home-recent {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3rem 2.25rem;
+  align-items: start;
 }
-
-.hero-cta-row {
-  margin-top: 0.5rem;
-}
+.home-recent .painting-card { grid-row: auto !important; width: auto; max-width: none; }
 
 /* --- Gallery: flex-wrap with transposed landscape dimensions --- */
 /* Portrait cards are 280×350 (image 280×350 + info ~130 = ~480 total).
@@ -1385,7 +1357,9 @@ button.hero-image-wrap {
   .nav-note { display: block; margin-top: auto; font-size: 0.75rem; line-height: 1.6; color: var(--text-muted); }
 
   /* the top bar used to give the hero painting 68px of air above it */
-  .hero { margin-top: 0; padding-top: 2.5rem; }
+  .hero { margin-top: 0; padding-top: 3.5rem; }
+  /* the rail lists the collections — no second copy on the home page */
+  .categories { display: none; }
   .collection-header { padding-top: 4.5rem; }
   /* the nav carries the tabs now — no second copy in the page */
   .coll-layout .coll-rail { display: none; }
@@ -1576,8 +1550,10 @@ footer {
 
 /* --- Responsive (mobile-first refinements) --- */
 @media (max-width: 1024px) {
-  .hero-meta { grid-template-columns: 1fr; gap: 1.5rem; padding-bottom: 3.5rem; }
-  .hero-side { align-items: flex-start; }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 2.5rem; padding-top: 3rem; }
+  .hero-title { font-size: clamp(2.3rem, 6vw, 3.4rem); }
+  .hero-image-wrap { width: min(100%, calc(72vh * var(--hero-ratio, 4/5))); }
+  .home-recent { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 768px) {
@@ -1597,9 +1573,7 @@ footer {
 
   nav .nav-links.open { display: flex; }
 
-  .hero-image-wrap { height: 64vh; min-height: 320px; }
-  .hero-meta { padding: 1.75rem 1.5rem 3rem; }
-  .hero-title { font-size: clamp(2.6rem, 11vw, 4.4rem); }
+  .hero { padding: 2.25rem 1.5rem 0; gap: 2rem; }
 
   .modal-content { grid-template-columns: 1fr; }
   /* Image first, taller — let the painting breathe on phones. */
@@ -1619,9 +1593,11 @@ footer {
   .section-title { flex-direction: column; gap: 0.5rem; }
 }
 
+@media (max-width: 600px) {
+  .home-recent { grid-template-columns: minmax(0, 1fr); gap: 3.5rem; }
+}
 @media (max-width: 480px) {
   .category-grid { grid-template-columns: 1fr; }
-  .hero-title { font-size: 2.4rem; letter-spacing: -0.02em; }
   .testimonial blockquote { font-size: 1.08rem; }
   .modal-overlay { padding: 0; }
   .modal { margin: 0; }
@@ -2812,11 +2788,12 @@ function renderHero() {
   // hence the split. Sold count only shown when meaningful (>=3) so a
   // brand-new studio doesn't read empty.
   const soldCount = PAINTINGS.filter(p => p.sold).length;
+  const heroSize = heroPiece ? formatDimensions(heroPiece).split(' / ')[0] : '';
   const creditWork = heroPiece
     ? [
         heroPiece.title,
         heroPiece.medium ? capitalize(heroPiece.medium) : '',
-        heroPiece.year || ''
+        heroSize
       ].filter(Boolean).join(' <span class="sep">&middot;</span> ')
     : '';
   const creditStat = soldCount >= 3
@@ -2842,20 +2819,17 @@ function renderHero() {
 
   return `
     <section class="hero" aria-label="Featured painting">
-      ${heroBox}
-      <div class="hero-meta">
-        <h1 class="hero-title">Sveta <span class="italic">Colours</span></h1>
-        <div class="hero-side">
-          ${(creditWork || creditStat) ? `<div class="hero-credit">
-            ${creditWork ? `<div class="hero-credit-work">${creditWork}</div>` : ''}
-            ${creditStat ? `<div class="hero-credit-stat">${creditStat}</div>` : ''}
-          </div>` : ''}
-          <p class="hero-tagline">Paintings of light, weather, and quiet places &mdash; acrylic and watercolor, made slowly.</p>
-          <div class="hero-cta-row">
-            <a href="#paintings" class="link link-arrow link-accent" onclick="event.preventDefault(); showPage('paintings');">View available paintings</a>
-          </div>
+      <div class="hero-text">
+        <h1 class="hero-title">Paintings of light, weather, and quiet places <span class="italic">&mdash; acrylic and watercolor, made slowly.</span></h1>
+        <div class="hero-cta-row">
+          <a href="#paintings" class="link link-arrow link-accent" onclick="event.preventDefault(); showPage('paintings');">View available paintings</a>
         </div>
+        ${creditStat ? `<p class="hero-stat">${creditStat}</p>` : ''}
       </div>
+      <figure class="hero-figure">
+        ${heroBox}
+        ${creditWork ? `<figcaption class="hero-credit">${creditWork}</figcaption>` : ''}
+      </figure>
     </section>`;
 }
 
@@ -2863,7 +2837,7 @@ function renderHome() {
   // Curated featured grid — see selectFeatured() for the algorithm.
   // Hero piece is excluded so we never repeat it as the first card.
   const heroPiece = getHeroPiece();
-  const featured = selectFeatured(PAINTINGS, 6, heroPiece && heroPiece.id);
+  const featured = selectFeatured(PAINTINGS, 4, heroPiece && heroPiece.id);
   const collections = getAllCollections();
 
   return `
@@ -2899,7 +2873,7 @@ function renderHome() {
           <span class="eyebrow">Selected works</span>
           <h2>Recent paintings</h2>
         </div>
-        <div class="gallery-grid" data-masonry>
+        <div class="home-recent">
           ${featured.map(cardHTML).join('')}
         </div>
         <div style="margin-top: 2rem; text-align: center;">
