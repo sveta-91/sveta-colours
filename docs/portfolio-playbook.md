@@ -23,6 +23,22 @@ the Sheet open.
 
 ## Data layer
 
+### Site texts sheet (copy outside the code)
+
+Every text the artist writes (hero, section headings, About, FAQ, page subtitles, footer
+lines) comes from a separate "Site texts" sheet: `key | text | where it shows`, published
+to the web as CSV. Patterns that matter:
+
+- **Built-in copy is the safety net.** `TEXT_DEFAULTS` holds every key; the sheet only
+  overrides. An empty cell keeps the built-in text, so a stray delete never blanks a page.
+- **Fetch in parallel, cap the wait.** The texts CSV loads alongside the paintings CSV and
+  the first render waits at most 3 s for it; a missing sheet renders instantly with defaults.
+- **Escape, then allow line breaks.** Cell text is HTML-escaped; a new line in a cell becomes
+  `<br>`. Typed HTML shows as text.
+- **Numbered keys read until the first gap** (`about.1…`, `faq.N.q/a`), so the artist adds
+  a paragraph or a question by adding a row. `-` hides a text.
+- Interface labels (menu, buttons, empty states) stay in code: they're not her writing.
+
 ### Sheet schema that survived contact
 
 | Column | Purpose | Notes |

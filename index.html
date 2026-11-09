@@ -2024,6 +2024,105 @@ const CURRENCY = "$";
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv";
 
 /* ========================================================
+   SITE TEXTS — every headline and paragraph Sveta writes lives in the
+   "Site texts" Google Sheet (key | text | where it shows), published to
+   the web as CSV. TEXT_DEFAULTS below is the safety net: the site shows
+   these when the sheet is slow, unreachable, or a cell is left empty.
+   A cell holding just "-" hides that text. Numbered keys (about.1,
+   about.2, …; faq.1.q / faq.1.a, …) are read until the first gap, so a
+   new row "about.4" adds a paragraph with no code change.
+   Keep TEXT_DEFAULTS in step with the sheet when texts change for good.
+   ======================================================== */
+const SITE_TEXTS_CSV_URL = '';  // "Publish to web" CSV link of the Site texts sheet
+const TEXT_DEFAULTS = {
+  "home.headline": "The feeling of being there.",
+  "home.lede.1": "Paintings of familiar places, fleeting light, and ordinary beauty.",
+  "home.lede.2": "Acrylic paintings to bring a quiet moment into your home.",
+  "home.recent.label": "Selected works",
+  "home.recent.title": "Recent paintings",
+  "home.collections.label": "By theme",
+  "home.collections.title": "Collections",
+  "home.studio.label": "About",
+  "home.studio.title": "From the studio",
+  "home.studio.1": "I'm Sveta. My paintings usually begin with a memory: a walk in the woods, warm evening light, a wander through the city.",
+  "home.studio.2": "I paint in acrylic. I work from Thornhill, Ontario, Canada. I've been painting for 8 years. Each piece is one-of-a-kind.",
+  "process.label": "Process",
+  "process.title": "On painting",
+  "process.1": "I paint one piece at a time. Each canvas sits in the studio for weeks while it finds its weather.",
+  "process.2": "Acrylic on cotton canvas or linen, primed in the studio. I work from references — quick sketches, light I notice on walks — but the painting itself decides what it wants to be.",
+  "process.3": "Each finished piece is signed on the verso, photographed in daylight, and shipped rolled or stretched depending on size. Nothing is reproduced — every painting is the only one of its kind.",
+  "contact.title": "Inquiries\n& studio visits",
+  "contact.note": "Studio visits by appointment.",
+  "about.title": "About",
+  "about.1": "I've always doodled on whatever paper was at hand. But for a long time, I thought learning to paint properly was something other people did.",
+  "about.2": "Eventually, I tried. I started with the basics and found there was a lot I'd never noticed: how a tree holds its own shadow inside, how light catches the outer leaves, how the setting sun lights it from below. Mixing colours still feels like a sort of witchcraft.",
+  "about.3": "My paintings usually begin with a memory: a walk in the woods, warm evening light, a wander through the city. I try to keep something of how it felt to be there, whatever that feeling was.",
+  "faq.title": "FAQ & shipping",
+  "faq.subtitle": "Everything about ordering, shipping, returns, and care.",
+  "faq.1.q": "How are paintings shipped?",
+  "faq.1.a": "Smaller works ship flat, packed in archival board and rigid mailers. Larger paintings ship rolled in a sturdy tube, ready to be re-stretched by a local framer (I include instructions and a list of recommended framers on request). Every shipment is insured for full value and tracked end-to-end.",
+  "faq.2.q": "Where do you ship from and to?",
+  "faq.2.a": "Ships from Canada. I ship worldwide with full insurance and tracking. Most pieces reach EU addresses in 3–7 days, North America in 7–14 days, and the rest of the world in 10–21 days. Customs duties are the buyer's responsibility for international orders.",
+  "faq.3.q": "What's your return policy?",
+  "faq.3.a": "14 days from delivery, no questions asked. If a painting doesn't feel right in your space, return it in its original packaging and I'll refund in full once it arrives back safely. Return shipping is the buyer's responsibility.",
+  "faq.4.q": "Is the painting ready to hang?",
+  "faq.4.a": "Stretched paintings arrive ready to hang, with hardware attached. Rolled paintings need to be re-stretched by a framer first. I can recommend trusted framers, or you can use your local framing studio — either way I'll include instructions for safe handling.",
+  "faq.5.q": "Can I commission a custom piece?",
+  "faq.5.a": "Yes. Commissions begin with a conversation about scale, palette, and mood — not a specific reference image. Timeline is typically 6–10 weeks from deposit. Write to the studio to start the conversation.",
+  "faq.6.q": "How long until I receive a painting?",
+  "faq.6.a": "Available paintings ship within 5 business days of payment. Add transit time (see shipping above). For commissions, expect 6–10 weeks from approved deposit.",
+  "faq.7.q": "Do you offer payment plans?",
+  "faq.7.a": "I'm happy to discuss split payment for larger works — usually two or three instalments over up to 90 days. Write to the studio with the piece you're considering and we'll work something out.",
+  "faq.8.q": "How do I care for an acrylic painting?",
+  "faq.8.a": "Hang away from direct sunlight and from heat sources. Dust gently with a soft, dry brush every few months. Avoid water or cleaning products on the surface. Acrylic paintings cured properly will last a lifetime if cared for simply.",
+  "recent.title": "Recent",
+  "recent.subtitle": "The latest from the studio.",
+  "collections.title": "Collections",
+  "collections.subtitle": "Paintings grouped by mood, light, and atmosphere.",
+  "paintings.title": "All paintings",
+  "paintings.subtitle": "Every painting one-of-a-kind. Available works and pieces already in private collections — commission requests welcome.",
+  "paintings.large": "Large works — 16 × 20 in",
+  "paintings.small": "Small works — 11 × 14 in",
+  "past.title": "Past work",
+  "past.subtitle": "Paintings that have found homes. Browse for atmosphere — or write to commission something in a similar mood.",
+  "postcards.empty": "Watercolor postcards drop seasonally. New batch this spring.",
+  "footer.tagline": "Original paintings —\nmade slowly, one at a time.",
+  "footer.newsletter": "New work, seasonally. No spam.",
+  "footer.bottom": "All works one-of-a-kind. Shipped worldwide.",
+};
+const TEXTS = Object.assign({}, TEXT_DEFAULTS);
+const escapeText = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// One text, HTML-safe, line breaks kept. "-" → '' (hidden).
+function t(key) {
+  const v = TEXTS[key];
+  if (v == null || v.trim() === '-') return '';
+  return escapeText(v.trim()).replace(/\r?\n/g, '<br>');
+}
+// Numbered texts: list('about') → [about.1, about.2, …] until the first gap; hidden ones dropped.
+function list(prefix, suffix = '') {
+  const out = [];
+  for (let i = 1; TEXTS[`${prefix}.${i}${suffix}`] != null; i++) out.push(t(`${prefix}.${i}${suffix}`));
+  return out;
+}
+async function loadTexts() {
+  if (!SITE_TEXTS_CSV_URL) return;
+  try {
+    const res = await fetch(SITE_TEXTS_CSV_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = parseCSV(await res.text());
+    const head = (rows[0] || []).map(h => h.trim().toLowerCase());
+    const k = head.indexOf('key'), v = head.indexOf('text');
+    if (k < 0 || v < 0) throw new Error('no key/text columns');
+    for (const r of rows.slice(1)) {
+      const key = (r[k] || '').trim(), val = r[v] || '';
+      if (key && val.trim()) TEXTS[key] = val;   // empty cell → keep the built-in text
+    }
+  } catch (err) {
+    console.warn('Site texts: using built-in copy —', err.message);
+  }
+}
+
+/* ========================================================
    GOOGLE SHEET LOADER
    ======================================================== */
 
@@ -2163,6 +2262,7 @@ function sheetRowToPainting(row, headers, index) {
 
 async function loadFromSheet() {
   if (!SHEET_CSV_URL) return;
+  const textsReady = Promise.race([loadTexts(), new Promise(r => setTimeout(r, 3000))]);
   try {
     document.getElementById('app').innerHTML = `
       <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
@@ -2185,6 +2285,7 @@ async function loadFromSheet() {
   assignCatalogNumbers();
   injectPaintingsLD();
   togglePostcardsNav();
+  await textsReady;
   currentPage = pageFromHash(window.location.hash) || 'home';
   render();
   hydrateFromHash();
@@ -2957,8 +3058,8 @@ function renderHero() {
     <section class="hero" aria-label="Featured painting">
       <div class="hero-text">
         <img class="hero-portrait" src="https://lh3.googleusercontent.com/d/1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm=w600" onerror="this.onerror=null; this.src='images/sveta-portrait.jpg'" alt="Sveta, the painter" width="604" height="572" fetchpriority="high">
-        <h1 class="hero-title">The feeling of being there.</h1>
-        <p class="hero-lede"><span>Paintings of familiar places, fleeting light, and ordinary beauty.</span> <span>Acrylic paintings to bring a quiet moment into your home.</span></p>
+        <h1 class="hero-title">${t('home.headline')}</h1>
+        <p class="hero-lede">${list('home.lede').filter(Boolean).map(x => `<span>${x}</span>`).join(' ')}</p>
         ${creditStat ? `<p class="hero-stat">${creditStat}</p>` : ''}
       </div>
       <figure class="hero-figure">
@@ -2982,8 +3083,8 @@ function renderHome() {
     <section style="background: var(--bg);">
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">Selected works</span>
-          <h2>Recent paintings</h2>
+          <span class="eyebrow">${t('home.recent.label')}</span>
+          <h2>${t('home.recent.title')}</h2>
         </div>
         <div class="home-recent">
           ${featured.map(cardHTML).join('')}
@@ -2998,8 +3099,8 @@ function renderHome() {
     <section class="categories">
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">By theme</span>
-          <h2>Collections</h2>
+          <span class="eyebrow">${t('home.collections.label')}</span>
+          <h2>${t('home.collections.title')}</h2>
         </div>
         <div class="category-grid">
           ${collections.map(name => {
@@ -3024,8 +3125,8 @@ function renderHome() {
     <section>
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">About</span>
-          <h2>From the studio</h2>
+          <span class="eyebrow">${t('home.studio.label')}</span>
+          <h2>${t('home.studio.title')}</h2>
           <!-- Section titles dedup: kept this as "From the studio" (single
                "studio" mention on the home page). Process section retitled
                to "On painting"; Testimonials is "From collectors". -->
@@ -3050,15 +3151,8 @@ function renderHome() {
 /* About preview — only renders sentences for which we have data.
    The visitor never sees [TODO] or placeholder text. */
 function renderAboutPreview() {
-  const { location, yearsPracticing } = SITE_DATA.artist;
-  // First line is Sveta's own About sentence (2026-11-09); keep it in step
-  // with renderAbout(). The second line is facts only.
-  let bio = `I'm Sveta. My paintings usually begin with a memory: a walk in the woods, warm evening light, a wander through the city.`;
-  let bio2 = `I paint in acrylic.`;
-  if (location)        bio2 += ` I work from ${location}.`;
-  if (yearsPracticing) bio2 += ` I've been painting for ${yearsPracticing} years.`;
-  bio2 += ` Each piece is one-of-a-kind.`;
-  return `<p>${bio}</p><p>${bio2}</p>`;
+  // Texts: home.studio.1, .2, … in the Site texts sheet.
+  return list('home.studio').filter(Boolean).map(x => `<p>${x}</p>`).join('');
 }
 
 function renderTestimonialsSection() {
@@ -3093,16 +3187,14 @@ function renderProcessSection() {
     <section>
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">Process</span>
-          <h2>On painting</h2>
+          <span class="eyebrow">${t('process.label')}</span>
+          <h2>${t('process.title')}</h2>
         </div>
         <!-- TODO (source-only): add real studio photo via SITE_DATA.artist.studioPhotoUrl -->
         <div class="process-grid" style="${photo ? '' : 'grid-template-columns: 1fr;'}">
           ${imageHTML}
           <div class="process-text reveal">
-            <p>I paint one piece at a time. Each canvas sits in the studio for weeks while it finds its weather.</p>
-            <p>Acrylic on cotton canvas or linen, primed in the studio. I work from references &mdash; quick sketches, light I notice on walks &mdash; but the painting itself decides what it wants to be.</p>
-            <p>Each finished piece is signed on the verso, photographed in daylight, and shipped rolled or stretched depending on size. Nothing is reproduced &mdash; every painting is the only one of its kind.</p>
+            ${list('process').filter(Boolean).map(x => `<p>${x}</p>`).join('')}
           </div>
         </div>
       </div>
@@ -3153,10 +3245,10 @@ function renderContactSection() {
   return `
     <section class="contact" id="contact">
       <div class="contact-inner">
-        <h2><span class="italic">Inquiries</span><br>&amp; studio visits</h2>
+        <h2>${t('contact.title')}</h2>
         <div class="contact-meta">
           <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>
-          Studio visits by appointment.
+          ${t('contact.note')}
         </div>
       </div>
     </section>
@@ -3211,16 +3303,16 @@ function renderPaintings() {
     // No dimensions on any painting — fall back to one undifferentiated grid.
     body = `<section><div class="section-inner"><div class="gallery-grid" data-masonry>${unknown.map(cardHTML).join('')}</div></div></section>`;
   } else {
-    body = chapter('Large works &mdash; 16 &times; 20 in', large, 'works-large')
-         + chapter('Small works &mdash; 11 &times; 14 in', small, 'works-small')
+    body = chapter(t('paintings.large'), large, 'works-large')
+         + chapter(t('paintings.small'), small, 'works-small')
          + chapter('Other works', interleaveByOrientation(unknown), 'works-other');
   }
 
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>All paintings</h1>
-      <p>Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.</p>
+      <h1>${t('paintings.title')}</h1>
+      <p>${t('paintings.subtitle')}</p>
     </div>
     ${body}
     ${renderContactSection()}
@@ -3235,8 +3327,8 @@ function renderRecent() {
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>Recent</h1>
-      <p>The latest from the studio.</p>
+      <h1>${t('recent.title')}</h1>
+      <p>${t('recent.subtitle')}</p>
     </div>
     <section><div class="section-inner">
       <div class="gallery-grid" data-masonry>${items.map(cardHTML).join('')}</div>
@@ -3255,7 +3347,7 @@ function renderPostcards() {
     p.medium === 'watercolour' ||
     (p.collections || []).map(c => c.toLowerCase()).includes('postcards')
   );
-  const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);font-size:1.05rem;padding:2rem;">Watercolor postcards drop seasonally. New batch this spring.</p>`;
+  const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);font-size:1.05rem;padding:2rem;">${t('postcards.empty')}</p>`;
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
@@ -3354,8 +3446,8 @@ function renderCollections() {
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>Collections</h1>
-      <p>Paintings grouped by mood, light, and atmosphere.</p>
+      <h1>${t('collections.title')}</h1>
+      <p>${t('collections.subtitle')}</p>
     </div>
     <div class="coll-layout">
       ${renderCollectionRail(null)}
@@ -3408,17 +3500,13 @@ function renderCollectionDetail(name) {
 }
 
 function renderAbout() {
-  // Statement in Sveta's own words — her text, 2026-11-09. Edit only on her say.
-  const paras = [
-    `<p>I've always doodled on whatever paper was at hand. But for a long time, I thought learning to paint properly was something other people did.</p>`,
-    `<p>Eventually, I tried. I started with the basics and found there was a lot I'd never noticed: how a tree holds its own shadow inside, how light catches the outer leaves, how the setting sun lights it from below. Mixing colours still feels like a sort of witchcraft.</p>`,
-    `<p>My paintings usually begin with a memory: a walk in the woods, warm evening light, a wander through the city. I try to keep something of how it felt to be there, whatever that feeling was.</p>`,
-  ];
+  // Sveta's own words — rows about.1, about.2, … of the Site texts sheet.
+  const paras = list('about').filter(Boolean).map(x => `<p>${x}</p>`);
 
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>About</h1>
+      <h1>${t('about.title')}</h1>
     </div>
     <section style="padding-top: 0;">
       <div class="section-inner about-full reveal">
@@ -3432,51 +3520,21 @@ function renderAbout() {
 }
 
 function renderFAQ() {
-  const country = SITE_DATA.shipping && SITE_DATA.shipping.fromCountry;
-  const shippingFrom = country
-    ? `Ships from ${country}.`
-    : `Origin depends on where the studio is currently based.`;
+  // Questions/answers: faq.1.q / faq.1.a, … in the Site texts sheet.
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>FAQ &amp; shipping</h1>
-      <p>Everything about ordering, shipping, returns, and care.</p>
+      <h1>${t('faq.title')}</h1>
+      <p>${t('faq.subtitle')}</p>
     </div>
     <section style="padding-top: 1rem;">
       <div class="section-inner">
         <div class="faq-list">
+          ${list('faq', '.q').map((q, i) => q ? `
           <details>
-            <summary>How are paintings shipped?</summary>
-            <div class="faq-answer">Smaller works ship flat, packed in archival board and rigid mailers. Larger paintings ship rolled in a sturdy tube, ready to be re-stretched by a local framer (I include instructions and a list of recommended framers on request). Every shipment is insured for full value and tracked end-to-end.</div>
-          </details>
-          <details>
-            <summary>Where do you ship from and to?</summary>
-            <div class="faq-answer">${shippingFrom} I ship worldwide with full insurance and tracking. Most pieces reach EU addresses in 3&ndash;7 days, North America in 7&ndash;14 days, and the rest of the world in 10&ndash;21 days. Customs duties are the buyer's responsibility for international orders.</div>
-          </details>
-          <details>
-            <summary>What's your return policy?</summary>
-            <div class="faq-answer">14 days from delivery, no questions asked. If a painting doesn't feel right in your space, return it in its original packaging and I'll refund in full once it arrives back safely. Return shipping is the buyer's responsibility.</div>
-          </details>
-          <details>
-            <summary>Is the painting ready to hang?</summary>
-            <div class="faq-answer">Stretched paintings arrive ready to hang, with hardware attached. Rolled paintings need to be re-stretched by a framer first. I can recommend trusted framers, or you can use your local framing studio &mdash; either way I'll include instructions for safe handling.</div>
-          </details>
-          <details>
-            <summary>Can I commission a custom piece?</summary>
-            <div class="faq-answer">Yes. Commissions begin with a conversation about scale, palette, and mood &mdash; not a specific reference image. Timeline is typically 6&ndash;10 weeks from deposit. Write to the studio to start the conversation.</div>
-          </details>
-          <details>
-            <summary>How long until I receive a painting?</summary>
-            <div class="faq-answer">Available paintings ship within 5 business days of payment. Add transit time (see shipping above). For commissions, expect 6&ndash;10 weeks from approved deposit.</div>
-          </details>
-          <details>
-            <summary>Do you offer payment plans?</summary>
-            <div class="faq-answer">I'm happy to discuss split payment for larger works &mdash; usually two or three instalments over up to 90 days. Write to the studio with the piece you're considering and we'll work something out.</div>
-          </details>
-          <details>
-            <summary>How do I care for an acrylic painting?</summary>
-            <div class="faq-answer">Hang away from direct sunlight and from heat sources. Dust gently with a soft, dry brush every few months. Avoid water or cleaning products on the surface. Acrylic paintings cured properly will last a lifetime if cared for simply.</div>
-          </details>
+            <summary>${q}</summary>
+            <div class="faq-answer">${t(`faq.${i + 1}.a`)}</div>
+          </details>` : '').join('')}
         </div>
       </div>
     </section>
@@ -3500,8 +3558,8 @@ function renderPastWork() {
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>Past work</h1>
-      <p>Paintings that have found homes. Browse for atmosphere &mdash; or write to commission something in a similar mood.</p>
+      <h1>${t('past.title')}</h1>
+      <p>${t('past.subtitle')}</p>
     </div>
     <section style="padding-top: 1rem;">
       <div class="section-inner">
@@ -3637,7 +3695,7 @@ function renderFooter() {
   const newsletterCol = newsletterHTML
     ? `<div class="footer-col">
          <h4>Newsletter</h4>
-         <p style="font-family:var(--font-body);color:var(--text-muted);font-size:0.92rem;margin-bottom:0.8rem;line-height:1.5;">New work, seasonally. No spam.</p>
+         <p style="font-family:var(--font-body);color:var(--text-muted);font-size:0.92rem;margin-bottom:0.8rem;line-height:1.5;">${t('footer.newsletter')}</p>
          ${newsletterHTML}
        </div>`
     : '';
@@ -3654,7 +3712,7 @@ function renderFooter() {
       <div class="footer-grid ${newsletterHTML ? '' : 'no-newsletter'}">
         <div class="footer-col">
           <div class="footer-mark">Sveta Colours</div>
-          <div class="footer-tagline">Original paintings &mdash;<br>made slowly, one at a time.</div>
+          <div class="footer-tagline">${t('footer.tagline')}</div>
         </div>
         <div class="footer-col">
           <h4>Browse</h4>
@@ -3679,7 +3737,7 @@ function renderFooter() {
       </div>
       <div class="footer-bottom">
         <div>&copy; ${year} Sveta Colours${studioLocation}</div>
-        <div>All works one-of-a-kind. Shipped worldwide.</div>
+        <div>${t('footer.bottom')}</div>
       </div>
     </div>`;
 }
