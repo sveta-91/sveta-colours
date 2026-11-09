@@ -2147,6 +2147,11 @@ function sheetRowToPainting(row, headers, index) {
     featured: featured,
     hero: heroFlag,
     recent: isNaN(recentN) ? null : recentN,
+    // Collection curation (optional columns): `cover` names the collection(s)
+    // this painting fronts; `order` is its position — "3" in every collection,
+    // or "Forest:2,Seasons:5" per collection. See collectionItems().
+    cover: get('cover') ? get('cover').split(',').map(c => c.trim().toLowerCase()).filter(Boolean) : [],
+    order: get('order'),
     // New optional fields — render only if present
     year: get('year'),
     surface: get('surface'),
@@ -3273,9 +3278,41 @@ function renderPostcards() {
 // Thumbnail for a collection's picture tab: first unsold painting with an
 // image (sold ones are still fine as a fallback — the tab is navigation,
 // not a sales pitch).
+// Position of painting p inside collection `name`, from the sheet's `order`
+// column: "3" applies to every collection, "Forest:2,Seasons:5" per
+// collection. Unnumbered → Infinity (after the numbered ones).
+function orderIn(p, name) {
+  const raw = String(p.order || '').trim();
+  if (!raw) return Infinity;
+  if (/^\d+(\.\d+)?$/.test(raw)) return parseFloat(raw);
+  const want = name.toLowerCase();
+  for (const part of raw.split(',')) {
+    const m = part.match(/^\s*(.+?)\s*:\s*(\d+(?:\.\d+)?)\s*$/);
+    if (m && m[1].toLowerCase() === want) return parseFloat(m[2]);
+  }
+  return Infinity;
+}
+
+// A collection's paintings in Sveta's order: numbered first (ascending),
+// then the rest in sheet order. Array.sort is stable, so ties keep sheet order.
+function collectionItems(name) {
+  return PAINTINGS
+    .filter(p => (p.collections || []).includes(name))
+    .map((p, i) => ({ p, i, o: orderIn(p, name) }))
+    .sort((a, b) => (a.o - b.o) || (a.i - b.i))
+    .map(x => x.p);
+}
+
+// The collection's button picture: the painting whose `cover` column names
+// it; otherwise the first available painting in the collection's order.
+function collectionCover(name) {
+  const inCol = collectionItems(name).filter(p => p.image);
+  const want = name.toLowerCase();
+  return inCol.find(p => (p.cover || []).includes(want)) || inCol.find(x => !x.sold) || inCol[0];
+}
+
 function collectionThumb(name, px, cls) {
-  const inCol = PAINTINGS.filter(p => (p.collections || []).includes(name) && p.image);
-  const p = inCol.find(x => !x.sold) || inCol[0];
+  const p = collectionCover(name);
   if (!p) return '';
   const src = p.image.indexOf('lh3.googleusercontent.com') !== -1 ? `${p.image}=w${px || 160}` : p.image;
   return `<img class="${cls || 'thumb'}" src="${src}" alt="" loading="lazy" decoding="async" width="48" height="60">`;
@@ -3348,7 +3385,7 @@ function renderCollections() {
 }
 
 function renderCollectionDetail(name) {
-  const items = PAINTINGS.filter(p => (p.collections || []).includes(name));
+  const items = collectionItems(name);
   return `
     <div class="collection-header">
       <h1>${name}</h1>

@@ -36,6 +36,8 @@ the Sheet open.
 | `orientation` | `portrait` / `landscape` / `square` | Used for near-square paintings where dimensions tie; derived for the rest |
 | `hero` | `TRUE`/`FALSE` | Marks the home-page hero painting |
 | `recent` | Integer 1..N | Order in the "Recent" home strip; null = not featured |
+| `cover` | Collection name(s), comma-separated | This painting is the collection's button picture (rail tabs + Collections cards). Blank → first available in order |
+| `order` | `3` or `Forest:2,Seasons:5` | Position on collection pages; numbered first, ties and blanks keep sheet order (`collectionItems()`) |
 | `collections` | Comma-separated tags | Drives `/collections/<slug>` chapters |
 
 **Why `hero` and `recent` are sheet-driven:** the artist controls curation

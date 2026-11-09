@@ -51,7 +51,7 @@ client-side with a case-insensitive `get('column')` helper, and renders. Every f
 degrades gracefully; JS constants are the safety net (`HERO_PIN_TITLE`,
 `FEATURED_TITLES`) so an emptied column never blanks the home page.
 
-**Sheet schema — 11 columns, in order:**
+**Sheet schema — 11 columns, in order** (plus optional `cover`, `order` after them; `push_painting.py` preserves extra columns):
 `title, medium, price, sold, size, image, description, collection, orientation, hero, recent`
 
 | Column | Semantics |
@@ -62,6 +62,8 @@ degrades gracefully; JS constants are the safety net (`HERO_PIN_TITLE`,
 | `hero` | `TRUE` or empty. **Exactly one at a time**; `--hero` does not unset the old one |
 | `recent` | `1`–`6`, a *position* in the home carousel, not a boolean |
 | `collection` | Comma-separated, no spaces. Values: `Big City`, `Flowers`, `Forest`, `Seasons` |
+| `cover` *(optional, after `recent`)* | Collection name(s) this painting is the button picture for, e.g. `Forest`. Blank → first available painting in the collection's order |
+| `order` *(optional)* | Position inside collections: `3` (every collection) or `Forest:2,Seasons:5`. Numbered first, then the rest in sheet order |
 
 Gallery cards lock rendered aspect to the **physical canvas** (`size`), never to the
 photo's pixel aspect; `push_painting.py`'s `check_canvas_aspect()` enforces the match at
