@@ -91,6 +91,10 @@
   /* The site name and the home hero words (Sveta chose Marcellus, 2026-11-09).
      One weight only — never set it bold or italic. */
   --font-brand: 'Marcellus', Georgia, 'Times New Roman', serif;
+  /* Font rules (Sveta, 2026-11-09): two fonts per page. Names and headings
+     → --font-brand, upright. Everything else (body, notes, counts, menu,
+     prices) → --font-body. No italic for notes. Fraunces (--font-display)
+     remains only on painting cards and the painting popup. */
 
   /* Layout */
   --max-w: 1280px;
@@ -277,20 +281,19 @@ section { padding: 6rem 2rem; }
 }
 
 .section-title h2 {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-family: var(--font-brand);
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
   font-weight: 400;
-  line-height: 1.02;
-  letter-spacing: -0.015em;
+  line-height: 1.1;
+  letter-spacing: 0;
   color: var(--text);
   flex: 1;
   min-width: 0;
 }
 
 .section-title .section-meta {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   font-size: 0.95rem;
   color: var(--text-muted);
   flex-shrink: 0;
@@ -672,17 +675,16 @@ button.hero-image-wrap {
 .category-card:hover { background: var(--paper); }
 
 .category-card h3 {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: 1.8rem;
+  font-family: var(--font-brand);
+  font-size: 1.6rem;
   font-weight: 400;
-  letter-spacing: -0.01em;
-  line-height: 1.05;
+  letter-spacing: 0;
+  line-height: 1.1;
 }
 
 .category-card .cat-count {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   font-size: 0.92rem;
   color: var(--text-muted);
 }
@@ -775,8 +777,8 @@ button.hero-image-wrap {
   align-items: center;
   justify-content: center;
   color: var(--text-faint);
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   font-size: 0.95rem;
   text-align: center;
   padding: 2rem;
@@ -791,9 +793,9 @@ button.hero-image-wrap {
 }
 
 .process-text p:first-child {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-style: italic;
+  font-family: var(--font-brand);
+  font-size: 1.2rem;
+  font-style: normal;
   color: var(--text);
   line-height: 1.45;
   margin-bottom: 1.25rem;
@@ -818,11 +820,10 @@ button.hero-image-wrap {
 .faq-list details:first-child { border-top: 1px solid var(--hairline); }
 
 .faq-list summary {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: 1.2rem;
+  font-family: var(--font-brand);
+  font-size: 1.12rem;
   font-weight: 400;
-  letter-spacing: -0.005em;
+  letter-spacing: 0;
   color: var(--text);
   cursor: pointer;
   list-style: none;
@@ -870,14 +871,14 @@ button.hero-image-wrap {
 }
 
 .exhibitions-list .exh-year {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   font-size: 1rem;
   color: var(--text-muted);
 }
 
 .exhibitions-list .exh-title {
-  font-family: var(--font-display);
+  font-family: var(--font-brand);
   font-size: 1.1rem;
   color: var(--text);
 }
@@ -890,8 +891,8 @@ button.hero-image-wrap {
 }
 
 .exhibitions-empty {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   color: var(--text-muted);
   padding: 2rem 0;
 }
@@ -995,19 +996,18 @@ button.hero-image-wrap {
 }
 
 .contact h2 {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-family: var(--font-brand);
+  font-size: clamp(1.8rem, 4.2vw, 2.9rem);
   font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 0.98;
+  letter-spacing: 0;
+  line-height: 1.1;
 }
 
-.contact h2 em, .contact h2 .italic { font-style: italic; }
+.contact h2 em, .contact h2 .italic { font-style: normal; }
 
 .contact-meta {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   font-size: 1.05rem;
   color: var(--text-muted);
   line-height: 1.5;
@@ -1028,19 +1028,17 @@ button.hero-image-wrap {
 }
 
 .collection-header h1 {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-variation-settings: "opsz" 144;
-  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  font-family: var(--font-brand);
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
   font-weight: 400;
-  letter-spacing: -0.025em;
-  line-height: 0.98;
+  letter-spacing: 0;
+  line-height: 1.08;
   margin-bottom: 0.6rem;
 }
 
 .collection-header p {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   color: var(--text-muted);
   font-size: 1.05rem;
   max-width: 52ch;
@@ -1322,9 +1320,8 @@ button.hero-image-wrap {
 }
 .coll-tab .label { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
 .coll-tab .name {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: 1.1rem;
+  font-family: var(--font-brand);
+  font-size: 1.02rem;
   line-height: 1.15;
 }
 .coll-tab .n { font-size: 0.75rem; color: var(--text-muted); }
@@ -1372,7 +1369,7 @@ button.hero-image-wrap {
     justify-content: flex-start;
     gap: 1.9rem;
   }
-  nav .logo { align-self: flex-start; }
+  nav .logo { align-self: flex-start; font-size: 1.75rem; }
   nav .nav-links { flex-direction: column; align-items: stretch; gap: 0.7rem; }
   nav .coll-tab { padding: 0.45rem; gap: 0.75rem; }
   nav .coll-tab .thumb { width: 40px; height: 50px; }
@@ -1405,7 +1402,7 @@ button.hero-image-wrap {
   nav .coll-tab { padding: 0.3rem 0.45rem; gap: 0.6rem; }
   nav .coll-tab .thumb { width: 28px; height: 35px; }
   nav .coll-tab .label { flex-direction: row; align-items: baseline; gap: 0.45rem; }
-  nav .coll-tab .name { font-size: 0.98rem; }
+  nav .coll-tab .name { font-size: 0.92rem; }
   .hero { padding-top: 1.5rem; padding-bottom: 1.5rem; }
 }
 /* Very short windows (≤600px tall, e.g. 1440×660 with toolbars): six links
@@ -1550,8 +1547,8 @@ footer {
 }
 
 .footer-col .footer-tagline {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   color: var(--text-muted);
   font-size: 0.98rem;
   line-height: 1.5;
@@ -1751,9 +1748,9 @@ body.cursor-hide * { cursor: none !important; }
     padding: 0 1.5rem;
     background: rgba(20, 19, 15, 0.96);
     color: var(--paper);
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 1rem;
+    font-family: var(--font-body);
+    font-style: normal;
+    font-size: 0.95rem;
     letter-spacing: 0.01em;
     text-decoration: none;
     border-top: 1px solid rgba(255,255,255,0.08);
@@ -3652,7 +3649,7 @@ function renderFooter() {
     ? `<li><a href="${SITE_DATA.artist.instagram}" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a></li>`
     : '';
   const studioLocation = SITE_DATA.artist.location
-    ? ` &middot; <span style="font-style:italic;">${SITE_DATA.artist.location}</span>`
+    ? ` &middot; <span>${SITE_DATA.artist.location}</span>`
     : '';
   const year = new Date().getFullYear();
 

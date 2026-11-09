@@ -228,6 +228,24 @@ Show them. Don't hide them. The portfolio is a record.
 
 ---
 
+## Type (fonts)
+
+Two fonts per page, chosen by Sveta on 2026-11-09 after a six-font prototype:
+
+- **Marcellus** (`--font-brand`, one weight, upright only): the site name, the
+  home headline and its two lede lines, page titles, section headings, FAQ
+  questions, collection names (rail tabs and home cards), contact heading.
+- **Inter** (`--font-body`): everything else: body text, menu, counts, notes,
+  prices, buttons. Notes that used to be Fraunces italic are plain Inter now.
+- **Fraunces** (`--font-display`) is left only on painting cards and the
+  painting popup. Moving those to Marcellus is an open option, not done.
+- No italic, no bold, no flourish under the name. Marcellus has no italic or
+  bold, so the browser would fake both badly.
+- Name size: 28px in the desktop rail, 22.4px in the phone top bar. Keep it
+  smaller than the page headline.
+- Check: every visible text node on About and FAQ computes to
+  Marcellus or Inter, `font-style: normal`.
+
 ## Interaction patterns
 
 ### Custom cursor — scope it tightly
