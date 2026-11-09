@@ -310,14 +310,34 @@ section { padding: 6rem 2rem; }
 .hero-title {
   font-family: var(--font-display);
   font-optical-sizing: auto;
-  font-size: clamp(2.3rem, 3.9vw, 4.5rem);
+  font-size: clamp(2rem, 2.5vw, 3rem);
   font-weight: 400;
-  line-height: 1.08;
-  letter-spacing: -0.02em;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
   color: var(--text);
   margin: 0;
 }
 .hero-title .italic { font-style: italic; color: var(--text-secondary); }
+/* The painter's photo heads the text column; its width also shrinks with
+   window height so photo + words stay above the fold on short laptops. */
+.hero-portrait {
+  display: block;
+  width: min(300px, 16vw, 30vh);
+  height: auto;
+  aspect-ratio: 604 / 572;
+  object-fit: cover;
+  background: var(--surface-alt, #E0DBD1);
+}
+/* Two sentences, one line each when the column has room; they wrap only
+   when it doesn't. */
+.hero-lede {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.05vw, 1.2rem);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.hero-lede span { display: block; }
 .hero-stat {
   margin: 0;
   font-family: var(--font-body);
@@ -1568,7 +1588,9 @@ footer {
 /* --- Responsive (mobile-first refinements) --- */
 @media (max-width: 1024px) {
   .hero { grid-template-columns: minmax(0, 1fr); gap: 2.5rem; padding-top: 3rem; }
-  .hero-title { font-size: clamp(2.3rem, 6vw, 3.4rem); }
+  .hero-title { font-size: clamp(1.9rem, 4.5vw, 2.6rem); }
+  .hero-portrait { width: min(220px, 56vw); }
+  .hero-lede { font-size: 1.06rem; }
   .hero-image-wrap { width: min(100%, calc(72vh * var(--hero-ratio, 4/5))); }
   .home-recent { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -2933,7 +2955,9 @@ function renderHero() {
   return `
     <section class="hero" aria-label="Featured painting">
       <div class="hero-text">
-        <h1 class="hero-title">Paintings of light, weather, and quiet places <span class="italic">&mdash; in acrylic, made slowly.</span></h1>
+        <img class="hero-portrait" src="images/sveta-portrait.jpg" alt="Sveta, the painter" width="604" height="572" fetchpriority="high">
+        <h1 class="hero-title">The feeling of being there.</h1>
+        <p class="hero-lede"><span>Paintings of familiar places, fleeting light, and ordinary beauty.</span> <span>Acrylic paintings to bring a quiet moment into your home.</span></p>
         ${creditStat ? `<p class="hero-stat">${creditStat}</p>` : ''}
       </div>
       <figure class="hero-figure">
