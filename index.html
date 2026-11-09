@@ -142,7 +142,7 @@ nav .nav-inner {
 
 nav .logo {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 1.4rem;
   font-weight: 400;
   letter-spacing: -0.005em;
@@ -1540,7 +1540,7 @@ footer {
 
 .footer-col .footer-mark {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 1.4rem;
   color: var(--text);
   margin-bottom: 0.4rem;
@@ -1646,20 +1646,12 @@ footer {
 /* --- Semantic italic (replaces <em> visual abuse) --- */
 .italic { font-style: italic; }
 
-/* --- Logo squiggle (subtle SVG flourish under nav logo) --- */
+/* --- Logo: upright, no flourish (Sveta, 2026-11-09) --- */
 nav .logo {
   position: relative;
   display: inline-flex;
   flex-direction: column;
   line-height: 1;
-}
-nav .logo .logo-squiggle {
-  display: block;
-  width: 36px;
-  height: 6px;
-  margin-top: 4px;
-  color: var(--accent);
-  opacity: 0.55;
 }
 
 /* --- Visually hidden (for labels) --- */
@@ -1880,7 +1872,6 @@ body.cursor-hide * { cursor: none !important; }
   <div class="nav-inner">
     <a href="#home" class="logo" onclick="event.preventDefault(); showPage('home');" aria-label="Sveta Colours — home">
       <span>Sveta Colours</span>
-      <svg class="logo-squiggle" viewBox="0 0 40 6" aria-hidden="true" focusable="false"><path d="M2 4 Q 10 1, 20 3 T 38 4" stroke="currentColor" stroke-width="0.7" fill="none" stroke-linecap="round"/></svg>
     </a>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
       <span></span><span></span><span></span>
