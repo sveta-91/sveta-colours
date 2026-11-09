@@ -65,6 +65,12 @@ degrades gracefully; JS constants are the safety net (`HERO_PIN_TITLE`,
 | `cover` *(optional, after `recent`)* | Collection name(s) this painting is the button picture for, e.g. `Forest`. Blank → first available painting in the collection's order |
 | `order` *(optional)* | Position inside collections: `3` (every collection) or `Forest:2,Seasons:5`. Also accepted inline in `collection`: `Big City:1` (wins over `order`). Numbered first, then the rest in sheet order |
 
+**Long site texts** live in plain text files in `texts/`: `home.txt`, `about.txt`, `faq.txt`.
+`index.html` reads them at load. A `[label]` line opens each block; a blank line starts a
+paragraph. These texts have no copy in the code, so change the file, not `index.html`.
+Short copy (titles, subtitles, headings, contact, footer, buttons) stays in code.
+Format rules and the planned move to Drive: playbook → "Long texts in plain .txt files".
+
 Gallery cards lock rendered aspect to the **physical canvas** (`size`), never to the
 photo's pixel aspect; `push_painting.py`'s `check_canvas_aspect()` enforces the match at
 publish time (<2% pass, 2–5% snap-crop, ≥5% hard exit). Layout patterns, the hero-sizing

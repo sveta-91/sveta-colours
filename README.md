@@ -9,6 +9,10 @@ index.html                       — main portfolio page (editorial gallery)
 favicon.ico                      — root favicon (legacy auto-request)
 CNAME                            — custom domain for GitHub Pages
 icons/                           — favicon assets (SVG + multi-size PNG)
+texts/                           — long site texts as plain .txt, read by index.html at load ([label] blocks)
+  home.txt                       — [headline], [under headline], [from the studio], [on painting]
+  about.txt                      — [about] paragraphs
+  faq.txt                        — [question]/[answer] pairs, in page order
 images/                          — local fallbacks for site photos served from Drive
   sveta-portrait.jpg             — painter photo (home hero); live copy is Drive file 1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm
 worker/                          — Cloudflare Worker that proxies the site's AI chat to OpenAI

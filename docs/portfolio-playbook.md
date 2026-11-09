@@ -62,6 +62,30 @@ that's case-insensitive and trims whitespace. Every numeric field goes through
 `TRUE`, `true`, `yes`, `1`. This sounds paranoid — it's not, because Sheets
 exports `TRUE` and humans type `true`.
 
+### Long texts in plain .txt files (`texts/`)
+
+Sveta's choice (2026-11-09), after rejecting a key/text Google Sheet: the long
+texts live in plain text files she can read and edit as text.
+
+- `texts/home.txt` (`[headline]`, `[under headline]`, `[from the studio]`,
+  `[on painting]` — the last shows on Home and About), `texts/about.txt`
+  (`[about]`), `texts/faq.txt` (`[question]`/`[answer]` pairs, page order).
+- A `[label]` line opens a block (case-insensitive). Blank line = new paragraph,
+  single line break = `<br>` (under-headline: one `<span>` per line). Text is
+  escaped — HTML typed in a file shows as typed.
+- Missing/empty block → that spot is hidden. Unknown label, text before the first
+  label, half a FAQ pair → skipped with a `console.warn` naming it.
+- No copy of these texts in `index.html` — the files are the only source.
+  `loadTexts()` starts at boot, runs parallel to the sheet fetch, capped at 4s;
+  a missing file renders the page without its texts.
+- Short copy (page titles/subtitles, section headings, contact, footer,
+  postcards line, menu, buttons) stays in code — her call ("only the long texts").
+- **Step 2, planned, not built:** read the same files from Drive (`TEXTS_BASE`),
+  with `texts/` as the backup. Needs each file shared "anyone with the link" and a
+  test that a browser can fetch Drive files cross-origin at all.
+- Editing: GitHub web editor (repo → `texts/` → file → pencil → Commit), live in
+  ~1–5 min. Text changes go through the `sveta-writing` skill like any site copy.
+
 ---
 
 ## Layout patterns (and what we tried first that didn't work)

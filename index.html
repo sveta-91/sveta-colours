@@ -1933,8 +1933,8 @@ body.cursor-hide * { cursor: none !important; }
 const SITE_DATA = {
   artist: {
     name: "Sveta",
-    location: "Thornhill, Ontario, Canada",        // e.g. "Toronto, Canada" — appears in About preview + Footer
-    yearsPracticing: 8, // e.g. 8                  — appears in About preview
+    location: "Thornhill, Ontario, Canada",        // e.g. "Toronto, Canada" — appears in Footer (home "From the studio" text is in texts/home.txt)
+    yearsPracticing: 8, // e.g. 8                  — not shown; the years are written in texts/home.txt
     schooling: "self-taught",       // e.g. "self-taught"      — appears in About full
     influences: null,      // e.g. "Lois Dodd, Vuillard, Peter Doig" — About full
     exhibitions: [],       // [{year:2024, title:"Group show", venue:"Gallery X", city:"Berlin"}]
@@ -1947,7 +1947,7 @@ const SITE_DATA = {
                            // If null → form is hidden everywhere (no alert).
   },
   shipping: {
-    fromCountry: "Canada"      // e.g. "Canada" — appears in FAQ shipping answer
+    fromCountry: "Canada"      // e.g. "Canada" — not shown; the FAQ answer text is in texts/faq.txt
   },
   ogImage: null            // e.g. "/og-image.jpg" — when null, og/twitter image meta is omitted
 };
@@ -2022,6 +2022,64 @@ let PAINTINGS = [
 const CONTACT_EMAIL = "sveta.colours@gmail.com";
 const CURRENCY = "$";
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv";
+
+// ---- Long site texts: plain .txt files in texts/ (Sveta edits them, not this code).
+// Format: a "[label]" line, then the text. Blank line = new paragraph,
+// single line break = line break. Missing/empty block → that spot is hidden.
+// Step 2 (later): read the same files from Drive; texts/ stays as the backup.
+const TEXTS_BASE = 'texts/';
+const TEXT_LABELS = {
+  home:  ['headline', 'under headline', 'from the studio', 'on painting'],
+  about: ['about'],
+  faq:   ['question', 'answer'],
+};
+const TEXTS = { home: [], about: [], faq: [] };   // file → [{label, text}] in file order
+
+function parseTextFile(name, raw) {
+  const blocks = [];
+  let cur = null;
+  for (const line of String(raw).replace(/^﻿/, '').split(/\r?\n/)) {
+    const m = line.match(/^\s*\[([^\]]+)\]\s*$/);
+    if (m) {
+      const label = m[1].trim().toLowerCase().replace(/\s+/g, ' ');
+      if (TEXT_LABELS[name].includes(label)) { cur = { label, lines: [] }; blocks.push(cur); }
+      else { cur = null; console.warn(`texts/${name}.txt: unknown label [${m[1].trim()}] — block skipped. Known: ${TEXT_LABELS[name].map(l => '[' + l + ']').join(' ')}`); }
+    } else if (cur) cur.lines.push(line);
+    else if (line.trim()) console.warn(`texts/${name}.txt: text before the first [label] skipped: "${line.trim().slice(0, 40)}"`);
+  }
+  return blocks.map(b => ({ label: b.label, text: b.lines.join('\n').trim() })).filter(b => b.text);
+}
+
+async function loadTexts() {
+  await Promise.all(Object.keys(TEXTS).map(async name => {
+    try {
+      const r = await fetch(TEXTS_BASE + name + '.txt', { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      TEXTS[name] = parseTextFile(name, await r.text());
+    } catch (err) {
+      console.warn(`texts/${name}.txt could not be loaded (${err.message}) — its texts are hidden.`);
+    }
+  }));
+}
+// Started at once so it runs in parallel with the paintings fetch; capped so a
+// slow file never holds the page.
+const textsReady = Promise.race([loadTexts(), new Promise(r => setTimeout(r, 4000))]);
+
+const escText = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const textBlock = (name, label) => (TEXTS[name].find(b => b.label === label) || {}).text || '';
+const textLines = s => escText(s).replace(/\n/g, '<br>');
+// Paragraphs of a block as <p>…</p> strings.
+const textParas = (name, label) => textBlock(name, label).split(/\n\s*\n/).map(p => p.trim()).filter(Boolean).map(p => `<p>${textLines(p)}</p>`);
+// FAQ: [question] then [answer], in file order. A half pair is skipped.
+function faqPairs() {
+  const out = [];
+  for (const b of TEXTS.faq) {
+    if (b.label === 'question') out.push({ q: b.text, a: '' });
+    else if (out.length && !out[out.length - 1].a) out[out.length - 1].a = b.text;
+    else console.warn('texts/faq.txt: [answer] without a [question] above it — skipped.');
+  }
+  return out.filter(p => p.a || (console.warn(`texts/faq.txt: question "${p.q.slice(0, 40)}" has no [answer] — skipped.`), false));
+}
 
 /* ========================================================
    GOOGLE SHEET LOADER
@@ -2185,6 +2243,7 @@ async function loadFromSheet() {
   assignCatalogNumbers();
   injectPaintingsLD();
   togglePostcardsNav();
+  await textsReady;
   currentPage = pageFromHash(window.location.hash) || 'home';
   render();
   hydrateFromHash();
@@ -2957,8 +3016,8 @@ function renderHero() {
     <section class="hero" aria-label="Featured painting">
       <div class="hero-text">
         <img class="hero-portrait" src="https://lh3.googleusercontent.com/d/1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm=w600" onerror="this.onerror=null; this.src='images/sveta-portrait.jpg'" alt="Sveta, the painter" width="604" height="572" fetchpriority="high">
-        <h1 class="hero-title">The feeling of being there.</h1>
-        <p class="hero-lede"><span>Paintings of familiar places, fleeting light, and ordinary beauty.</span> <span>Acrylic paintings to bring a quiet moment into your home.</span></p>
+        ${textBlock('home', 'headline') ? `<h1 class="hero-title">${textLines(textBlock('home', 'headline'))}</h1>` : ''}
+        ${textBlock('home', 'under headline') ? `<p class="hero-lede">${textBlock('home', 'under headline').split('\n').map(l => l.trim()).filter(Boolean).map(l => `<span>${escText(l)}</span>`).join(' ')}</p>` : ''}
         ${creditStat ? `<p class="hero-stat">${creditStat}</p>` : ''}
       </div>
       <figure class="hero-figure">
@@ -3050,15 +3109,8 @@ function renderHome() {
 /* About preview — only renders sentences for which we have data.
    The visitor never sees [TODO] or placeholder text. */
 function renderAboutPreview() {
-  const { location, yearsPracticing } = SITE_DATA.artist;
-  // First line is Sveta's own About sentence (2026-11-09); keep it in step
-  // with renderAbout(). The second line is facts only.
-  let bio = `I'm Sveta. My paintings usually begin with a memory: a walk in the woods, warm evening light, a wander through the city.`;
-  let bio2 = `I paint in acrylic.`;
-  if (location)        bio2 += ` I work from ${location}.`;
-  if (yearsPracticing) bio2 += ` I've been painting for ${yearsPracticing} years.`;
-  bio2 += ` Each piece is one-of-a-kind.`;
-  return `<p>${bio}</p><p>${bio2}</p>`;
+  // Text: texts/home.txt → [from the studio]
+  return textParas('home', 'from the studio').join('');
 }
 
 function renderTestimonialsSection() {
@@ -3100,9 +3152,7 @@ function renderProcessSection() {
         <div class="process-grid" style="${photo ? '' : 'grid-template-columns: 1fr;'}">
           ${imageHTML}
           <div class="process-text reveal">
-            <p>I paint one piece at a time. Each canvas sits in the studio for weeks while it finds its weather.</p>
-            <p>Acrylic on cotton canvas or linen, primed in the studio. I work from references &mdash; quick sketches, light I notice on walks &mdash; but the painting itself decides what it wants to be.</p>
-            <p>Each finished piece is signed on the verso, photographed in daylight, and shipped rolled or stretched depending on size. Nothing is reproduced &mdash; every painting is the only one of its kind.</p>
+            ${textParas('home', 'on painting').join('\n')}
           </div>
         </div>
       </div>
@@ -3408,12 +3458,8 @@ function renderCollectionDetail(name) {
 }
 
 function renderAbout() {
-  // Statement in Sveta's own words — her text, 2026-11-09. Edit only on her say.
-  const paras = [
-    `<p>I've always doodled on whatever paper was at hand. But for a long time, I thought learning to paint properly was something other people did.</p>`,
-    `<p>Eventually, I tried. I started with the basics and found there was a lot I'd never noticed: how a tree holds its own shadow inside, how light catches the outer leaves, how the setting sun lights it from below. Mixing colours still feels like a sort of witchcraft.</p>`,
-    `<p>My paintings usually begin with a memory: a walk in the woods, warm evening light, a wander through the city. I try to keep something of how it felt to be there, whatever that feeling was.</p>`,
-  ];
+  // Statement in Sveta's own words: texts/about.txt → [about]. Edit only on her say.
+  const paras = textParas('about', 'about');
 
   return `
     <div class="collection-header">
@@ -3432,10 +3478,7 @@ function renderAbout() {
 }
 
 function renderFAQ() {
-  const country = SITE_DATA.shipping && SITE_DATA.shipping.fromCountry;
-  const shippingFrom = country
-    ? `Ships from ${country}.`
-    : `Origin depends on where the studio is currently based.`;
+  // Questions and answers: texts/faq.txt
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
@@ -3445,38 +3488,10 @@ function renderFAQ() {
     <section style="padding-top: 1rem;">
       <div class="section-inner">
         <div class="faq-list">
-          <details>
-            <summary>How are paintings shipped?</summary>
-            <div class="faq-answer">Smaller works ship flat, packed in archival board and rigid mailers. Larger paintings ship rolled in a sturdy tube, ready to be re-stretched by a local framer (I include instructions and a list of recommended framers on request). Every shipment is insured for full value and tracked end-to-end.</div>
-          </details>
-          <details>
-            <summary>Where do you ship from and to?</summary>
-            <div class="faq-answer">${shippingFrom} I ship worldwide with full insurance and tracking. Most pieces reach EU addresses in 3&ndash;7 days, North America in 7&ndash;14 days, and the rest of the world in 10&ndash;21 days. Customs duties are the buyer's responsibility for international orders.</div>
-          </details>
-          <details>
-            <summary>What's your return policy?</summary>
-            <div class="faq-answer">14 days from delivery, no questions asked. If a painting doesn't feel right in your space, return it in its original packaging and I'll refund in full once it arrives back safely. Return shipping is the buyer's responsibility.</div>
-          </details>
-          <details>
-            <summary>Is the painting ready to hang?</summary>
-            <div class="faq-answer">Stretched paintings arrive ready to hang, with hardware attached. Rolled paintings need to be re-stretched by a framer first. I can recommend trusted framers, or you can use your local framing studio &mdash; either way I'll include instructions for safe handling.</div>
-          </details>
-          <details>
-            <summary>Can I commission a custom piece?</summary>
-            <div class="faq-answer">Yes. Commissions begin with a conversation about scale, palette, and mood &mdash; not a specific reference image. Timeline is typically 6&ndash;10 weeks from deposit. Write to the studio to start the conversation.</div>
-          </details>
-          <details>
-            <summary>How long until I receive a painting?</summary>
-            <div class="faq-answer">Available paintings ship within 5 business days of payment. Add transit time (see shipping above). For commissions, expect 6&ndash;10 weeks from approved deposit.</div>
-          </details>
-          <details>
-            <summary>Do you offer payment plans?</summary>
-            <div class="faq-answer">I'm happy to discuss split payment for larger works &mdash; usually two or three instalments over up to 90 days. Write to the studio with the piece you're considering and we'll work something out.</div>
-          </details>
-          <details>
-            <summary>How do I care for an acrylic painting?</summary>
-            <div class="faq-answer">Hang away from direct sunlight and from heat sources. Dust gently with a soft, dry brush every few months. Avoid water or cleaning products on the surface. Acrylic paintings cured properly will last a lifetime if cared for simply.</div>
-          </details>
+          ${faqPairs().map(f => `<details>
+            <summary>${textLines(f.q)}</summary>
+            <div class="faq-answer">${textLines(f.a)}</div>
+          </details>`).join('\n          ')}
         </div>
       </div>
     </section>
@@ -3910,7 +3925,7 @@ initCustomCursor();
 initMobileCTA();
 initChat();
 if (SHEET_CSV_URL) loadFromSheet();
-else { assignCatalogNumbers(); injectPaintingsLD(); togglePostcardsNav(); currentPage = pageFromHash(window.location.hash) || 'home'; render(); hydrateFromHash(); }
+else textsReady.then(() => { assignCatalogNumbers(); injectPaintingsLD(); togglePostcardsNav(); currentPage = pageFromHash(window.location.hash) || 'home'; render(); hydrateFromHash(); });
 </script>
 
 <!--
