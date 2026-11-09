@@ -65,15 +65,6 @@ degrades gracefully; JS constants are the safety net (`HERO_PIN_TITLE`,
 | `cover` *(optional, after `recent`)* | Collection name(s) this painting is the button picture for, e.g. `Forest`. Blank → first available painting in the collection's order |
 | `order` *(optional)* | Position inside collections: `3` (every collection) or `Forest:2,Seasons:5`. Also accepted inline in `collection`: `Big City:1` (wins over `order`). Numbered first, then the rest in sheet order |
 
-**Site texts** (headlines, paragraphs, FAQ, page subtitles, footer lines) live in a second
-sheet, **"Site texts"** (Drive ID `1qOFzUACFoX4BkZPuideJrOY-LuNzegIKnftfPqFC0oM`, owned by
-sveta.mordkovich@gmail.com, edit access for sveta.colours@gmail.com): columns `key | text |
-where it shows`. The site reads its published CSV (`SITE_TEXTS_CSV_URL`); `TEXT_DEFAULTS`
-in `index.html` is the fallback for a slow/unreachable sheet or an empty cell. `-` in a cell
-hides that text; numbered keys (`about.4`, `faq.9.q`/`faq.9.a`) add items with no code change.
-Changing site copy means editing the sheet, not the code — update `TEXT_DEFAULTS` only when
-a text changes for good. Menu labels, buttons and empty-page messages stay in code.
-
 Gallery cards lock rendered aspect to the **physical canvas** (`size`), never to the
 photo's pixel aspect; `push_painting.py`'s `check_canvas_aspect()` enforces the match at
 publish time (<2% pass, 2–5% snap-crop, ≥5% hard exit). Layout patterns, the hero-sizing
