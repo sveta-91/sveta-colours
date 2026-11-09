@@ -24,6 +24,7 @@ docs/
 scripts/
   audit_gallery.py               — read-only pre-deploy audit of the gallery sheet data
   verify_site.py                 — parameterized Selenium UI verification
+  verify_collection_order.py     — Selenium check: collection order + button pictures vs the sheet rules
   dev.sh                         — start the local static server for the photo manager
   templates/                     — reusable Selenium verify templates
 tools/
