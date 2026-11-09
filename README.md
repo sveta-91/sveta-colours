@@ -9,8 +9,8 @@ index.html                       — main portfolio page (editorial gallery)
 favicon.ico                      — root favicon (legacy auto-request)
 CNAME                            — custom domain for GitHub Pages
 icons/                           — favicon assets (SVG + multi-size PNG)
-images/                          — site photos not in the Drive gallery
-  sveta-portrait.jpg             — painter photo at the top of the home hero
+images/                          — local fallbacks for site photos served from Drive
+  sveta-portrait.jpg             — painter photo (home hero); live copy is Drive file 1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm
 worker/                          — Cloudflare Worker that proxies the site's AI chat to OpenAI
   chat-worker.js                 — holds the OpenAI key; system prompt + live catalogue from the sheet CSV
   wrangler.toml                  — Worker config (model, per-IP rate limit)
