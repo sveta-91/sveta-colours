@@ -65,11 +65,13 @@ degrades gracefully; JS constants are the safety net (`HERO_PIN_TITLE`,
 | `cover` *(optional, after `recent`)* | Collection name(s) this painting is the button picture for, e.g. `Forest`. Blank → first available painting in the collection's order |
 | `order` *(optional)* | Position inside collections: `3` (every collection) or `Forest:2,Seasons:5`. Also accepted inline in `collection`: `Big City:1` (wins over `order`). Numbered first, then the rest in sheet order |
 
-**Long site texts** live in plain text files in `texts/`: `home.txt`, `about.txt`, `faq.txt`.
-`index.html` reads them at load. A `[label]` line opens each block; a blank line starts a
-paragraph. These texts have no copy in the code, so change the file, not `index.html`.
-Short copy (titles, subtitles, headings, contact, footer, buttons) stays in code.
-Format rules and the planned move to Drive: playbook → "Long texts in plain .txt files".
+**Long site texts** (home headline and paragraphs, About, FAQ) are read at load from three
+**published Google Docs** in the sveta.mordkovich Drive (`home`, `about`, `faq`; links in
+`TEXT_DOCS`). The plain-text copies in `texts/*.txt` are the backup if a Doc can't be read.
+A `[label]` line opens each block; a blank line starts a paragraph. Change copy by editing
+the Doc, then mirror it into `texts/` — never in `index.html`. Short copy (titles,
+subtitles, headings, contact, footer, buttons) stays in code. Format rules, why not
+.txt-in-Drive (403), publish lag: playbook → "Long texts in plain .txt files".
 
 Gallery cards lock rendered aspect to the **physical canvas** (`size`), never to the
 photo's pixel aspect; `push_painting.py`'s `check_canvas_aspect()` enforces the match at

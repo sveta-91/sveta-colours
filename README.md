@@ -9,7 +9,7 @@ index.html                       — main portfolio page (editorial gallery)
 favicon.ico                      — root favicon (legacy auto-request)
 CNAME                            — custom domain for GitHub Pages
 icons/                           — favicon assets (SVG + multi-size PNG)
-texts/                           — long site texts as plain .txt, read by index.html at load ([label] blocks)
+texts/                           — backup copies of the long site texts ([label] blocks); the live source is 3 published Google Docs (TEXT_DOCS)
   home.txt                       — [headline], [under headline], [from the studio], [on painting]
   about.txt                      — [about] paragraphs
   faq.txt                        — [question]/[answer] pairs, in page order

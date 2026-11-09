@@ -75,16 +75,35 @@ texts live in plain text files she can read and edit as text.
   escaped — HTML typed in a file shows as typed.
 - Missing/empty block → that spot is hidden. Unknown label, text before the first
   label, half a FAQ pair → skipped with a `console.warn` naming it.
-- No copy of these texts in `index.html` — the files are the only source.
-  `loadTexts()` starts at boot, runs parallel to the sheet fetch, capped at 4s;
-  a missing file renders the page without its texts.
+- No copy of these texts in `index.html`. `loadTexts()` starts at boot, runs
+  parallel to the sheet fetch, capped at 5s overall.
 - Short copy (page titles/subtitles, section headings, contact, footer,
   postcards line, menu, buttons) stays in code — her call ("only the long texts").
-- **Step 2, planned, not built:** read the same files from Drive (`TEXTS_BASE`),
-  with `texts/` as the backup. Needs each file shared "anyone with the link" and a
-  test that a browser can fetch Drive files cross-origin at all.
-- Editing: GitHub web editor (repo → `texts/` → file → pencil → Commit), live in
-  ~1–5 min. Text changes go through the `sveta-writing` skill like any site copy.
+
+**Step 2 (live): Google Docs are the source, `texts/` is the backup.**
+
+- Three Google Docs in the sveta.mordkovich Drive (the .txt originals are in sveta.colours) — `home`, `about`, `faq` — made
+  with "Open with Google Docs" from the .txt files, then File → Share → Publish
+  to web. `TEXT_DOCS` in `index.html` holds the three `…/d/e/2PACX-…/pub` links.
+  Same `[label]` format; each Doc paragraph = one line, empty paragraph = blank line
+  (`docPageToText()` reads `#contents` p/li/h*).
+- Per file: Doc first (2.5s timeout) → `texts/<name>.txt` → nothing.
+  `TEXTS_SOURCE` records which one was used (`doc`/`backup`/`none`).
+- **Why Docs, not the .txt in Drive:** Drive's download service answers a
+  browser's cross-site read with 403 for every link form (`uc?export=download`,
+  `drive.usercontent.google.com/download`, …), even when shared "anyone with the
+  link". Only "Publish to web" copies (Sheets CSV, Docs) send
+  `access-control-allow-origin`. Docs ignores `?output=txt` — the page is HTML,
+  hence the paragraph extraction. Also: a .txt can't be edited in Drive's browser
+  UI, a Doc can.
+- **Publish lag:** an edit reaches the `/pub` link at once for some Google
+  servers, but the copy a browser gets lagged ~5–6 min (measured 2026-11-09).
+- The `texts/` backup is not synced automatically — after Sveta changes a Doc
+  for good, copy the text into `texts/<name>.txt` too (or the backup shows old
+  text if Google is down).
+- Docs autocorrect may turn `'` into `’` and `--` into `—` as she types. Fine.
+- Editing: open the Doc in Drive, change it; no Publish step needed again.
+  Text changes go through the `sveta-writing` skill like any site copy.
 
 ---
 

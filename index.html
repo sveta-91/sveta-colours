@@ -2026,7 +2026,7 @@ const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZ
 // ---- Long site texts: plain .txt files in texts/ (Sveta edits them, not this code).
 // Format: a "[label]" line, then the text. Blank line = new paragraph,
 // single line break = line break. Missing/empty block → that spot is hidden.
-// Step 2 (later): read the same files from Drive; texts/ stays as the backup.
+// Step 2 (done): read first from published Google Docs (TEXT_DOCS); texts/ is the backup.
 const TEXTS_BASE = 'texts/';
 const TEXT_LABELS = {
   home:  ['headline', 'under headline', 'from the studio', 'on painting'],
@@ -2050,20 +2050,54 @@ function parseTextFile(name, raw) {
   return blocks.map(b => ({ label: b.label, text: b.lines.join('\n').trim() })).filter(b => b.text);
 }
 
+// Step 2: the same texts as Google Docs in Sveta's Drive, "Publish to web" links.
+// Drive won't let a page read an uploaded .txt (403), but a published Doc is
+// readable (CORS allowed). The site takes the Doc's paragraphs as lines; the
+// texts/ files are the backup when a Doc is slow or unreachable.
+const TEXT_DOCS = {
+  home:  'https://docs.google.com/document/d/e/2PACX-1vQJB9Itmyifx3EQ87SFrNYlPOEKNSEBd-gklsTlaA7zea5iF4iVa-3RFKEA2z7b_KW4e4KvSCdOxyjI/pub',
+  about: 'https://docs.google.com/document/d/e/2PACX-1vQCN_-haahrm03cy6o-F4WZdTSHQqwDYJsTq_pxMCu57mScljGm_ZaZ7L1kRU9pptMjdFebGhONF6TC/pub',
+  faq:   'https://docs.google.com/document/d/e/2PACX-1vR8NnB4A1Qf5DPfNK7i0D4Rr_OtxZ7PpHX0MVeAt17kbO7dHxKNqwuTSaJtWTAbfQvEJxG8zXUs8Uq3/pub',
+};
+// Published Doc page → plain text: one line per paragraph, empty paragraph = blank line.
+function docPageToText(html) {
+  const root = new DOMParser().parseFromString(html, 'text/html').getElementById('contents');
+  if (!root) throw new Error('no #contents in the published page');
+  return [...root.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6')]
+    .map(e => e.textContent.replace(/ /g, ' ').replace(/[​﻿]/g, '')).join('\n');
+}
+async function fetchText(url, ms) {
+  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, { cache: 'no-cache', signal: ctl.signal });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.text();
+  } finally { clearTimeout(timer); }
+}
+const TEXTS_SOURCE = {};   // file → 'doc' | 'backup' | 'none' (for checks)
 async function loadTexts() {
   await Promise.all(Object.keys(TEXTS).map(async name => {
+    if (TEXT_DOCS[name]) {
+      try {
+        const blocks = parseTextFile(name, docPageToText(await fetchText(TEXT_DOCS[name], 2500)));
+        if (blocks.length) { TEXTS[name] = blocks; TEXTS_SOURCE[name] = 'doc'; return; }
+        console.warn(`Google Doc "${name}" has no [label] blocks — using texts/${name}.txt`);
+      } catch (err) {
+        console.warn(`Google Doc "${name}" could not be read (${err.message}) — using texts/${name}.txt`);
+      }
+    }
     try {
-      const r = await fetch(TEXTS_BASE + name + '.txt', { cache: 'no-cache' });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      TEXTS[name] = parseTextFile(name, await r.text());
+      TEXTS[name] = parseTextFile(name, await fetchText(TEXTS_BASE + name + '.txt', 2500));
+      TEXTS_SOURCE[name] = 'backup';
     } catch (err) {
+      TEXTS_SOURCE[name] = 'none';
       console.warn(`texts/${name}.txt could not be loaded (${err.message}) — its texts are hidden.`);
     }
   }));
 }
 // Started at once so it runs in parallel with the paintings fetch; capped so a
 // slow file never holds the page.
-const textsReady = Promise.race([loadTexts(), new Promise(r => setTimeout(r, 4000))]);
+const textsReady = Promise.race([loadTexts(), new Promise(r => setTimeout(r, 5000))]);
 
 const escText = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const textBlock = (name, label) => (TEXTS[name].find(b => b.label === label) || {}).text || '';
