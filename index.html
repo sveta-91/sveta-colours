@@ -2132,6 +2132,16 @@ function sheetRowToPainting(row, headers, index) {
   const heroFlag = yes(get('hero'));
   const recentStr = get('recent');
   const recentN = recentStr ? parseInt(recentStr, 10) : NaN;
+  // `collection` entries may carry a position: "Big City:1" = in Big City,
+  // first. The name before the colon is the collection; the number feeds
+  // orderIn() (it wins over the `order` column for that collection).
+  const collOrder = {};
+  const collections = (get('collection') || '').split(',').map(c => c.trim()).filter(Boolean).map(c => {
+    const m = c.match(/^(.+?)\s*:\s*(\d+(?:\.\d+)?)$/);
+    if (!m) return c;
+    collOrder[m[1].trim().toLowerCase()] = parseFloat(m[2]);
+    return m[1].trim();
+  });
 
   return {
     id: index + 1,
@@ -2142,7 +2152,8 @@ function sheetRowToPainting(row, headers, index) {
     size: get('size'),
     image: driveImageURL(get('image')),
     description: get('description'),
-    collections: get('collection') ? get('collection').split(',').map(c => c.trim()).filter(Boolean) : [],
+    collections: collections,
+    collOrder: collOrder,
     available: !sold,
     featured: featured,
     hero: heroFlag,
@@ -3282,6 +3293,8 @@ function renderPostcards() {
 // column: "3" applies to every collection, "Forest:2,Seasons:5" per
 // collection. Unnumbered → Infinity (after the numbered ones).
 function orderIn(p, name) {
+  const fromColl = p.collOrder && p.collOrder[name.toLowerCase()];
+  if (typeof fromColl === 'number') return fromColl;
   const raw = String(p.order || '').trim();
   if (!raw) return Infinity;
   if (/^\d+(\.\d+)?$/.test(raw)) return parseFloat(raw);

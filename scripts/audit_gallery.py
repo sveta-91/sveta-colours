@@ -469,7 +469,8 @@ def check_rows(header: Sequence[str], rows: Sequence[Sequence[str]]) -> list[Fin
                     "(index.html trims, so this is cosmetic in the sheet)",
                     sheet_row,
                 ))
-            for name in [c.strip() for c in collection_raw.split(",") if c.strip()]:
+            # "Big City:1" = collection + position on its page (index.html orderIn)
+            for name in [re.sub(r"\s*:\s*\d+(\.\d+)?$", "", c.strip()) for c in collection_raw.split(",") if c.strip()]:
                 if name not in KNOWN_COLLECTIONS:
                     findings.append(Finding(
                         "INFO", "unknown-collection", label, "collection",
