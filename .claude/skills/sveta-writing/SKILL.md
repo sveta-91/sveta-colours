@@ -45,11 +45,16 @@ This rule is also stored in user-memory so it fires regardless of whether this s
 
 This is the source of truth for Sveta's voice. Every rule below traces back to a pattern in these three paragraphs:
 
-> I've always doodled — on whatever paper was at hand — but I'd assumed learning to paint properly was something other people did.
+> I've always doodled on whatever paper was at hand. But for a long time, I thought learning to paint properly was something other people did.
 >
-> Eventually I tried, starting from the very beginning: discovering that a tree shadows itself from within, lit only on the outside, lit from below at sunset — and that mixing colors is a sort of witchcraft.
+> Eventually, I tried. I started with the basics and found there was a lot I'd never noticed: how a tree holds its own shadow inside, how light catches the outer leaves, how the setting sun lights it from below. Mixing colours still feels like a sort of witchcraft.
 >
-> My paintings start from a memory — a walk through the woods, warm evening light, wandering through the city. Each one carries the feeling I had then — whatever it was.
+> My paintings usually begin with a memory: a walk in the woods, warm evening light, a wander through the city. I try to keep something of how it felt to be there, whatever that feeling was.
+
+*(Her own rewrite, 2026-11-09. Note what she changed: fewer em-dashes — colons
+and full stops instead — and "colours" with a u. The description rules below
+were derived from the earlier version; where they push more em-dashes than
+this text uses, follow this text.)*
 
 If a draft doesn't sound like the same person wrote it, the draft is wrong. Not the voice.
 
@@ -248,6 +253,7 @@ The bilingual reading rule still applies in the out-of-scope contexts; the voice
 Sveta asked for this skill to be **iterative — adjust by the way.** Append a dated note when something material changes.
 
 - **2026-06-10 — v1.** Created. Bilingual reading rule + voice anchor.
+- **2026-11-09 — v1.4.** Voice anchor replaced with Sveta's own rewrite of the About page (she pasted it; site uses it verbatim). Her version swaps most em-dashes for colons and full stops and spells *colours* the Canadian way. Home "From the studio" preview now opens with her memory sentence instead of the drafted "I paint quiet places" (a mood she never chose).
 - **2026-08-22 — v1.3.** Made the skill self-correcting. Added `corrections.md` (append-only log + 1/2/3 promotion protocol, seeded with 9 entries mined from the panel log, memory, and the 2026-08-22 session), a "What she actually corrects for" section, and the self-correction protocol. Headline finding from the mining: **every correction she has ever made is about the subject, not the prose** — no rule in this file would have caught any of them.
 - **2026-08-22 — v1.2.** Lower word bound relaxed: the 32-word floor is waived for descriptions Sveta writes herself (her ruling: *«нижняя граница снимается, когда текст пишу я»*). Prompted by *Vancouver* — her own 26-word text was stronger than the 45-word draft it replaced, precisely because it doesn't explain. `scripts/audit_gallery.py` mirrors this via `SVETA_AUTHORED`; add a title there when she supplies the text.
 - **2026-06-10 — v1.1.** Voice spec locked from R2 director synthesis of the paintings-descriptions panel. Key rulings: 32–55 word range with 60 ceiling; em-dash cap 2 (typical 1); required-ingredients restructured into (A) small thing + (B) hedged lyrical + (C) one of three About-patterns rotating; "from the easel" voice allowed ~1 in 5, fact-not-feeling; *beauty* added to hard bans; memory anchor demoted from required to encouraged. 5 sample descriptions drafted; awaiting Sveta's review of Morning Coffee outdoor-vs-window question.

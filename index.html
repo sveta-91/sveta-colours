@@ -3051,7 +3051,9 @@ function renderHome() {
    The visitor never sees [TODO] or placeholder text. */
 function renderAboutPreview() {
   const { location, yearsPracticing } = SITE_DATA.artist;
-  let bio = `I'm Sveta. I paint quiet places &mdash; landscapes, weather, late afternoons.`;
+  // First line is Sveta's own About sentence (2026-11-09); keep it in step
+  // with renderAbout(). The second line is facts only.
+  let bio = `I'm Sveta. My paintings usually begin with a memory: a walk in the woods, warm evening light, a wander through the city.`;
   let bio2 = `I paint in acrylic.`;
   if (location)        bio2 += ` I work from ${location}.`;
   if (yearsPracticing) bio2 += ` I've been painting for ${yearsPracticing} years.`;
