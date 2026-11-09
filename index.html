@@ -31,8 +31,8 @@
 <!-- Fonts: Fraunces (variable, optical sizing) + Inter -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500&display=swap">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500&family=Marcellus&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500&family=Marcellus&display=swap" rel="stylesheet">
 
 <!-- JSON-LD: injected per painting by JS; this is a fallback for the site itself -->
 <script type="application/ld+json">
@@ -88,6 +88,9 @@
   /* Type */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  /* The site name and the home hero words (Sveta chose Marcellus, 2026-11-09).
+     One weight only — never set it bold or italic. */
+  --font-brand: 'Marcellus', Georgia, 'Times New Roman', serif;
 
   /* Layout */
   --max-w: 1280px;
@@ -141,11 +144,11 @@ nav .nav-inner {
 }
 
 nav .logo {
-  font-family: var(--font-display);
+  font-family: var(--font-brand);
   font-style: normal;
   font-size: 1.4rem;
   font-weight: 400;
-  letter-spacing: -0.005em;
+  letter-spacing: 0.01em;
   color: var(--text);
   font-optical-sizing: auto;
 }
@@ -308,12 +311,11 @@ section { padding: 6rem 2rem; }
 }
 .hero-text { display: flex; flex-direction: column; gap: 1.75rem; min-width: 0; }
 .hero-title {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: clamp(2rem, 2.5vw, 3rem);
+  font-family: var(--font-brand);
+  font-size: clamp(1.85rem, 2.3vw, 2.75rem);
   font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: -0.015em;
+  line-height: 1.15;
+  letter-spacing: 0;
   color: var(--text);
   margin: 0;
 }
@@ -332,8 +334,8 @@ section { padding: 6rem 2rem; }
    when it doesn't. */
 .hero-lede {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.05rem, 1.05vw, 1.2rem);
+  font-family: var(--font-brand);
+  font-size: clamp(1rem, 1vw, 1.15rem);
   line-height: 1.5;
   color: var(--text-secondary);
 }
@@ -1539,7 +1541,8 @@ footer {
 }
 
 .footer-col .footer-mark {
-  font-family: var(--font-display);
+  font-family: var(--font-brand);
+  font-weight: 400;
   font-style: normal;
   font-size: 1.4rem;
   color: var(--text);
