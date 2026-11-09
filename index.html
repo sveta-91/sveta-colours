@@ -31,8 +31,8 @@
 <!-- Fonts: Fraunces (variable, optical sizing) + Inter -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500&family=Marcellus&display=swap">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500&family=Marcellus&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&display=swap" rel="stylesheet">
 
 <!-- JSON-LD: injected per painting by JS; this is a fallback for the site itself -->
 <script type="application/ld+json">
@@ -86,15 +86,14 @@
   --accent-tint: #1A2640;
 
   /* Type */
-  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-display: var(--font-brand); /* was Fraunces; kept as an alias */
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   /* The site name and the home hero words (Sveta chose Marcellus, 2026-11-09).
      One weight only — never set it bold or italic. */
   --font-brand: 'Marcellus', Georgia, 'Times New Roman', serif;
   /* Font rules (Sveta, 2026-11-09): two fonts per page. Names and headings
      → --font-brand, upright. Everything else (body, notes, counts, menu,
-     prices) → --font-body. No italic for notes. Fraunces (--font-display)
-     remains only on painting cards and the painting popup. */
+     prices) → --font-body. No italic anywhere. Fraunces is no longer loaded. */
 
   /* Layout */
   --max-w: 1280px;
@@ -322,7 +321,7 @@ section { padding: 6rem 2rem; }
   color: var(--text);
   margin: 0;
 }
-.hero-title .italic { font-style: italic; color: var(--text-secondary); }
+.hero-title .italic { font-style: normal; color: var(--text-secondary); }
 /* The painter's photo heads the text column; its width also shrinks with
    window height so photo + words stay above the fold on short laptops. */
 .hero-portrait {
@@ -439,9 +438,8 @@ button.hero-image-wrap {
    small 11×14 — each preceded by this label so the page reads as two rooms
    instead of one flat 11-painting feed. Display-italic + hairline rule. */
 .hang-chapter {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.1rem;
+  font-family: var(--font-brand);
+  font-size: 1.05rem;
   font-weight: 400;
   letter-spacing: 0.01em;
   color: var(--text-muted);
@@ -572,11 +570,10 @@ button.hero-image-wrap {
 .painting-card .card-text { min-width: 0; }
 
 .painting-card .card-title {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: 1.4rem;
+  font-family: var(--font-brand);
+  font-size: 1.25rem;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   line-height: 1.2;
   color: var(--text);
   margin-bottom: 0.25rem;
@@ -584,9 +581,9 @@ button.hero-image-wrap {
 }
 
 .painting-card .card-meta {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 0.86rem;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 0.84rem;
   letter-spacing: 0.005em;
   color: var(--text-muted);
   line-height: 1.45;
@@ -599,9 +596,9 @@ button.hero-image-wrap {
 .painting-card .card-price {
   display: block;
   margin-top: 0.4rem;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 0.88rem;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 0.86rem;
   line-height: 1.45;
   color: var(--text-faint);
   position: relative;
@@ -620,9 +617,9 @@ button.hero-image-wrap {
   padding: 0;
   background: none;
   border: none;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 0.86rem;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 0.84rem;
   line-height: 1.45;
   color: var(--accent);
   text-decoration: underline;
@@ -702,13 +699,13 @@ button.hero-image-wrap {
 }
 
 .about-preview p {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
+  font-family: var(--font-brand);
+  font-size: 1.2rem;
   line-height: 1.5;
   color: var(--text);
   margin-bottom: 1rem;
   font-weight: 400;
-  letter-spacing: -0.005em;
+  letter-spacing: 0;
 }
 
 .about-preview p + p {
@@ -729,12 +726,11 @@ button.hero-image-wrap {
 }
 
 .testimonial blockquote {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.2rem;
+  font-family: var(--font-brand);
+  font-size: 1.1rem;
   line-height: 1.5;
   color: var(--text);
-  letter-spacing: -0.005em;
+  letter-spacing: 0;
   margin-bottom: 1.25rem;
   position: relative;
 }
@@ -746,7 +742,7 @@ button.hero-image-wrap {
   top: -0.4rem;
   font-size: 2rem;
   color: var(--text-faint);
-  font-style: italic;
+  font-style: normal;
 }
 
 .testimonial cite {
@@ -907,18 +903,17 @@ button.hero-image-wrap {
 }
 
 .newsletter h2 {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-family: var(--font-brand);
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
   font-weight: 400;
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
   line-height: 1.05;
   margin-bottom: 0.75rem;
 }
 
 .newsletter p {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   color: var(--text-muted);
   margin-bottom: 2rem;
   font-size: 1.05rem;
@@ -1132,19 +1127,18 @@ button.hero-image-wrap {
 }
 
 .modal-details h2 {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: 1.9rem;
+  font-family: var(--font-brand);
+  font-size: 1.7rem;
   font-weight: 400;
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
   line-height: 1.05;
   margin-bottom: 0.3rem;
 }
 
 .modal-details .modal-sub {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1rem;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 0.95rem;
   color: var(--text-muted);
   margin-bottom: 1.5rem;
 }
@@ -1192,9 +1186,10 @@ button.hero-image-wrap {
 }
 
 .modal-price {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-style: italic;
+  font-family: var(--font-body);
+  font-size: 1.2rem;
+  font-weight: 500;
+  font-style: normal;
   color: var(--text);
   margin-bottom: 1rem;
   position: relative;
@@ -1219,9 +1214,9 @@ button.hero-image-wrap {
 }
 
 .modal-cta .cta-link {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.15rem;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 1rem;
   color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -1483,11 +1478,10 @@ button.hero-image-wrap {
 .about-full { max-width: var(--max-w-text); margin: 0 auto; }
 
 .about-full .lede {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-size: 1.6rem;
+  font-family: var(--font-brand);
+  font-size: 1.45rem;
   line-height: 1.4;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   color: var(--text);
   margin-bottom: 2rem;
 }
@@ -1644,7 +1638,7 @@ footer {
 }
 
 /* --- Semantic italic (replaces <em> visual abuse) --- */
-.italic { font-style: italic; }
+.italic { font-style: normal; } /* site rule: no italic (Sveta, 2026-11-09) */
 
 /* --- Logo: upright, no flourish (Sveta, 2026-11-09) --- */
 nav .logo {
@@ -1692,8 +1686,8 @@ nav .logo {
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
+  font-style: normal;
   font-size: 0.82rem;
   color: var(--text);
   letter-spacing: 0.01em;
@@ -1796,7 +1790,7 @@ body.cursor-hide * { cursor: none !important; }
   padding: 0.7rem 1.1rem;
   background: var(--accent); color: var(--paper);
   border: 0; border-radius: 999px;
-  font-family: var(--font-display); font-style: italic; font-size: 1rem;
+  font-family: var(--font-body); font-style: normal; font-size: 0.95rem;
   box-shadow: 0 6px 20px rgba(20, 19, 15, 0.18);
   cursor: pointer;
 }
@@ -1817,7 +1811,7 @@ body.cursor-hide * { cursor: none !important; }
   display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
   padding: 0.85rem 1rem; border-bottom: 1px solid var(--hairline);
 }
-.chat-head h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
+.chat-head h2 { margin: 0; font-family: var(--font-brand); font-weight: 400; font-size: 1.1rem; }
 .chat-head-actions { display: flex; gap: 0.25rem; flex-shrink: 0; white-space: nowrap; }
 .chat-head button {
   background: none; border: 0; color: var(--text-muted); cursor: pointer;
@@ -1839,7 +1833,7 @@ body.cursor-hide * { cursor: none !important; }
 }
 .chat-msg.assistant { align-self: flex-start; background: var(--surface-alt); }
 .chat-msg.user { align-self: flex-end; background: var(--accent); color: var(--paper); }
-.chat-msg.pending { color: var(--text-muted); font-style: italic; }
+.chat-msg.pending { color: var(--text-muted); font-style: normal; }
 .chat-msg.error { align-self: stretch; max-width: none; background: none; color: #8A2B1F; font-size: 0.85rem; }
 .chat-sr {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -2172,7 +2166,7 @@ async function loadFromSheet() {
   try {
     document.getElementById('app').innerHTML = `
       <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
-        <p style="color:var(--text-muted);font-family:var(--font-display);font-style:italic;font-size:1.2rem;">Loading paintings&hellip;</p>
+        <p style="color:var(--text-muted);font-family:var(--font-body);font-size:1.2rem;">Loading paintings&hellip;</p>
       </div>`;
     const response = await fetch(SHEET_CSV_URL);
     if (!response.ok) throw new Error('Could not fetch sheet');
@@ -2424,7 +2418,7 @@ function paintingImage(p, opts) {
       : '';
     return `<img src="${p.image}" ${srcsetAttr} alt="${alt}" ${wAttr} ${hAttr} ${loadAttr} ${crossOrigin} ${onLoad}>`;
   }
-  return `<div style="width:100%;height:100%;min-height:240px;background:${placeholderGradient(p.id)};display:flex;align-items:center;justify-content:center;" role="img" aria-label="${alt}"><span style="font-family:var(--font-display);font-style:italic;font-size:1.1rem;color:rgba(20,19,15,0.22);text-align:center;padding:1rem;">${p.title}</span></div>`;
+  return `<div style="width:100%;height:100%;min-height:240px;background:${placeholderGradient(p.id)};display:flex;align-items:center;justify-content:center;" role="img" aria-label="${alt}"><span style="font-family:var(--font-body);font-size:1.1rem;color:rgba(20,19,15,0.22);text-align:center;padding:1rem;">${p.title}</span></div>`;
 }
 
 function cardHTML(p) {
@@ -3203,7 +3197,7 @@ function renderPaintings() {
        </section>`
     : '';
 
-  const emptyMsg = `<section><div class="section-inner"><p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;">No paintings yet.</p></div></section>`;
+  const emptyMsg = `<section><div class="section-inner"><p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);">No paintings yet.</p></div></section>`;
 
   // When every painting carries dimensions: render two real chapters.
   // When some are missing dims: render an extra "Other works" chapter so
@@ -3259,7 +3253,7 @@ function renderPostcards() {
     p.medium === 'watercolour' ||
     (p.collections || []).map(c => c.toLowerCase()).includes('postcards')
   );
-  const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;font-size:1.05rem;padding:2rem;">Watercolor postcards drop seasonally. New batch this spring.</p>`;
+  const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);font-size:1.05rem;padding:2rem;">Watercolor postcards drop seasonally. New batch this spring.</p>`;
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
@@ -3374,13 +3368,13 @@ function renderCollections() {
                 ${collectionThumb(name, 480, 'cat-thumb')}
                 <div class="cat-text">
                   <div>
-                    <h2 style="font-family:var(--font-display);font-optical-sizing:auto;font-size:1.8rem;font-weight:400;letter-spacing:-0.01em;line-height:1.05;">${name}</h2>
+                    <h2 style="font-family:var(--font-brand);font-size:1.6rem;font-weight:400;letter-spacing:0;line-height:1.1;">${name}</h2>
                     <div class="cat-count">${count} painting${count !== 1 ? 's' : ''}</div>
                   </div>
                   <div class="cat-arrow">VIEW &rarr;</div>
                 </div>
               </div>`;
-          }).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;padding:2rem;">No collections defined yet.</p>'}
+          }).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);padding:2rem;">No collections defined yet.</p>'}
         </div>
       </div>
     </div>
@@ -3401,7 +3395,7 @@ function renderCollectionDetail(name) {
         <div class="gallery-grid" data-masonry>
           ${items.length ? items.map(cardHTML).join('') : `
             <div style="text-align:center;padding:2.5rem 1rem;grid-column:1/-1;">
-              <p style="color:var(--text-muted);font-family:var(--font-display);font-style:italic;margin-bottom:1rem;">No paintings in this collection yet.</p>
+              <p style="color:var(--text-muted);font-family:var(--font-body);margin-bottom:1rem;">No paintings in this collection yet.</p>
               <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all paintings &rarr;</a>
             </div>`}
         </div>
@@ -3510,7 +3504,7 @@ function renderPastWork() {
     <section style="padding-top: 1rem;">
       <div class="section-inner">
         <div class="gallery-grid gallery-grid--all-sold" data-masonry>
-          ${sold.length ? sold.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-display);font-style:italic;">Nothing sold yet.</p>'}
+          ${sold.length ? sold.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);">Nothing sold yet.</p>'}
         </div>
       </div>
     </section>
@@ -3641,7 +3635,7 @@ function renderFooter() {
   const newsletterCol = newsletterHTML
     ? `<div class="footer-col">
          <h4>Newsletter</h4>
-         <p style="font-family:var(--font-display);font-style:italic;color:var(--text-muted);font-size:0.92rem;margin-bottom:0.8rem;line-height:1.5;">New work, seasonally. No spam.</p>
+         <p style="font-family:var(--font-body);color:var(--text-muted);font-size:0.92rem;margin-bottom:0.8rem;line-height:1.5;">New work, seasonally. No spam.</p>
          ${newsletterHTML}
        </div>`
     : '';
