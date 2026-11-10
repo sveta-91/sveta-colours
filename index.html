@@ -16,12 +16,18 @@
 <meta property="og:url" content="https://www.sveta-colours.com/">
 <meta property="og:site_name" content="Sveta Colours">
 <link rel="canonical" href="https://www.sveta-colours.com/">
-<!-- og:image / twitter:image meta tags injected by JS only when SITE_DATA.ogImage is set. -->
+<!-- Static on purpose: messenger and social crawlers don't run JS.
+     images/og-image.jpg is 1200×630, three paintings on the site's --bg. -->
+<meta property="og:image" content="https://www.sveta-colours.com/images/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Three original acrylic paintings by Sveta">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Sveta Colours — Original Paintings">
 <meta name="twitter:description" content="Original acrylic paintings — landscapes, light, quiet places.">
+<meta name="twitter:image" content="https://www.sveta-colours.com/images/og-image.jpg">
 
 <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
@@ -1200,6 +1206,57 @@ button.hero-image-wrap {
   color: var(--text-muted);
 }
 
+.price-code {
+  font-size: 0.68em;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-left: 0.3em;
+}
+.modal-shipping {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: -0.6rem 0 1rem;
+}
+
+/* Inquiry form + visible email (replaces bare mailto, which fails for webmail) */
+.modal-cta button.cta-link {
+  background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+}
+.inquiry-email {
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  font-size: 0.85rem; color: var(--text-secondary);
+}
+.inquiry-email a { color: inherit; text-decoration: none; overflow-wrap: anywhere; }
+.inquiry-copy {
+  font: inherit; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+  background: none; border: 1px solid var(--hairline); border-radius: 999px;
+  padding: 0.2rem 0.65rem; color: var(--text-muted); cursor: pointer;
+}
+.inquiry-copy:hover { color: var(--text); border-color: var(--text-muted); }
+.inquiry-alt { font-size: 0.78rem; color: var(--text-muted); margin-bottom: -0.5rem; }
+.inquiry-form { display: flex; flex-direction: column; gap: 0.7rem; }
+.inquiry-form[hidden] { display: none; }
+.inquiry-form label {
+  display: flex; flex-direction: column; gap: 0.25rem;
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);
+}
+.inquiry-form input, .inquiry-form textarea {
+  font: inherit; font-size: 0.92rem; text-transform: none; letter-spacing: 0;
+  color: var(--text); background: var(--paper);
+  border: 1px solid var(--hairline); border-radius: 4px; padding: 0.55rem 0.7rem;
+}
+.inquiry-form textarea { resize: vertical; min-height: 5.5rem; }
+.inquiry-form input:focus, .inquiry-form textarea:focus { outline: 1.5px solid var(--accent); outline-offset: 0; }
+.inquiry-form .inquiry-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.inquiry-send {
+  align-self: flex-start; font: inherit; font-size: 0.92rem;
+  background: var(--text); color: var(--paper); border: 0; border-radius: 999px;
+  padding: 0.55rem 1.4rem; cursor: pointer;
+}
+.inquiry-send:disabled { opacity: 0.5; cursor: default; }
+.inquiry-status { font-size: 0.8rem; color: var(--text-muted); min-height: 1em; }
+.inquiry-done { font-size: 0.92rem; color: var(--text); line-height: 1.6; }
+
 /* Modal overlay accent border + tinted bg when JS samples a dominant color */
 .modal {
   border-top: 2px solid var(--accent-tint);
@@ -1948,8 +2005,7 @@ const SITE_DATA = {
   },
   shipping: {
     fromCountry: "Canada"      // e.g. "Canada" — not shown; the FAQ answer text is in texts/faq.txt
-  },
-  ogImage: null            // e.g. "/og-image.jpg" — when null, og/twitter image meta is omitted
+  }
 };
 
 /* ========================================================
@@ -2002,25 +2058,21 @@ let PAINTINGS = [
   }
 ];
 
-/* Render og:image / twitter:image meta tags only if data exists.
-   Done early so crawlers see them in the DOM after JS execution. */
-(function injectOGImage(){
-  if (!SITE_DATA.ogImage) return;
-  const m1 = document.createElement('meta');
-  m1.setAttribute('property', 'og:image');
-  m1.setAttribute('content', SITE_DATA.ogImage);
-  document.head.appendChild(m1);
-  const m2 = document.createElement('meta');
-  m2.setAttribute('name', 'twitter:image');
-  m2.setAttribute('content', SITE_DATA.ogImage);
-  document.head.appendChild(m2);
-})();
-
 /* ========================================================
    CONFIGURATION
    ======================================================== */
 const CONTACT_EMAIL = "sveta.colours@gmail.com";
 const CURRENCY = "$";
+// Prices in the sheet are USD (playbook). Shown next to every price so a
+// Canadian site doesn't leave buyers guessing CAD vs USD; JSON-LD uses it too.
+const CURRENCY_CODE = "USD";
+// The shipping line under the modal price. Wording only, no policy beyond the FAQ.
+const SHIPPING_NOTE = "Shipping quoted to your address. Insured, from Canada.";
+// Inquiry form endpoint (Formspree-compatible: POST JSON, {ok:true} back).
+// Empty → the modal shows the email address + Copy instead of the form.
+// To turn on: create a form at formspree.io for the studio address and
+// paste its URL here, e.g. "https://formspree.io/f/abcdwxyz".
+const FORM_ENDPOINT = "";
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv";
 
 // ---- Long site texts: plain .txt files in texts/ (Sveta edits them, not this code).
@@ -2378,13 +2430,13 @@ function closeMenu() {
 function formatPriceText(p) {
   if (p.sold) return 'Sold';
   if (p.price == null || isNaN(p.price)) return '';
-  return `${CURRENCY}${p.price.toLocaleString()}`;
+  return `${CURRENCY}${p.price.toLocaleString()} ${CURRENCY_CODE}`;
 }
 
 function formatPrice(p) {
   if (p.sold) return `<span class="card-price sold">Sold</span>`;
   if (p.price == null || isNaN(p.price)) return '';
-  return `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}</span>`;
+  return `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}<span class="price-code">${CURRENCY_CODE}</span></span>`;
 }
 
 // Convert "16 x 20 in" or numeric inches to "16 × 20 in / 40.6 × 50.8 cm"
@@ -2482,7 +2534,7 @@ function paintingImage(p, opts) {
   opts = opts || {};
   const alt = `${p.title} — original ${p.medium || 'painting'} painting by Sveta`;
   if (p.image) {
-    const loadAttr = opts.isHero ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"';
+    const loadAttr = (opts.isHero || opts.isModal) ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"';
     const crossOrigin = opts.crossOrigin ? 'crossorigin="anonymous"' : '';
     // Intrinsic dims from Sheet widthIn/heightIn eliminate first-paint CLS:
     // the browser knows the image's natural ratio before the bytes arrive.
@@ -2493,8 +2545,14 @@ function paintingImage(p, opts) {
     // Google Drive (lh3.googleusercontent.com) accepts an =w<N> suffix that
     // returns a thumbnail at that pixel width. Build a srcset so phones
     // don't pull the full-res original. Hero gets a larger floor.
+    // The modal gets its own sizes + a 2000w step: with the grid's "33vw"
+    // the browser picked the 400/800 file for the full-size view and the
+    // brushwork couldn't be seen (reviewer saw 475×376).
+    const sizes = opts.isModal ? '(max-width:768px) 100vw, 65vw'
+      : opts.isHero ? '(max-width:768px) 100vw, 1200px'
+      : '(max-width:600px) 100vw, (max-width:1024px) 50vw, 33vw';
     const srcsetAttr = (p.image.indexOf('lh3.googleusercontent.com') !== -1)
-      ? `srcset="${p.image}=w400 400w, ${p.image}=w800 800w, ${p.image}=w1400 1400w" sizes="${opts.isHero ? '(max-width:768px) 100vw, 1200px' : '(max-width:600px) 100vw, (max-width:1024px) 50vw, 33vw'}"`
+      ? `srcset="${p.image}=w400 400w, ${p.image}=w800 800w, ${p.image}=w1400 1400w${opts.isModal ? `, ${p.image}=w2000 2000w` : ''}" sizes="${sizes}"`
       : '';
     // Hero only: refine --hero-ratio from the image's natural dims after
     // load, so the hero band hugs the photo (no letterbox bars on the
@@ -2521,7 +2579,7 @@ function cardHTML(p) {
   // (Modal still uses the struck-through price treatment where it informs.)
   const priceHTML = p.sold
     ? `<span class="card-price card-price--sold">Sold</span>`
-    : (p.price ? `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}</span>` : '');
+    : (p.price ? `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}<span class="price-code">${CURRENCY_CODE}</span></span>` : '');
   // Sold-card recovery: a buyer falling for a sold piece gets an in-card
   // path to inquire about a commission instead of a dead end. The button
   // is nested in the card-link <a>, which is invalid HTML in the strict
@@ -2531,7 +2589,7 @@ function cardHTML(p) {
     ? encodeURIComponent(`Commission similar to "${p.title}"`)
     : '';
   const commissionHTML = p.sold
-    ? `<button type="button" class="card-commission" onclick="event.stopPropagation(); event.preventDefault(); window.location.href='mailto:${CONTACT_EMAIL}?subject=${commissionSubject}';">Commission similar &rarr;</button>`
+    ? `<button type="button" class="card-commission" onclick="event.stopPropagation(); event.preventDefault(); openModal(${p.id}, { pushHistory: true, focusInquiry: true });">Commission similar &rarr;</button>`
     : '';
   const meta = paintingMeta(p);
   // Mark cards by physical size so the 11×14 inset rule can shrink the
@@ -2550,7 +2608,7 @@ function cardHTML(p) {
   const span = estimateGridRowSpan(ratio);
   const aria = p.sold
     ? `Open details for ${p.title}, sold`
-    : `Open details for ${p.title}${p.price ? ', ' + CURRENCY + p.price : ''}`;
+    : `Open details for ${p.title}${p.price ? ', ' + CURRENCY + p.price + ' ' + CURRENCY_CODE : ''}`;
   return `
     <a class="painting-card reveal${p.sold ? ' is-sold' : ''}" href="#painting/${p.id}" data-card-id="${p.id}"${dataSize}${dataOrient} style="grid-row: span ${span};" onclick="return cardClick(event, ${p.id});" aria-label="${aria}">
       <div class="card-image">
@@ -2661,7 +2719,8 @@ function openModal(id, opts) {
   // alongside the commission offer.
   const priceHTML = p.sold
     ? `<div class="modal-price sold">Sold</div>`
-    : (p.price ? `<div class="modal-price">${CURRENCY}${p.price.toLocaleString()}</div>` : '');
+    : (p.price ? `<div class="modal-price">${CURRENCY}${p.price.toLocaleString()}<span class="price-code">${CURRENCY_CODE}</span></div>
+                  <div class="modal-shipping">${SHIPPING_NOTE}</div>` : '');
 
   // Descriptions display in full; truncateDescription only guards against a
   // pathological sheet entry (> DESC_MAX_CHARS).
@@ -2670,11 +2729,11 @@ function openModal(id, opts) {
   const ctaHTML = p.sold
     ? `<div class="modal-cta">
          <div class="cta-note"><span class="italic">Sold.</span> Write if you'd like a similar commission.</div>
-         <a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">Write to studio &rarr;</a>
+         ${inquiryHTML(p, `Commission like "${p.title}"`)}
        </div>`
     : `<div class="modal-cta">
-         <a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">Write to studio &rarr;</a>
-         <div class="cta-note">Replies within a day or two. Shipped from Canada, insured.</div>
+         ${inquiryHTML(p, `Inquiry about "${p.title}"`)}
+         <div class="cta-note">Replies within a day or two.</div>
        </div>`;
 
   const collectionsHTML = (p.collections || []).length
@@ -2690,7 +2749,7 @@ function openModal(id, opts) {
   // if CORS blocks (Google Drive sometimes does).
   document.getElementById('modalContent').innerHTML = `
     <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
-    <div class="modal-image" style="--ratio: ${modalRatio};">${paintingImage(p, { crossOrigin: true })}</div>
+    <div class="modal-image" style="--ratio: ${modalRatio};">${paintingImage(p, { crossOrigin: true, isModal: true })}</div>
     <div class="modal-details">
       <h2 id="modalTitle">${p.title}</h2>
       ${subMeta ? `<div class="modal-sub">${subMeta}</div>` : ''}
@@ -2715,12 +2774,90 @@ function openModal(id, opts) {
 
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  // Tab title / history entry / bookmark name the painting, not the page under it.
+  document.title = `${p.title} · Sveta Colours`;
 
   // Focus management
   setTimeout(() => {
+    if (opts.focusInquiry && FORM_ENDPOINT) { openInquiry(); return; }
     const closeBtn = document.querySelector('.modal-close');
     if (closeBtn) closeBtn.focus();
   }, 50);
+}
+
+/* ---- Inquiry: form when FORM_ENDPOINT is set, else visible email + Copy ----
+   mailto alone fails silently for webmail users (no desktop mail client), so
+   the address is always visible and copyable either way. */
+function inquiryHTML(p, subjectText) {
+  const subject = encodeURIComponent(subjectText);
+  const copyRow = `<div class="inquiry-email">
+      <a href="mailto:${CONTACT_EMAIL}?subject=${subject}">${CONTACT_EMAIL}</a>
+      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">Copy</button>
+    </div>`;
+  if (!FORM_ENDPOINT) {
+    return `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">Write to studio &rarr;</a>${copyRow}`;
+  }
+  const safeSubject = subjectText.replace(/"/g, '&quot;');
+  return `<button type="button" class="cta-link inquiry-toggle" aria-expanded="false" aria-controls="inquiryForm" onclick="openInquiry()">Write to studio &rarr;</button>
+    <form id="inquiryForm" class="inquiry-form" hidden onsubmit="return sendInquiry(event)">
+      <input type="hidden" name="_subject" value="${safeSubject}">
+      <input type="hidden" name="painting" value="${p.title.replace(/"/g, '&quot;')}">
+      <label class="inquiry-hp" aria-hidden="true">Leave empty<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+      <label>Your name<input type="text" name="name" required autocomplete="name"></label>
+      <label>Email<input type="email" name="email" required autocomplete="email"></label>
+      <label>Message<textarea name="message" rows="4" required>Hello, I'm interested in "${p.title.replace(/</g, '&lt;')}".</textarea></label>
+      <button type="submit" class="inquiry-send">Send</button>
+      <div class="inquiry-status" role="status" aria-live="polite"></div>
+    </form>
+    <div class="inquiry-alt">or write directly:</div>${copyRow}`;
+}
+
+function openInquiry() {
+  const form = document.getElementById('inquiryForm');
+  const toggle = document.querySelector('.inquiry-toggle');
+  if (!form) return;
+  form.hidden = false;
+  if (toggle) { toggle.setAttribute('aria-expanded', 'true'); toggle.hidden = true; }
+  const first = form.querySelector('input[name="name"]');
+  if (first) first.focus();
+}
+
+async function sendInquiry(e) {
+  e.preventDefault();
+  const form = e.target;
+  const status = form.querySelector('.inquiry-status');
+  const btn = form.querySelector('.inquiry-send');
+  const data = Object.fromEntries(new FormData(form).entries());
+  if (data._gotcha) return false;
+  btn.disabled = true;
+  status.textContent = 'Sending…';
+  try {
+    const res = await fetch(FORM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    form.innerHTML = `<div class="inquiry-done">Thank you. Your message is with the studio; I'll reply to ${data.email.replace(/</g, '&lt;')} within a day or two.</div>`;
+  } catch (err) {
+    btn.disabled = false;
+    status.textContent = `Couldn't send just now. Please write to ${CONTACT_EMAIL} directly.`;
+  }
+  return false;
+}
+
+function copyStudioEmail(btn) {
+  const done = () => { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = 'Copy'; }, 1800); };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(CONTACT_EMAIL).then(done, () => {});
+      return;
+    }
+  } catch (e) { /* fall through */ }
+  const t = document.createElement('textarea');
+  t.value = CONTACT_EMAIL; document.body.appendChild(t); t.select();
+  try { document.execCommand('copy'); done(); } catch (e) { /* ignore */ }
+  t.remove();
 }
 
 function applyAccentTint(p) {
@@ -2771,6 +2908,7 @@ function closeModal(fromPopstate) {
   if (!modalEl.classList.contains('open')) return;
   modalEl.classList.remove('open');
   document.body.style.overflow = '';
+  document.title = pageTitleFor(currentPage);
 
   // Reset accent tint
   document.documentElement.style.removeProperty('--accent-tint');
@@ -2830,7 +2968,8 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeModal();
   // Focus trap inside modal
   if (e.key === 'Tab' && document.getElementById('modal').classList.contains('open')) {
-    const focusables = document.querySelectorAll('.modal a, .modal button, .modal [tabindex]:not([tabindex="-1"])');
+    const focusables = Array.from(document.querySelectorAll('.modal a, .modal button, .modal input:not([type="hidden"]):not([tabindex="-1"]), .modal textarea, .modal [tabindex]:not([tabindex="-1"])'))
+      .filter(el => el.offsetParent !== null);
     if (focusables.length === 0) return;
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
@@ -2860,7 +2999,7 @@ function injectPaintingsLD() {
         "offers": p.sold ? undefined : (p.price ? {
           "@type": "Offer",
           "price": p.price,
-          "priceCurrency": "USD",
+          "priceCurrency": CURRENCY_CODE,
           "availability": "https://schema.org/InStock"
         } : undefined)
       };

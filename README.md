@@ -15,6 +15,7 @@ texts/                           — backup copies of the long site texts ([labe
   faq.txt                        — [question]/[answer] pairs, in page order
 images/                          — local fallbacks for site photos served from Drive
   sveta-portrait.jpg             — painter photo (home hero); live copy is Drive file 1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm
+  og-image.jpg                   — 1200×630 link-preview picture (og:image / twitter:image): Held Summer, Where the Forest Breathes, Autumn Light on --bg
 worker/                          — Cloudflare Worker that proxies the site's AI chat to OpenAI
   chat-worker.js                 — holds the OpenAI key; system prompt + live catalogue from the sheet CSV
   wrangler.toml                  — Worker config (model, per-IP rate limit)
