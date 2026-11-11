@@ -30,7 +30,7 @@ the Sheet open.
 | `title` | Display title | Required |
 | `medium` | "Acrylic", "Watercolor" | Required |
 | `widthIn` / `heightIn` | Painting dimensions in inches | **Use these to derive `isLandscape`** — never infer from the photo |
-| `price` | Number, USD | Empty = "Price on request" |
+| `price` | Number, CAD | Empty = "Price on request" |
 | `sold` | `TRUE`/`FALSE` | Renders `.is-sold` class + "Sold" badge |
 | `image` | Drive file ID | Just the ID, not full URL |
 | `orientation` | `portrait` / `landscape` / `square` | Used for near-square paintings where dimensions tie; derived for the rest |

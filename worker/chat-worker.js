@@ -37,7 +37,7 @@ const DEFAULT_MODEL = 'gpt-5.4-mini';
 
 const STUDIO_FACTS = `
 Artist: Sveta (the studio is "Sveta Colours"), Thornhill, Ontario, Canada. Use only her first name.
-Medium: acrylic on canvas. Prices are in US dollars ($).
+Medium: acrylic on canvas. Prices are in Canadian dollars (CAD).
 Contact / purchases / commissions: email sveta.colours@gmail.com. There is no checkout on the site.
 
 About, in her words:
@@ -104,7 +104,7 @@ export function catalogueFromCSV(text) {
     .map(r => {
       const sold = /^(yes|true|1)$/i.test(get(r, 'sold'));
       const price = get(r, 'price');
-      const status = sold ? 'SOLD' : price ? `available, $${price}` : 'available, price on request';
+      const status = sold ? 'SOLD' : price ? `available, $${price} CAD` : 'available, price on request';
       const parts = [
         `"${get(r, 'title')}"`,
         get(r, 'medium'),
