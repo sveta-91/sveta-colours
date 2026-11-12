@@ -5,10 +5,13 @@ AI title/description dialog, Save to Drive + the `Paintings` sheet, live check.
 
 ## One-time Google setup (OAuth for Drive + Sheets)
 
-1. https://console.cloud.google.com → the project that issued the OAuth client
-   `754552250731-hdl67ujna2lk1lataah35mnl69emi8qt`.
-2. **OAuth consent screen** → External, Testing. Add the Google account that owns
-   the Drive folder and the sheet as a test user. Scopes:
+1. https://console.cloud.google.com → project **sveta-colours**, which issued the
+   OAuth client `754552250731-hdl67ujna2lk1lataah35mnl69emi8qt`.
+2. **OAuth consent screen** (Google Auth Platform → Audience) → External, Testing.
+   **Test user: the sveta.mordkovich Gmail account**, the one that owns the
+   `Paintings` sheet and the portfolio Drive folder. Sign in with that account
+   (it is not the old work address that used to be listed here; any other
+   account gets "access blocked"). Scopes:
    `https://www.googleapis.com/auth/drive.file`, `https://www.googleapis.com/auth/spreadsheets`.
 3. **Credentials** → the OAuth client → Authorized JavaScript origins:
    `http://localhost:8000` and `http://127.0.0.1:8000`.
