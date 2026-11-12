@@ -18,6 +18,7 @@ images/                          — local fallbacks for site photos served from
   og-image.jpg                   — 1200×630 link-preview picture (og:image / twitter:image): Held Summer, Where the Forest Breathes, Autumn Light on --bg
 inquiry/
   Code.gs                        — Apps Script backend for the inquiry form (not wired yet: FORM_ENDPOINT is empty)
+  README.md                      — site ↔ script contract and the one-time deploy steps
 docs/
   roadmap.md                     — image pipeline implementation roadmap
   photo-manager-setup.md         — one-time Google setup + acceptance checklist

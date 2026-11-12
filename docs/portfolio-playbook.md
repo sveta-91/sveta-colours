@@ -571,14 +571,12 @@ fourth serverless piece for payments and images.
    numeric links open nothing (none had been shared), so no painting data
    lives in the code. `p.id` is still the row number but only used inside the page.
    `push_painting.py` and the photo manager both write it for new paintings.
-2. **Inquiry contract mismatch.** `Code.gs` says the site posts
-   `Content-Type: text/plain` to avoid a CORS preflight (Apps Script can't answer
-   `OPTIONS`). `sendInquiry()` posts `application/json`, so the form would
-   fail the moment `FORM_ENDPOINT` is set. `Code.gs` also checks `elapsedMs`,
-   which the form never sends, and points to an `inquiry/README.md` that
-   doesn't exist. This is the same class of bug as "Spec-vs-renderer drift"
-   above. It's moot if the Spring app replaces Apps Script, but fix it if Apps
-   Script ships first.
+2. **Inquiry contract mismatch** (fixed 2026-11-11). The site posted
+   `application/json` while the Apps Script expects `text/plain` (no CORS
+   preflight), never sent `elapsedMs`, and showed "Thank you" on any HTTP 200,
+   though Apps Script reports failures as 200 + `{ok:false}`. Now: text/plain,
+   `elapsedMs` + `page` + `intent` sent, success only on `ok: true`. Contract
+   and deploy steps: `inquiry/README.md`.
 
 ### Target shape
 

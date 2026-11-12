@@ -2722,10 +2722,12 @@ function inquiryHTML(p, subjectText) {
     return `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">Write to studio &rarr;</a>${copyRow}`;
   }
   const safeSubject = subjectText.replace(/"/g, '&quot;');
+  const intent = /^Commission/.test(subjectText) ? 'commission' : 'question';
   return `<button type="button" class="cta-link inquiry-toggle" aria-expanded="false" aria-controls="inquiryForm" onclick="openInquiry()">Write to studio &rarr;</button>
     <form id="inquiryForm" class="inquiry-form" hidden onsubmit="return sendInquiry(event)">
       <input type="hidden" name="_subject" value="${safeSubject}">
       <input type="hidden" name="painting" value="${p.title.replace(/"/g, '&quot;')}">
+      <input type="hidden" name="intent" value="${intent}">
       <label class="inquiry-hp" aria-hidden="true">Leave empty<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
       <label>Your name<input type="text" name="name" required autocomplete="name"></label>
       <label>Email<input type="email" name="email" required autocomplete="email"></label>
@@ -2741,6 +2743,7 @@ function openInquiry() {
   const toggle = document.querySelector('.inquiry-toggle');
   if (!form) return;
   form.hidden = false;
+  form.dataset.openedAt = String(Date.now());   // bot check: humans take > 2.5 s
   if (toggle) { toggle.setAttribute('aria-expanded', 'true'); toggle.hidden = true; }
   const first = form.querySelector('input[name="name"]');
   if (first) first.focus();
@@ -2753,15 +2756,22 @@ async function sendInquiry(e) {
   const btn = form.querySelector('.inquiry-send');
   const data = Object.fromEntries(new FormData(form).entries());
   if (data._gotcha) return false;
+  data.elapsedMs = form.dataset.openedAt ? Date.now() - Number(form.dataset.openedAt) : 0;
+  data.page = window.location.href;
   btn.disabled = true;
   status.textContent = 'Sending…';
   try {
+    // text/plain keeps this a "simple" request: no CORS preflight, which the
+    // Apps Script web app (inquiry/Code.gs) can't answer. The body is still JSON.
     const res = await fetch(FORM_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error(String(res.status));
+    // Apps Script answers 200 even on failure; the verdict is in the body.
+    const reply = await res.json().catch(() => ({}));
+    if (!reply.ok) throw new Error(reply.error || 'no confirmation');
     form.innerHTML = `<div class="inquiry-done">Thank you. Your message is with the studio; I'll reply to ${data.email.replace(/</g, '&lt;')} within a day or two.</div>`;
   } catch (err) {
     btn.disabled = false;
