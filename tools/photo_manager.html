@@ -746,11 +746,12 @@ function watchLive(title, fileId){
     setStatus('liveStatus', `Waiting for the site to pick it up (Google's published copy lags a few minutes)… ${mins} min`);
     try {
       const rows = parseCsvSimple(await (await fetch(PUBLISHED_CSV + '&t=' + Date.now(), { cache: 'no-store' })).text());
-      const h = rows[0].map(x => x.trim().toLowerCase()), ti = h.indexOf('title'), ii = h.indexOf('image');
+      const h = rows[0].map(x => x.trim().toLowerCase()), ti = h.indexOf('title'), ii = h.indexOf('image'), si = h.indexOf('slug');
       for (let i = 1; i < rows.length; i++){
         if (normalizeTitle(rows[i][ti] || '') === normalizeTitle(title) && String(rows[i][ii] || '').includes(fileId)){
           const el = $('liveStatus');
-          const link = `${SITE_URL}#painting/${i}`;
+          const slug = si >= 0 ? String(rows[i][si] || '').trim() : '';
+          const link = `${SITE_URL}#painting/${slug || slugify(rows[i][ti])}`;
           el.className = 'status ok';
           el.innerHTML = `Live on the site: <a href="${link}" target="_blank" rel="noopener">${link}</a>`;
           state.livePoll = null;
