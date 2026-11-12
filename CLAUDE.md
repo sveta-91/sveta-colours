@@ -98,7 +98,7 @@ trap, masonry timing, cursor scoping, and the CSV cache lag: all in the playbook
 | Path | Purpose |
 | --- | --- |
 | `tools/image_pipeline/` | All Python tooling. Venv at `.venv/`; run commands from this dir |
-| `tools/photo_manager.html` | Browser alternative to `push_painting.py`. Serve via `scripts/dev.sh` |
+| `tools/photo_manager.html` | One-page publishing for a prepared image: watermark, AI title/description dialog (OpenAI, voice rules read live from `sveta-writing`), Save to Drive + sheet, live check. Serve via `scripts/dev.sh` |
 | `scripts/audit_gallery.py` | Read-only pre-deploy data audit of the gallery. CSV-only by default; `--check-drive` opts into Drive checks |
 | `scripts/verify_site.py` | Parameterized Selenium UI verification against the deployed site |
 | `scripts/verify_collection_order.py` | Checks each collection's painting order and button picture against the `collection`/`order`/`cover` rules, on real sheet data plus synthetic cases. Run after touching ordering code |

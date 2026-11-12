@@ -36,7 +36,7 @@ scripts/
   dev.sh                         — start the local static server for the photo manager
   templates/                     — reusable Selenium verify templates
 tools/
-  photo_manager.html             — local HTML page for processing photos end-to-end
+  photo_manager.html             — one-page publishing: prepared image → watermark → AI title/description → Drive + sheet → live check
   image_pipeline/                — Python pipeline (download → process → upload)
   favicon/                       — favicon generation scripts (palette sampling + final render)
 .claude/
@@ -49,10 +49,25 @@ CLAUDE.md                        — project instructions for Claude Code agents
 
 ## Photo Manager (`tools/photo_manager.html`)
 
-Local browser tool to upload a processed painting to the portfolio: drag-drop
-image → fill form (defaults pulled from the sheet's most-common values) →
-brightness/contrast/saturation/watermark adjustments → Save to Drive + Paintings
-sheet. OAuth as Sveta. Served via `python3 -m http.server` from the repo root.
+Publishing a painting in one page. The image arrives already prepared (cropped);
+the page never edits it except for an optional watermark.
+
+1. Drop the image. It is uploaded **as is**; only a watermark (opacity > 0)
+   re-saves it as JPEG 95%. A warning shows when the photo's proportions don't
+   match the canvas `size`, or the image orientation disagrees with the form.
+2. The record fills itself from the sheet: an existing title loads its row
+   (Save then updates it), otherwise medium/size/price take the most common values.
+3. **Title & description with AI**: a dialog with OpenAI about this painting.
+   The voice rules are read live from `.claude/skills/sveta-writing/` (never
+   copied). **Use this** fills the form; **Copy for corrections.md** keeps the
+   voice skill learning. The API key is pasted once and stays in this browser.
+4. **Save to Drive + Sheet** (under the form): uploads, writes the row by the
+   sheet's own header (extra columns kept; `slug` written once if the column
+   exists), moves `hero` if ticked, warns on a duplicate `recent` position, then
+   watches the published CSV until the site shows the painting and links to it.
+
+Run `scripts/dev.sh` and open http://localhost:8000/tools/photo_manager.html.
+OAuth as Sveta.
 
 See `docs/photo-manager-setup.md` for one-time Google setup and the acceptance checklist.
 
@@ -63,7 +78,7 @@ Python tooling. Two distinct workflows:
 - **Per-painting portfolio publishing** (the active path): Grok web UI for
   perspective+crop → `trim_borders.py` to strip Grok's white padding → discuss
   title/description with Claude in chat → `push_painting.py` to upload + upsert
-  the sheet row. CLI alternative to `photo_manager.html`.
+  the sheet row. The Claude Code path; `photo_manager.html` does the same in one page.
 - **Batch pipeline** (`run_pipeline.py`): scan a Drive inbox folder, straighten
   tilted phone photos, crop background, save locally. Older workflow; see
   `docs/roadmap.md`.

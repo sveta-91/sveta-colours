@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sveta Colours — Photo Manager</title>
+<title>Sveta Colours — Publish a Painting</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root {
@@ -43,13 +43,22 @@ h1 { font-size: 1.75rem; margin-bottom: 1rem; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
 
-.top-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1.5rem; align-items: start; }
-.col-right { display: flex; flex-direction: column; gap: 1rem; }
-.bottom-section { margin-top: 1.5rem; }
+.top-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
 
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
   .top-layout { grid-template-columns: 1fr; }
 }
+.check-row { display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.6rem; padding-left: calc(80px + 0.5rem); }
+.check-row label { font-size: 0.9rem; color: var(--text-secondary); display: inline-flex; gap: 0.4rem; align-items: center; }
+.field-row input[type=text], .field-row textarea, .field-row select { flex: 1; min-width: 0; }
+.field-row input[type=range] { flex: 1; }
+[hidden] { display: none !important; }
+.field-row.center { align-items: center; }
+.field-row.center label { padding-top: 0; }
+.status.warn { color: #7A5200; }
+.status a { color: var(--accent); }
+@media (max-width: 500px) { .check-row { padding-left: 0; } }
 
 .card { background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
 .card-title { font-family: var(--font-display); font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
@@ -90,191 +99,181 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px
 @keyframes spin { to { transform: rotate(360deg); } }
 
 hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; }
+
+/* ── Title & description with AI ─────────────────────────────── */
+@media (max-width: 1000px) { .bottom-section { grid-template-columns: 1fr; } }
+.ai-log { display: flex; flex-direction: column; gap: 0.6rem; max-height: 460px; overflow-y: auto; margin-bottom: 0.75rem; }
+.ai-log:empty { display: none; }
+.ai-msg { padding: 0.6rem 0.8rem; border-radius: var(--radius-md); font-size: 0.9rem; white-space: pre-wrap; line-height: 1.45; }
+.ai-msg.me { background: var(--surface-alt); align-self: flex-end; max-width: 85%; }
+.ai-msg.ai { background: var(--surface); border: 1px solid var(--border); }
+.ai-proposal { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--hairline); display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.ai-row { display: flex; gap: 0.5rem; align-items: flex-end; }
+.ai-row textarea { flex: 1; width: 100%; resize: vertical; }
+.ai-settings { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.6rem; }
+.ai-settings summary { cursor: pointer; }
+.ai-settings .field-row input { flex: 1; }
 </style>
 </head>
 <body>
-  <h1 class="sr-only">Photo Manager</h1>
+  <h1 class="sr-only">Publish a painting</h1>
 
   <main class="top-layout">
-    <section class="col-left" aria-labelledby="canvas-h">
-      <div class="card">
-        <h2 id="canvas-h" class="card-title">Canvas</h2>
+    <div class="col">
+      <section class="card" aria-labelledby="painting-h">
+        <h2 id="painting-h" class="card-title">Painting</h2>
 
         <label id="dropZone" class="drop-zone" for="fileInput" tabindex="0" role="button"
-               aria-label="Upload an image: drag a file here or press Enter to browse">
+               aria-label="Add the prepared painting image: drag a file here or press Enter to browse">
           <i class="ti ti-upload" aria-hidden="true" style="font-size:36px;color:var(--text-faint)"></i>
-          <p>Drag &amp; drop or press Enter to upload</p>
-          <small>JPG, PNG, WEBP, HEIC — any size</small>
+          <p>Drag &amp; drop or press Enter to add the prepared image</p>
+          <small>JPEG, PNG or WEBP, already cropped. Uploaded as is.</small>
         </label>
-        <input type="file" id="fileInput" accept="image/*,.heic,.heif">
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
 
         <div id="workArea" hidden>
-          <div class="tool-bar" role="toolbar" aria-label="Image tools">
-            <button type="button" onclick="resetToOriginal()">Reset</button>
-          </div>
           <div class="canvas-area" id="canvasArea">
             <canvas id="preview-canvas" aria-label="Image preview"></canvas>
           </div>
           <div class="status" id="dimInfo" aria-live="polite"></div>
+          <div class="status" id="aspectInfo" aria-live="polite"></div>
+          <div class="btn-row"><button type="button" onclick="chooseAnother()">Choose another image</button></div>
+          <hr class="divider">
+          <div class="field-row center">
+            <label for="wmOpacity">Watermark</label>
+            <input type="range" id="wmOpacity" min="0" max="100" value="0" step="1" aria-describedby="wov">
+            <span id="wov" aria-live="off">0%</span>
+          </div>
+          <div class="field-row">
+            <label for="wmText">Text</label>
+            <input type="text" id="wmText" value="© sveta-colours" placeholder="Watermark text">
+          </div>
+          <div class="status" id="wmInfo">Off: the original file is uploaded untouched.</div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <aside class="col-right" aria-label="Controls">
-      <!-- Adjustments -->
-      <div class="card">
-        <h2 class="card-title">Adjustments</h2>
-        <div class="field-row">
-          <label for="brightness">Brightness</label>
-          <input type="range" id="brightness" min="-100" max="100" value="0" step="1">
-          <span id="bv" aria-live="off">0</span>
-        </div>
-        <div class="field-row">
-          <label for="contrast">Contrast</label>
-          <input type="range" id="contrast" min="-100" max="100" value="0" step="1">
-          <span id="cv" aria-live="off">0</span>
-        </div>
-        <div class="field-row">
-          <label for="saturation">Saturation</label>
-          <input type="range" id="saturation" min="-100" max="100" value="0" step="1">
-          <span id="sv" aria-live="off">0</span>
-        </div>
-        <hr class="divider">
-        <div class="field-row">
-          <label for="wmOpacity">Watermark opacity</label>
-          <input type="range" id="wmOpacity" min="0" max="100" value="0" step="1">
-          <span id="wov" aria-live="off">0</span>
-        </div>
-        <div class="field-row">
-          <label for="wmText">Watermark text</label>
-          <input type="text" id="wmText" value="© sveta-colours" placeholder="Watermark text">
-          <button type="button" onclick="applyAll()">Refresh</button>
-        </div>
-      </div>
-
-      <!-- Export -->
-      <div class="card">
-        <h2 class="card-title">Export</h2>
-        <div class="field-row">
-          <label for="exportFormat">Format</label>
-          <select id="exportFormat">
-            <option value="jpeg" selected>JPEG</option>
-            <option value="png">PNG</option>
-            <option value="webp">WEBP</option>
-          </select>
-        </div>
-        <div class="field-row" id="qualityRow">
-          <label for="jpegQuality">Quality</label>
-          <input id="jpegQuality" type="range" min="10" max="100" value="95">
-          <span id="qv" aria-live="off">95%</span>
-        </div>
+      <form class="card" id="portfolioForm" onsubmit="event.preventDefault()">
+        <h2 class="card-title">Portfolio record</h2>
+        <fieldset style="border:0;padding:0">
+          <legend class="sr-only">Painting record</legend>
+          <div class="field-row"><label for="fTitle">Title *</label><input id="fTitle" type="text" required></div>
+          <div class="field-row" id="slugRow" hidden><label for="fSlug">Slug</label><input id="fSlug" type="text" spellcheck="false" placeholder="noise-and-silence"></div>
+          <div class="field-row"><label for="fDesc">Description</label><textarea id="fDesc" rows="4"></textarea></div>
+          <div class="field-row"><label for="fMedium">Medium</label><input id="fMedium" type="text" placeholder="acrylic"></div>
+          <div class="field-row"><label for="fSize">Size</label><input id="fSize" type="text" placeholder="16x20 in"></div>
+          <div class="field-row"><label for="fOrientation">Orientation</label>
+            <select id="fOrientation">
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label for="fCollection">Collection</label>
+            <input id="fCollection" type="text" list="collectionsList" placeholder="Forest or Big City,Seasons">
+            <datalist id="collectionsList"></datalist>
+          </div>
+          <div class="field-row"><label for="fPrice">Price</label><input id="fPrice" type="text" placeholder="400"></div>
+          <div class="field-row"><label for="fRecent">Recent</label>
+            <select id="fRecent">
+              <option value="">— not on the home carousel</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+            </select>
+          </div>
+          <div class="check-row">
+            <label><input type="checkbox" id="fSold"> Sold</label>
+            <label><input type="checkbox" id="fHero"> Hero (home page; replaces the current one)</label>
+          </div>
+        </fieldset>
         <div class="btn-row">
-          <button type="button" onclick="downloadImg()">Download</button>
-          <button type="button" class="primary" onclick="saveAll()" id="btnSaveAll">Save to Drive + Sheets</button>
+          <button type="button" class="primary" onclick="saveAll()" id="btnSaveAll">Save to Drive + Sheet</button>
         </div>
         <div class="status" id="saveStatus" aria-live="polite" role="status"></div>
-      </div>
-    </aside>
-  </main>
+        <div class="status" id="liveStatus" aria-live="polite"></div>
+      </form>
+    </div>
 
-  <section class="bottom-section" id="bottomLayout">
-    <form class="card" id="portfolioForm" onsubmit="event.preventDefault()">
-      <h2 class="card-title">Portfolio record</h2>
-      <fieldset style="border:0;padding:0">
-        <legend class="sr-only">Painting metadata</legend>
-        <div class="field-row"><label for="fTitle">Title *</label><input id="fTitle" type="text" required></div>
-        <div class="field-row"><label for="fDesc">Description</label><textarea id="fDesc" rows="3"></textarea></div>
-        <div class="field-row"><label for="fMedium">Medium</label><input id="fMedium" type="text" placeholder="acrylic"></div>
-        <div class="field-row"><label for="fSize">Size</label><input id="fSize" type="text" placeholder="16x20 in"></div>
-        <div class="field-row"><label for="fOrientation">Orientation</label>
-          <select id="fOrientation">
-            <option value="portrait">Portrait</option>
-            <option value="landscape">Landscape</option>
-          </select>
+    <div class="col">
+      <section class="card" id="aiCard" aria-labelledby="ai-h">
+        <h2 id="ai-h" class="card-title">Title &amp; description with AI</h2>
+        <p class="status" id="aiIntro" style="margin:0 0 0.6rem">Add the painting first. Then tell the AI anything it should know (what you saw, the feeling, the small thing) and press Start. Talk until it's right, then press <b>Use this</b> to fill the form.</p>
+        <div class="ai-log" id="aiLog" aria-live="polite"></div>
+        <div class="ai-row">
+          <textarea id="aiInput" rows="3" placeholder="Notes for the AI, in English or Russian… (Cmd+Enter sends)"></textarea>
+          <button type="button" class="primary" id="aiSend" onclick="aiSend()">Start</button>
         </div>
-        <div class="field-row">
-          <label for="fCollection">Collection</label>
-          <input id="fCollection" type="text" list="collectionsList" placeholder="pick existing or type new">
-          <datalist id="collectionsList"></datalist>
+        <div class="btn-row">
+          <button type="button" onclick="aiReset()">Start over</button>
+          <button type="button" id="aiCopyLog" onclick="aiCopyCorrection()" hidden>Copy for corrections.md</button>
         </div>
-        <div class="field-row"><label for="fStatus">Status</label>
-          <select id="fStatus">
-            <option value="">—</option>
-            <option value="available">Available</option>
-            <option value="sold">Sold</option>
-            <option value="reserved">Reserved</option>
-            <option value="not for sale">Not for sale</option>
-          </select>
-        </div>
-        <div class="field-row"><label for="fPrice">Price</label><input id="fPrice" type="text" placeholder="400"></div>
-      </fieldset>
-    </form>
-  </section>
+        <div class="status" id="aiStatus" aria-live="polite"></div>
+        <details class="ai-settings" id="aiSettings">
+          <summary>OpenAI settings</summary>
+          <div class="field-row" style="margin-top:0.5rem"><label for="aiKey">API key</label><input id="aiKey" type="password" autocomplete="off" placeholder="sk-… (kept in this browser only)"></div>
+          <div class="field-row"><label for="aiModel">Model</label><input id="aiModel" type="text"></div>
+          <div class="btn-row"><button type="button" onclick="aiSaveSettings()">Save</button><button type="button" onclick="aiForgetKey()">Forget key</button></div>
+        </details>
+      </section>
+    </div>
+  </main>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://accounts.google.com/gsi/client" async></script>
 <script>
+// ── PUBLISH A PAINTING — one page ─────────────────────────────────────────
+// Prepared image in → watermark (optional) → record + AI title/description →
+// Save (Drive upload + sheet row) → wait until the published CSV shows it.
+// Columns are read from the sheet's own header row, so extra columns (cover,
+// order, slug) are preserved, and a `slug` column is written once it exists.
 const DRIVE_FOLDER='1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX';
 const SHEET_ID='170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI';
 const CLIENT_ID='754552250731-hdl67ujna2lk1lataah35mnl69emi8qt.apps.googleusercontent.com';
 const SHEET_TAB='Paintings';
-// Must match the live `Paintings` sheet schema, in order (see CLAUDE.md).
-const COLS=['title','medium','price','sold','size','image','description','collection','orientation','hero','recent'];
-
-// Form fields that take their default from "most common non-empty value" in the
-// corresponding sheet column. fStatus is excluded because the form's status enum
-// doesn't round-trip with the sheet's yes/no `sold` column. `description`, `notes`,
-// and `price` are also in here but typically have unique values per row, so the
-// most-common pass usually yields nothing — harmless no-op.
-const DEFAULT_FIELD_TO_COL = {
-  fMedium: 'medium',
-  fSize:   'size',
-  fPrice:  'price',
-  fDesc:   'description',
-};
+const SITE_URL='https://www.sveta-colours.com/';
+const PUBLISHED_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv';
+// Only used to initialize a completely empty sheet (see CLAUDE.md for the schema).
+const DEFAULT_COLS=['title','medium','price','sold','size','image','description','collection','orientation','hero','recent'];
+const WM_TEXT_STORE='pm-wm-text', WM_OPACITY_STORE='pm-wm-opacity';
+const LIVE_POLL_MS=20000, LIVE_POLL_MAX_MS=10*60*1000;
 
 const state = {
-  origImg: null,                                  // EXIF-corrected source canvas
-  fullCanvas: document.createElement('canvas'),   // FULL RESOLUTION — source of truth
+  file: null,                                     // the prepared file, uploaded as is
+  origImg: null,                                  // EXIF-corrected canvas (preview + AI)
+  fullCanvas: document.createElement('canvas'),   // full resolution
   cachedToken: null,
   cachedTokenExpiresAt: 0,                        // ms epoch
   saveInFlight: false,
-  _cachedRows: null,                              // last fetched Paintings rows; invalidated on Save
+  header: null,                                   // sheet header, lower-cased
+  _cachedRows: null,                              // last fetched rows; invalidated on Save
+  slugLocked: false,                              // true when the matched row already has a slug
+  livePoll: null,
+  filledFor: null,                                // which row (or 'new') last filled the form
 };
-const fullCtx = state.fullCanvas.getContext('2d', { willReadFrequently: false });
-
+const fullCtx = state.fullCanvas.getContext('2d');
 const canvas=document.getElementById('preview-canvas');
 const ctx=canvas.getContext('2d');
+const $ = id => document.getElementById(id);
 
 function setStatus(id, msg, kind) {
-  const el = document.getElementById(id);
+  const el = $(id);
   if (!el) return;
   el.textContent = msg;
-  el.classList.remove('ok', 'err');
+  el.classList.remove('ok', 'err', 'warn');
   if (kind) el.classList.add(kind);
 }
 
-// ── Upload ──
-const dz=document.getElementById('dropZone');
-const fi=document.getElementById('fileInput');
+// ── Image in ──
+const dz=$('dropZone');
+const fi=$('fileInput');
 dz.addEventListener('click',()=>fi.click());
 dz.addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    fi.click();
-  }
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fi.click(); }
 });
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
 dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');handleFile(e.dataTransfer.files[0]);});
 fi.addEventListener('change',()=>handleFile(fi.files[0]));
 
-['brightness','contrast','saturation','wmOpacity'].forEach(id=>{
-  const map={brightness:'bv',contrast:'cv',saturation:'sv',wmOpacity:'wov'};
-  document.getElementById(id).addEventListener('input',function(){document.getElementById(map[id]).textContent=this.value;applyAll();});
-});
-document.getElementById('jpegQuality').addEventListener('input',function(){document.getElementById('qv').textContent=this.value+'%';});
-document.getElementById('exportFormat').addEventListener('change',function(){document.getElementById('qualityRow').style.display=this.value==='png'?'none':'flex';});
+function chooseAnother(){ fi.value=''; fi.click(); }
 
 // Returns EXIF orientation 1–8, or 1 if missing/unparseable.
 function readExifOrientation(arrayBuffer){
@@ -330,92 +329,79 @@ function applyOrientationToCanvas(img, o){
   return c;
 }
 
+const ALLOWED_TYPES = ['image/jpeg','image/png','image/webp'];
+
 function handleFile(file){
   if(!file) return;
-  if(!file.type.startsWith('image/') && !/\.(heic|heif)$/i.test(file.name)){
-    setStatus('saveStatus','Only image files (JPG, PNG, WEBP, HEIC) supported.','err');
+  if(!ALLOWED_TYPES.includes(file.type)){
+    setStatus('saveStatus','Use a prepared JPEG, PNG or WEBP.','err');
     return;
   }
-
   const reader=new FileReader();
   reader.onload=e=>{
     const buf=e.target.result;
     const orientation = file.type==='image/jpeg' ? readExifOrientation(buf) : 1;
-    const blob=new Blob([buf],{type:file.type||'application/octet-stream'});
-    const url=URL.createObjectURL(blob);
+    const url=URL.createObjectURL(new Blob([buf],{type:file.type}));
     const img=new Image();
-    img.onerror=()=>{
-      URL.revokeObjectURL(url);
-      setStatus('saveStatus','Could not decode image (corrupted or unsupported format).','err');
-    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); setStatus('saveStatus','Could not read this image.','err'); };
     img.onload=()=>{
       URL.revokeObjectURL(url);
       const oriented=applyOrientationToCanvas(img,orientation);
+      state.file=file;
       state.origImg=oriented;
-      setupCanvasFromCanvas(oriented);
       dz.style.display='none';
-      document.getElementById('workArea').style.display='block';
+      $('workArea').hidden=false;
+      setupCanvasFromCanvas(oriented);
 
-      // Fresh entry — clear form, seed title from filename, orientation from the
-      // (already cropped) image's dimensions, then layer sheet-derived defaults:
-      // if the title matches an existing row, fill from it; otherwise most-common.
+      // Fresh entry: clear the form, seed the title from the file name and the
+      // orientation from the (already cropped) image, then layer sheet values:
+      // an existing row with this title fills the form, otherwise most-common.
       resetForm();
-      const name=file.name.replace(/\.[^.]+$/,'');
-      document.getElementById('fTitle').value=name;
-      document.getElementById('fOrientation').value=
-        oriented.width>oriented.height ? 'landscape' : 'portrait';
-      loadAndApplyDefaults().catch(()=>{ /* silent — defaults reload after Save */ });
-
-      drawPreview();
+      $('fTitle').value=file.name.replace(/\.[^.]+$/,'');
+      $('fOrientation').value= oriented.width>oriented.height ? 'landscape' : 'portrait';
+      syncSlugFromTitle();
+      updateAspectInfo();
+      setStatus('saveStatus',''); setStatus('liveStatus','');
+      if (typeof aiReset === 'function') aiReset();
+      loadAndApplyDefaults().catch(()=>{ /* silent — values reload on Save */ });
     };
     img.src=url;
   };
   reader.readAsArrayBuffer(file);
 }
 
-// Used by transforms (and resetToOriginal) that produce a new canvas.
 function setupCanvasFromCanvas(srcCanvas){
   state.fullCanvas.width = srcCanvas.width;
   state.fullCanvas.height = srcCanvas.height;
   fullCtx.drawImage(srcCanvas, 0, 0);
   fitPreviewToFull();
-  updateDimInfo();
+  setStatus('dimInfo', `${srcCanvas.width} × ${srcCanvas.height} px · ${(state.file.size/1048576).toFixed(1)} MB`);
 }
 
 function fitPreviewToFull(){
-  const area = document.getElementById('canvasArea');
-  const maxW = area.clientWidth || 600, maxH = 460;
+  const area = $('canvasArea');
+  const maxW = area.clientWidth || 600, maxH = 520;
   const fw = state.fullCanvas.width || 1, fh = state.fullCanvas.height || 1;
   const scale = Math.min(maxW / fw, maxH / fh, 1);
   canvas.width = Math.round(fw * scale);
   canvas.height = Math.round(fh * scale);
   drawPreview();
 }
-
-function updateDimInfo(){
-  setStatus('dimInfo',
-    `${state.fullCanvas.width} × ${state.fullCanvas.height} px (preview ${canvas.width}×${canvas.height})`);
-}
+window.addEventListener('resize', () => { if (state.fullCanvas.width) fitPreviewToFull(); });
 
 function drawPreview(){
   if(!state.fullCanvas.width) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.filter = buildFilter();
   ctx.drawImage(state.fullCanvas, 0, 0, canvas.width, canvas.height);
-  ctx.filter = 'none';
   drawWatermarkOnContext(ctx, canvas.width, canvas.height);
 }
 
-// Thin wrapper kept for legacy callers (slider listeners, watermark Refresh).
-function applyAll(){
-  drawPreview();
-}
-
-function buildFilter(){const b=+document.getElementById('brightness').value,c=+document.getElementById('contrast').value,s=+document.getElementById('saturation').value;return `brightness(${1+b/100}) contrast(${1+c/100}) saturate(${1+s/100})`;}
-
+// ── Watermark ── (the only change ever made to the image)
+function wmOpacity(){ return +$('wmOpacity').value / 100; }
+function watermarkOn(){ return wmOpacity() > 0 && $('wmText').value.trim() !== ''; }
 function drawWatermarkOnContext(c, w, h){
-  const text = document.getElementById('wmText').value.trim();
-  const op = +document.getElementById('wmOpacity').value / 100;
+  const text = $('wmText').value.trim();
+  const op = wmOpacity();
   if (!text || op <= 0) return;
   const fs = Math.max(12, Math.round(w / 24));
   c.save();
@@ -425,189 +411,179 @@ function drawWatermarkOnContext(c, w, h){
   c.lineWidth = Math.max(1, fs / 16);
   c.textAlign = 'right';
   c.textBaseline = 'bottom';
-  const x = w - Math.round(w / 100);
-  const y = h - Math.round(h / 100);
+  const x = w - Math.round(w / 100), y = h - Math.round(h / 100);
   c.strokeText(text, x, y);
   c.fillText(text, x, y);
   c.restore();
 }
+function onWatermarkChange(){
+  $('wov').textContent = $('wmOpacity').value + '%';
+  setStatus('wmInfo', watermarkOn()
+    ? 'On: the image is re-saved as JPEG (95%) with the watermark.'
+    : 'Off: the original file is uploaded untouched.');
+  try { localStorage.setItem(WM_TEXT_STORE, $('wmText').value); localStorage.setItem(WM_OPACITY_STORE, $('wmOpacity').value); } catch(e){}
+  drawPreview();
+}
+try {
+  const t = localStorage.getItem(WM_TEXT_STORE), o = localStorage.getItem(WM_OPACITY_STORE);
+  if (t !== null) $('wmText').value = t;
+  if (o !== null) $('wmOpacity').value = o;
+} catch(e){}
+$('wmOpacity').addEventListener('input', onWatermarkChange);
+$('wmText').addEventListener('input', onWatermarkChange);
+onWatermarkChange();
 
-// Compose a Blob from the full-res canvas with filters + watermark applied.
-async function composeFullBlob(format = 'image/jpeg', quality = 0.9){
+// What gets uploaded: the untouched file, or a JPEG with the watermark burned in.
+async function uploadPayload(){
+  if (!watermarkOn()){
+    const ext = state.file.type === 'image/png' ? 'png' : state.file.type === 'image/webp' ? 'webp' : 'jpeg';
+    return { blob: state.file, ext };
+  }
   const out = document.createElement('canvas');
-  out.width = state.fullCanvas.width;
-  out.height = state.fullCanvas.height;
+  out.width = state.fullCanvas.width; out.height = state.fullCanvas.height;
   const octx = out.getContext('2d');
-  octx.filter = buildFilter();
   octx.drawImage(state.fullCanvas, 0, 0);
-  octx.filter = 'none';
   drawWatermarkOnContext(octx, out.width, out.height);
-  return await new Promise(r => out.toBlob(r, format, quality));
+  const blob = await new Promise(r => out.toBlob(r, 'image/jpeg', 0.95));
+  return { blob, ext: 'jpeg' };
 }
 
-function resetToOriginal(){
-  if(!state.origImg)return;
-  setupCanvasFromCanvas(state.origImg);
-  ['brightness','contrast','saturation'].forEach(id=>{document.getElementById(id).value=0;});
-  ['bv','cv','sv'].forEach(id=>{document.getElementById(id).textContent='0';});
-  document.getElementById('wmOpacity').value=0;document.getElementById('wov').textContent='0';
+// ── Photo vs canvas ── (warning only; the site sizes cards by the canvas)
+function updateAspectInfo(){
+  if (!state.fullCanvas.width){ setStatus('aspectInfo',''); return; }
+  const w = state.fullCanvas.width, h = state.fullCanvas.height;
+  const photoOrient = w > h ? 'landscape' : 'portrait';
+  const notes = [];
+  let kind = 'ok';
+  if ($('fOrientation').value !== photoOrient){
+    notes.push(`The image is ${photoOrient} but Orientation says ${$('fOrientation').value}.`);
+    kind = 'warn';
+  }
+  const m = $('fSize').value.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/);
+  if (m){
+    const a = +m[1], b = +m[2];
+    const small = Math.min(a, b), large = Math.max(a, b);
+    const canvasAspect = w > h ? large / small : small / large;
+    const delta = Math.abs(w / h - canvasAspect) / canvasAspect;
+    const pct = (delta * 100).toFixed(1);
+    if (delta < 0.02) notes.unshift(`Matches a ${a}×${b} canvas (${pct}% off).`);
+    else {
+      const wider = (w / h) > canvasAspect ? 'wider' : 'taller';
+      notes.unshift(`The image is ${pct}% ${wider} than a ${a}×${b} canvas. The site shows paintings at canvas proportions, so it will look ${delta < 0.05 ? 'slightly ' : ''}squeezed.`);
+      kind = delta < 0.05 ? 'warn' : 'err';
+    }
+  }
+  setStatus('aspectInfo', notes.join(' '), notes.length ? kind : '');
 }
+$('fSize').addEventListener('input', updateAspectInfo);
+$('fOrientation').addEventListener('change', updateAspectInfo);
 
-// ── EXPORT ──
-function getMime(){const f=document.getElementById('exportFormat').value;return f==='png'?'image/png':f==='webp'?'image/webp':'image/jpeg';}
-function getExt(){const f=document.getElementById('exportFormat').value;return f==='jpeg'?'jpg':f;}
-function getQ(){return+document.getElementById('jpegQuality').value/100;}
-
-async function downloadImg(){
-  if(!state.origImg){setStatus('saveStatus','Upload an image first','err');return;}
-  const mime=getMime(),q=getQ();
-  const blob=await composeFullBlob(mime,q);
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=(document.getElementById('fTitle').value.trim()||'photo')+'.'+getExt();
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
-}
-
-// ── FORM ──
+// ── Form ──
 function resetForm(){
-  for (const id of ['fTitle','fDesc','fMedium','fSize','fCollection','fPrice']){
-    const el=document.getElementById(id);
-    if (el) el.value='';
-  }
-  const status=document.getElementById('fStatus');
-  if (status) status.value='';
+  for (const id of ['fTitle','fSlug','fDesc','fMedium','fSize','fCollection','fPrice']) $(id).value='';
+  $('fRecent').value=''; $('fSold').checked=false; $('fHero').checked=false;
+  state.slugLocked=false; $('fSlug').readOnly=false; state.filledFor=null;
 }
 
-// ── DEFAULTS FROM SHEET ──
-// Two-step fill, applied at upload and whenever the title field changes:
-//   1) if the typed title matches an existing row, fill empty fields from THAT row
-//      (so re-typing a previous painting brings up its metadata)
-//   2) otherwise fall back to per-column most-common across all rows
-// Always populates the Collection datalist with distinct existing values for autocomplete.
-// Requests OAuth on first use; subsequent calls reuse the cached token. If the user
-// dismisses the popup, silently bails — they can still type values manually.
-async function loadAndApplyDefaults(){
-  let token;
-  try {
-    token = await getAccessToken();
-  } catch (e) {
-    return;  // OAuth dismissed or unavailable — fall through to placeholders
-  }
-  if (!state._cachedRows){
-    state._cachedRows = await fetchAllRows(token);
-  }
-  applyDefaultsFromRows(state._cachedRows);
-}
+// Same rule as index.html's slugify(), so the site and the sheet agree.
+function slugify(name){ return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+function syncSlugFromTitle(){ if (!state.slugLocked) $('fSlug').value = slugify($('fTitle').value); }
+$('fTitle').addEventListener('input', syncSlugFromTitle);
+
+// ── Sheet ──
+function colIdx(name){ return state.header ? state.header.indexOf(name) : -1; }
+function colLetter(i){ let s=''; i++; while(i>0){ const r=(i-1)%26; s=String.fromCharCode(65+r)+s; i=Math.floor((i-1)/26);} return s; }
+const truthy = v => ['yes','true','1','y'].includes(String(v||'').trim().toLowerCase());
 
 async function fetchAllRows(token){
-  const lastCol = String.fromCharCode(64 + COLS.length); // 'K' for 11 columns
   const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:${lastCol}`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_TAB)}`,
     { headers: { Authorization: 'Bearer ' + token } }
   );
   if (!res.ok) throw new Error('Sheets read failed: ' + res.status);
-  return (await res.json()).values || [];
+  const rows = (await res.json()).values || [];
+  state.header = rows.length ? rows[0].map(h => String(h).trim().toLowerCase()) : DEFAULT_COLS.slice();
+  $('slugRow').hidden = colIdx('slug') < 0;
+  return rows;
+}
+
+// Two-step fill, at image load and when the title changes:
+//   1) a row with this title exists → fill the form from THAT row
+//   2) otherwise → medium/size/price from the most common values
+// Asks for Google sign-in on first use; if dismissed, the form still works.
+async function loadAndApplyDefaults(){
+  let token;
+  try { token = await getAccessToken(); } catch (e) { return; }
+  if (!state._cachedRows) state._cachedRows = await fetchAllRows(token);
+  applyDefaultsFromRows(state._cachedRows);
+}
+
+function findRowByTitle(rows, title){
+  const t = normalizeTitle(title), ti = colIdx('title');
+  for (let i = 1; i < rows.length; i++) if (rows[i] && normalizeTitle(rows[i][ti] || '') === t) return i;
+  return -1;
 }
 
 function applyDefaultsFromRows(rows){
-  // Header in row 0; bail if sheet has no data rows.
   if (rows.length <= 1) return;
-  const data = rows.slice(1);
-
-  populateCollectionDatalist(data);
-
-  const title = document.getElementById('fTitle').value.trim();
-  if (title){
-    const titleIdx = COLS.indexOf('title');
-    const normT = normalizeTitle(title);
-    const matched = data.find(r => normalizeTitle(r[titleIdx] || '') === normT);
-    if (matched){
-      fillFromRow(matched);
-      return;
-    }
-  }
-  fillFromMostCommon(data);
+  populateCollectionDatalist(rows.slice(1));
+  const i = findRowByTitle(rows, $('fTitle').value);
+  // Fill once per title: a field she empties on purpose must stay empty.
+  const key = i > 0 ? 'row:' + i : 'new';
+  if (state.filledFor === key) return;
+  state.filledFor = key;
+  if (i > 0) fillFromRow(rows[i]); else fillFromMostCommon(rows.slice(1));
 }
 
-// Map sheet column → form field id, used by both row-match and most-common fills.
-const COL_TO_FIELD = {
-  description: 'fDesc',
-  medium:      'fMedium',
-  price:       'fPrice',
-  size:        'fSize',
-  collection:  'fCollection',
-};
+const COL_TO_FIELD = { description:'fDesc', medium:'fMedium', price:'fPrice', size:'fSize', collection:'fCollection' };
 
 function fillFromRow(row){
-  for (const [colName, fieldId] of Object.entries(COL_TO_FIELD)){
-    const idx = COLS.indexOf(colName);
-    if (idx < 0) continue;
-    const val = (row[idx] || '').trim();
-    if (!val) continue;
-    const el = document.getElementById(fieldId);
-    if (!el || el.value.trim()) continue;  // never clobber typed input
-    el.value = val;
+  const cell = name => { const i = colIdx(name); return i >= 0 ? String(row[i] || '').trim() : ''; };
+  $('fTitle').value = cell('title');                  // keep the sheet's spelling
+  for (const [col, id] of Object.entries(COL_TO_FIELD)){
+    const v = cell(col);
+    if (v && !$(id).value.trim()) $(id).value = v;   // never clobber typed input
   }
-  // Status maps from `sold` column: 'yes' → 'sold'. 'no' is ambiguous
-  // (could be available/reserved/not-for-sale), so we leave the select blank.
-  const soldIdx = COLS.indexOf('sold');
-  if (soldIdx >= 0){
-    const sold = (row[soldIdx] || '').trim().toLowerCase();
-    const st = document.getElementById('fStatus');
-    if (sold === 'yes' && st && !st.value) st.value = 'sold';
-  }
+  if (cell('orientation')) $('fOrientation').value = cell('orientation').toLowerCase();
+  $('fSold').checked = truthy(cell('sold'));
+  $('fHero').checked = truthy(cell('hero'));
+  $('fRecent').value = /^[1-6]$/.test(cell('recent')) ? cell('recent') : '';
+  if (cell('slug')){ $('fSlug').value = cell('slug'); state.slugLocked = true; $('fSlug').readOnly = true; }
+  setStatus('saveStatus', 'This title is already on the site: Save will update it.', 'warn');
+  updateAspectInfo();
 }
 
 function fillFromMostCommon(data){
-  for (const [fieldId, colName] of Object.entries(DEFAULT_FIELD_TO_COL)){
-    const el = document.getElementById(fieldId);
-    if (!el || el.value.trim()) continue;
-    const idx = COLS.indexOf(colName);
+  for (const [id, col] of [['fMedium','medium'],['fSize','size'],['fPrice','price']]){
+    if ($(id).value.trim()) continue;
+    const idx = colIdx(col);
     if (idx < 0) continue;
     const counts = new Map();
-    for (const r of data){
-      const v = (r[idx] || '').trim();
-      if (!v) continue;
-      counts.set(v, (counts.get(v) || 0) + 1);
-    }
-    let best = '', bestCount = 0;
-    for (const [v, c] of counts){
-      if (c > bestCount){ best = v; bestCount = c; }
-    }
-    if (best) el.value = best;
+    for (const r of data){ const v = (r[idx] || '').trim(); if (v) counts.set(v, (counts.get(v) || 0) + 1); }
+    let best = '', n = 0;
+    for (const [v, c] of counts) if (c > n){ best = v; n = c; }
+    if (best) $(id).value = best;
   }
+  updateAspectInfo();
 }
 
 function populateCollectionDatalist(data){
-  const cIdx = COLS.indexOf('collection');
-  if (cIdx < 0) return;
-  const collections = new Set();
-  for (const r of data){
-    const v = (r[cIdx] || '').trim();
-    if (v) collections.add(v);
-  }
-  const dl = document.getElementById('collectionsList');
-  if (!dl) return;
+  const idx = colIdx('collection');
+  if (idx < 0) return;
+  const names = new Set();
+  for (const r of data) String(r[idx] || '').split(',').map(s => s.replace(/:\d+$/, '').trim()).filter(Boolean).forEach(n => names.add(n));
+  const dl = $('collectionsList');
   dl.textContent = '';
-  for (const c of [...collections].sort((a,b)=>a.localeCompare(b))){
-    const opt = document.createElement('option');
-    opt.value = c;
-    dl.appendChild(opt);
-  }
+  for (const c of [...names].sort((a,b)=>a.localeCompare(b))){ const o = document.createElement('option'); o.value = c; dl.appendChild(o); }
 }
 
-// Re-apply defaults when the user types a title and tabs out — picks up an
-// existing row's values if the title matches, otherwise most-common.
-document.getElementById('fTitle').addEventListener('change', ()=>{
-  loadAndApplyDefaults().catch(()=>{});
-});
+$('fTitle').addEventListener('change', ()=>{ loadAndApplyDefaults().catch(()=>{}); });
 
-// ── GOOGLE AUTH ──
+// ── Google sign-in ──
 function getAccessToken() {
   return new Promise((resolve, reject) => {
     if (state.cachedToken && Date.now() < state.cachedTokenExpiresAt) return resolve(state.cachedToken);
-    if (!window.google?.accounts?.oauth2) return reject(new Error('GIS not loaded'));
+    if (!window.google?.accounts?.oauth2) return reject(new Error('Google sign-in not loaded'));
     const client = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets',
@@ -623,28 +599,34 @@ function getAccessToken() {
   });
 }
 
-// ── SAVE ALL ──
+// ── Save ──
 async function saveAll() {
   if (state.saveInFlight) return;
-  if (!state.origImg) { setStatus('saveStatus', 'Upload an image first', 'err'); return; }
+  if (!state.file) { setStatus('saveStatus', 'Add the painting image first.', 'err'); return; }
+  if (!$('fTitle').value.trim()) { setStatus('saveStatus', 'Title is required.', 'err'); $('fTitle').focus(); return; }
   state.saveInFlight = true;
-  const btn = document.getElementById('btnSaveAll');
+  const btn = $('btnSaveAll');
   btn.disabled = true;
-  setStatus('saveStatus', 'Saving…');
+  setStatus('saveStatus', 'Saving…'); setStatus('liveStatus', '');
   try {
     const token = await getAccessToken();
+    const rows = await fetchAllRows(token);              // always re-read right before writing
+    if (!rows.length) await initHeader(token);
+    const foundIdx = findRowByTitle(rows, $('fTitle').value);
+    const existing = foundIdx > 0 ? rows[foundIdx] : [];
+    const slug = checkSlug(rows, foundIdx, existing);    // throws on a clash
     const driveFileId = await uploadToDrive(token);
-    const oldFileId = await upsertSheetRow(token, driveFileId);
-    // Clean up the previous Drive file for this title — only after the new row write succeeded,
-    // so a failure here can't strand the Sheets row pointing at a deleted file.
-    if (oldFileId && oldFileId !== driveFileId) {
-      deleteDriveFile(token, oldFileId).catch(e => console.warn('orphan cleanup:', e));
-    }
-    setStatus('saveStatus', 'Saved.', 'ok');
-    // We have a fresh token + the row we just wrote — invalidate the row cache so
-    // the next upload / title change sees up-to-date most-common and any new Collection.
+    const row = composeRow(driveFileId, existing, slug);
+    const rowNum = await writeRow(token, row, foundIdx, rows.length);
+    const notes = [];
+    if ($('fHero').checked) notes.push(...await clearOtherHeroes(token, rows, rowNum));
+    const dup = otherRecentAt(rows, rowNum, $('fRecent').value);
+    if (dup) notes.push(`"${dup}" is also at Recent position ${$('fRecent').value}; change one of them in the sheet.`);
+    const oldFileId = colIdx('image') >= 0 ? String(existing[colIdx('image')] || '').trim() : '';
+    if (oldFileId && oldFileId !== driveFileId) deleteDriveFile(token, oldFileId).catch(e => console.warn('orphan cleanup:', e));
+    setStatus('saveStatus', `Saved: sheet row ${rowNum}${foundIdx > 0 ? ' updated' : ' added'}. ${notes.join(' ')}`.trim(), notes.length ? 'warn' : 'ok');
     state._cachedRows = null;
-    loadAndApplyDefaults().catch(()=>{});
+    watchLive($('fTitle').value, driveFileId);
   } catch (e) {
     setStatus('saveStatus', 'Save failed: ' + e.message, 'err');
   } finally {
@@ -653,143 +635,347 @@ async function saveAll() {
   }
 }
 
+async function initHeader(token){
+  const res = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1?valueInputOption=RAW`,
+    { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [DEFAULT_COLS] }) });
+  if (!res.ok) throw new Error('Sheets header init failed: ' + res.status);
+}
+
+// The slug is written once and never changed. Returns '' when the sheet has no slug column.
+function checkSlug(rows, foundIdx, existing){
+  const si = colIdx('slug');
+  if (si < 0) return '';
+  const kept = String(existing[si] || '').trim();
+  if (kept) return kept;
+  const slug = $('fSlug').value.trim() || slugify($('fTitle').value);
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) throw new Error(`slug "${slug}" must be lower-case letters, digits and dashes.`);
+  for (let i = 1; i < rows.length; i++)
+    if (i !== foundIdx && String(rows[i][si] || '').trim() === slug) throw new Error(`slug "${slug}" is already used by "${rows[i][colIdx('title')]}". Edit the Slug field.`);
+  return slug;
+}
+
 async function uploadToDrive(token) {
-  const fmt = document.getElementById('exportFormat').value;
-  const mime = fmt === 'png' ? 'image/png' : fmt === 'webp' ? 'image/webp' : 'image/jpeg';
-  const q = +document.getElementById('jpegQuality').value / 100;
-  const blob = await composeFullBlob(mime, q);
-
-  const title = (document.getElementById('fTitle').value.trim() || 'untitled') + '.' + fmt;
-  const meta = { name: title, parents: [DRIVE_FOLDER] };
-
+  const { blob, ext } = await uploadPayload();
+  const meta = { name: `${$('fTitle').value.trim()}.${ext}`, parents: [DRIVE_FOLDER] };
   const form = new FormData();
   form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
   form.append('file', blob);
-
-  const res = await fetch(
-    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
-    { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: form }
-  );
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+    { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: form });
   if (!res.ok) throw new Error('Drive upload failed: ' + res.status);
-  const j = await res.json();
-  return j.id;
+  return (await res.json()).id;
 }
 
 // Sheets RAW already prevents formula execution, but normalize for dedup/display.
-function sanitizeCell(s) {
-  if (s == null) return '';
-  return String(s).replace(/\r\n/g, '\n').trim();
-}
+function sanitizeCell(s) { return s == null ? '' : String(s).replace(/\r\n/g, '\n').trim(); }
+function normalizeTitle(s) { return sanitizeCell(s).toLowerCase().replace(/\s+/g, ' '); }
 
-function normalizeTitle(s) {
-  return sanitizeCell(s).toLowerCase().replace(/\s+/g, ' ');
-}
-
-async function upsertSheetRow(token, driveFileId) {
-  // 1) Read the full row width so we have the dedup target (col A), the prior file ID
-  //    (col F), and every existing value to preserve on update.
-  const lastCol = String.fromCharCode(64 + COLS.length);
-  const readRes = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A:${lastCol}`,
-    { headers: { Authorization: 'Bearer ' + token } }
-  );
-  if (!readRes.ok) throw new Error('Sheets read failed: ' + readRes.status);
-  const rows = (await readRes.json()).values || [];
-
-  // 2) Header row only initialized if sheet is completely empty.
-  // We do NOT overwrite an existing header — the user owns the schema and we extend it on append.
-  if (rows.length === 0) {
-    const headRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1?valueInputOption=RAW`,
-      { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ values: [COLS] }) }
-    );
-    if (!headRes.ok) throw new Error('Sheets header init failed: ' + headRes.status);
-  }
-
-  // 3) Find existing row by normalized title in column A; capture old Drive file ID from column F.
-  const title = document.getElementById('fTitle').value;
-  const normTitle = normalizeTitle(title);
-  let foundIdx = -1;
-  let oldFileId = '';
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i] && normalizeTitle(rows[i][0] || '') === normTitle) {
-      foundIdx = i;
-      oldFileId = (rows[i][5] || '').trim();  // column F = image (Drive file ID)
-      break;
-    }
-  }
-
-  // 4) Compose the row. Same rule as push_painting.py: on an existing row, any column
-  //    the form leaves empty keeps its current sheet value (hero/recent are never in
-  //    the form, so manual sheet edits survive a re-save).
-  const existing = foundIdx >= 0 ? (rows[foundIdx] || []) : [];
-  const row = composeRow(driveFileId, existing);
-
-  if (foundIdx >= 0) {
-    const rowNum = foundIdx + 1;
-    const range = `${SHEET_TAB}!A${rowNum}:${String.fromCharCode(64 + COLS.length)}${rowNum}`;
-    const res = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,
-      { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ range, values: [row] }) }
-    );
-    if (!res.ok) throw new Error('Sheets update failed: ' + res.status);
-  } else {
-    const res = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:append?valueInputOption=RAW`,
-      { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ values: [row] }) }
-    );
-    if (!res.ok) throw new Error('Sheets append failed: ' + res.status);
-  }
-
-  return oldFileId;  // empty string if no prior row; caller may delete the orphan
-}
-
-// Best-effort delete of a Drive file. 404 (already gone) is treated as success;
-// 403 (drive.file scope can't touch files we didn't create) is treated as success too —
-// we don't want orphan cleanup to break a save.
-async function deleteDriveFile(token, fileId) {
-  if (!fileId) return;
-  const res = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`,
-    { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } }
-  );
-  if (!res.ok && res.status !== 404 && res.status !== 403) {
-    throw new Error('Drive delete failed: ' + res.status);
-  }
-}
-
-// Form value for a column, or '' when the form doesn't set it (→ preserved / blank).
-function getCellForCol(col, driveFileId) {
-  const status = (document.getElementById('fStatus').value || '').toLowerCase();
-  const m = {
-    'title': document.getElementById('fTitle').value,
-    'medium': document.getElementById('fMedium').value,
-    'price': document.getElementById('fPrice').value,
-    // Blank status = "don't touch": preserved on update, 'no' for a new row (below).
-    'sold': status === 'sold' ? 'yes' : status ? 'no' : '',
-    'size': document.getElementById('fSize').value,
-    'image': driveFileId,
-    'description': document.getElementById('fDesc').value,
-    'collection': document.getElementById('fCollection').value,
-    'orientation': document.getElementById('fOrientation').value,
-    'hero': '',    // manual sheet flag (TRUE / empty), exactly one painting at a time
-    'recent': '',  // manual sheet field: carousel position 1–6
+// One value per sheet column, in the sheet's own order. Text fields left empty
+// keep the sheet's current value; sold/hero/recent are always written as shown
+// (they were filled from the row). Unknown columns (cover, order…) are preserved.
+function composeRow(driveFileId, existing, slug){
+  const form = {
+    title: $('fTitle').value, medium: $('fMedium').value, price: $('fPrice').value,
+    size: $('fSize').value, description: $('fDesc').value, collection: $('fCollection').value,
+    orientation: $('fOrientation').value, image: driveFileId, slug,
   };
-  return m[col] || '';
-}
-
-function composeRow(driveFileId, existing) {
-  return COLS.map((col, i) => {
-    const v = sanitizeCell(getCellForCol(col, driveFileId));
-    if (v) return v;
-    const prev = sanitizeCell(existing[i]);
-    if (prev) return prev;
-    return col === 'sold' ? 'no' : '';
+  const explicit = { sold: $('fSold').checked ? 'yes' : 'no', hero: $('fHero').checked ? 'TRUE' : '', recent: $('fRecent').value };
+  return state.header.map((col, i) => {
+    if (col in explicit) return explicit[col];
+    const v = sanitizeCell(form[col]);
+    return v || sanitizeCell(existing[i]);
   });
 }
+
+async function writeRow(token, row, foundIdx, rowsCount){
+  const last = colLetter(state.header.length - 1);
+  if (foundIdx > 0){
+    const n = foundIdx + 1, range = `${SHEET_TAB}!A${n}:${last}${n}`;
+    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`,
+      { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ range, values: [row] }) });
+    if (!res.ok) throw new Error('Sheets update failed: ' + res.status);
+    return n;
+  }
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+    { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ values: [row] }) });
+  if (!res.ok) throw new Error('Sheets append failed: ' + res.status);
+  const upd = ((await res.json()).updates || {}).updatedRange || '';
+  const m = upd.match(/![A-Z]+(\d+)/);
+  return m ? +m[1] : Math.max(rowsCount, 1) + 1;
+}
+
+// "Exactly one hero": clear the flag on every other row.
+async function clearOtherHeroes(token, rows, rowNum){
+  const hi = colIdx('hero');
+  if (hi < 0) return [];
+  const others = [];
+  for (let i = 1; i < rows.length; i++) if (i + 1 !== rowNum && truthy(rows[i][hi])) others.push(i);
+  if (!others.length) return [];
+  const data = others.map(i => ({ range: `${SHEET_TAB}!${colLetter(hi)}${i + 1}`, values: [['']] }));
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
+    { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valueInputOption: 'RAW', data }) });
+  if (!res.ok) return [`Hero set, but clearing the old hero failed (${res.status}); fix it in the sheet.`];
+  return [`Hero moved from "${others.map(i => rows[i][colIdx('title')]).join('", "')}".`];
+}
+
+function otherRecentAt(rows, rowNum, pos){
+  const ri = colIdx('recent');
+  if (!pos || ri < 0) return '';
+  for (let i = 1; i < rows.length; i++) if (i + 1 !== rowNum && String(rows[i][ri] || '').trim() === pos) return rows[i][colIdx('title')];
+  return '';
+}
+
+// Best-effort delete of the previous Drive file. 404 (gone) and 403 (drive.file
+// can't touch files this page didn't create, e.g. from push_painting.py) are fine.
+async function deleteDriveFile(token, fileId) {
+  if (!fileId) return;
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`,
+    { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+  if (!res.ok && res.status !== 404 && res.status !== 403) throw new Error('Drive delete failed: ' + res.status);
+}
+
+// ── Verify: wait until the published CSV (what the site reads) has the new image ──
+function watchLive(title, fileId){
+  if (state.livePoll) clearTimeout(state.livePoll);
+  const started = Date.now();
+  const tick = async () => {
+    const mins = Math.floor((Date.now() - started) / 60000);
+    setStatus('liveStatus', `Waiting for the site to pick it up (Google's published copy lags a few minutes)… ${mins} min`);
+    try {
+      const rows = parseCsvSimple(await (await fetch(PUBLISHED_CSV + '&t=' + Date.now(), { cache: 'no-store' })).text());
+      const h = rows[0].map(x => x.trim().toLowerCase()), ti = h.indexOf('title'), ii = h.indexOf('image');
+      for (let i = 1; i < rows.length; i++){
+        if (normalizeTitle(rows[i][ti] || '') === normalizeTitle(title) && String(rows[i][ii] || '').includes(fileId)){
+          const el = $('liveStatus');
+          const link = `${SITE_URL}#painting/${i}`;
+          el.className = 'status ok';
+          el.innerHTML = `Live on the site: <a href="${link}" target="_blank" rel="noopener">${link}</a>`;
+          state.livePoll = null;
+          return;
+        }
+      }
+    } catch (e) { /* keep trying */ }
+    if (Date.now() - started > LIVE_POLL_MAX_MS){
+      setStatus('liveStatus', 'Not in the published copy after 10 minutes. The sheet is saved; Google sometimes lags longer, so check the site later.', 'warn');
+      state.livePoll = null;
+      return;
+    }
+    state.livePoll = setTimeout(tick, LIVE_POLL_MS);
+  };
+  tick();
+}
+
+// ── TITLE & DESCRIPTION WITH AI ──────────────────────────────────────────
+// A dialog with OpenAI about the loaded painting's title and description.
+// The voice rules are NOT copied here: they are read at runtime from the
+// sveta-writing skill (served by scripts/dev.sh from the repo root), so the
+// skill stays the one source. The key lives only in this browser's
+// localStorage on localhost — never in the repo.
+const AI_KEY_STORE = 'pm-openai-key';
+const AI_MODEL_STORE = 'pm-openai-model';
+const AI_DEFAULT_MODEL = 'gpt-5.4-mini';
+const AI_VOICE_FILES = ['/.claude/skills/sveta-writing/SKILL.md', '/.claude/skills/sveta-writing/corrections.md'];
+const AI_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv';
+const AI_RULES = `You help the painter Sveta finalize the TITLE and DESCRIPTION of one new painting for her portfolio site, sveta-colours.com. This is a conversation, not a one-shot answer: discuss, ask her a question when it would really help, offer alternatives when she hesitates, and refine until she is happy.
+
+The site copy is in English. Sveta may write to you in Russian or English; answer in the language of her last message, but the title and description themselves are always English.
+
+Every proposal must follow the voice spec below exactly (length, sentence shape, forbidden moves, pre-publish tests). The corrections log shows how drafts went wrong before; do not repeat those mistakes. Keep the new text consistent with, but not repetitive of, the existing paintings listed at the end.
+
+Whenever you propose a candidate (a first draft or a revision), end your message with exactly these two lines and nothing after them:
+TITLE: <title>
+DESCRIPTION: <description on one line>
+If a message is only a question or a comment, leave those lines out.`;
+
+const ai = { messages: [], context: null, firstDraft: null, accepted: null };
+
+function aiGetKey(){ try { return localStorage.getItem(AI_KEY_STORE) || ''; } catch(e){ return ''; } }
+function aiGetModel(){ try { return localStorage.getItem(AI_MODEL_STORE) || AI_DEFAULT_MODEL; } catch(e){ return AI_DEFAULT_MODEL; } }
+function aiSaveSettings(){
+  const k = document.getElementById('aiKey').value.trim();
+  const m = document.getElementById('aiModel').value.trim() || AI_DEFAULT_MODEL;
+  try { if (k) localStorage.setItem(AI_KEY_STORE, k); localStorage.setItem(AI_MODEL_STORE, m); } catch(e){}
+  document.getElementById('aiKey').value = '';
+  document.getElementById('aiKey').placeholder = aiGetKey() ? 'key saved — paste a new one to replace' : 'sk-… (kept in this browser only)';
+  setStatus('aiStatus', aiGetKey() ? 'Settings saved.' : 'No key yet.', aiGetKey() ? 'ok' : 'err');
+}
+function aiForgetKey(){
+  try { localStorage.removeItem(AI_KEY_STORE); } catch(e){}
+  document.getElementById('aiKey').placeholder = 'sk-… (kept in this browser only)';
+  setStatus('aiStatus', 'Key removed from this browser.', 'ok');
+}
+
+async function aiLoadContext(){
+  if (ai.context) return ai.context;
+  const parts = [];
+  for (const f of AI_VOICE_FILES){
+    const r = await fetch(f, { cache: 'no-cache' });
+    if (!r.ok) throw new Error(`Could not read ${f} (${r.status}). Start the page with scripts/dev.sh.`);
+    parts.push(`=== ${f.split('/').pop()} ===\n` + await r.text());
+  }
+  let catalogue = '(could not load the existing paintings)';
+  try {
+    const r = await fetch(AI_CSV_URL);
+    const rows = parseCsvSimple(await r.text());
+    const h = rows[0].map(x => x.toLowerCase().trim());
+    const ti = h.indexOf('title'), di = h.indexOf('description');
+    catalogue = rows.slice(1).filter(r => r[ti]).map(r => `- ${r[ti]}: ${r[di] || ''}`).join('\n');
+  } catch(e){ /* the dialog still works without it */ }
+  ai.context = `${AI_RULES}\n\n${parts.join('\n\n')}\n\n=== Existing paintings (title: description) ===\n${catalogue}`;
+  return ai.context;
+}
+
+// Minimal RFC-4180 CSV parser (quoted fields, doubled quotes, newlines in quotes).
+function parseCsvSimple(text){
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (q){ if (c === '"'){ if (text[i+1] === '"'){ f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ','){ row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r'){ if (c === '\r' && text[i+1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f || row.length){ row.push(f); rows.push(row); }
+  return rows;
+}
+
+function aiImageDataURL(){
+  const src = state.fullCanvas, max = 1024;
+  const sc = Math.min(1, max / Math.max(src.width, src.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(src.width * sc); c.height = Math.round(src.height * sc);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.85);
+}
+
+function aiFieldsSummary(){
+  const v = id => document.getElementById(id).value.trim();
+  return [['Working title', v('fTitle')], ['Description so far', v('fDesc')], ['Medium', v('fMedium')],
+          ['Size', v('fSize')], ['Orientation', v('fOrientation')], ['Collection', v('fCollection')]]
+    .filter(([, x]) => x).map(([k, x]) => `${k}: ${x}`).join('\n');
+}
+
+function aiParseProposal(text){
+  const t = text.match(/^\s*TITLE:\s*(.+)$/mi), d = text.match(/^\s*DESCRIPTION:\s*(.+)$/mi);
+  return (t && d) ? { title: t[1].trim(), description: d[1].trim() } : null;
+}
+
+function aiRender(){
+  const log = document.getElementById('aiLog');
+  log.innerHTML = '';
+  ai.messages.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + (m.role === 'user' ? 'me' : 'ai');
+    div.textContent = m.display;
+    if (m.role === 'assistant'){
+      const p = aiParseProposal(m.content);
+      if (p){
+        const bar = document.createElement('div');
+        bar.className = 'ai-proposal';
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'primary'; b.textContent = 'Use this';
+        b.onclick = () => aiUse(p);
+        bar.appendChild(b);
+        div.appendChild(bar);
+      }
+    }
+    log.appendChild(div);
+  });
+  log.scrollTop = log.scrollHeight;
+  document.getElementById('aiSend').textContent = ai.messages.length ? 'Send' : 'Start';
+}
+
+function aiUse(p){
+  // Set values directly: firing 'change' on fTitle would re-apply sheet
+  // defaults and could overwrite the description just chosen.
+  document.getElementById('fTitle').value = p.title;
+  document.getElementById('fDesc').value = p.description;
+  syncSlugFromTitle();
+  ai.accepted = p;
+  document.getElementById('aiCopyLog').hidden = !ai.firstDraft;
+  setStatus('aiStatus', 'Title and description filled in. Review the form, then Save.', 'ok');
+}
+
+async function aiSend(){
+  const key = aiGetKey();
+  if (!key){ document.getElementById('aiSettings').open = true; setStatus('aiStatus', 'Paste your OpenAI API key in the settings below, then Save.', 'err'); return; }
+  if (!state.origImg){ setStatus('aiStatus', 'Load the painting photo first.', 'err'); return; }
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (ai.messages.length && !text) return;
+  const btn = document.getElementById('aiSend');
+  btn.disabled = true;
+  setStatus('aiStatus', 'Thinking…');
+  try {
+    const system = await aiLoadContext();
+    if (!ai.messages.length){
+      const intro = `Here is my new painting.\n${aiFieldsSummary()}${text ? `\n\nMy notes: ${text}` : ''}\n\nPropose a title and description.`;
+      ai.messages.push({ role: 'user', display: text || '(painting + form fields sent)',
+        content: [{ type: 'text', text: intro }, { type: 'image_url', image_url: { url: aiImageDataURL() } }] });
+    } else {
+      ai.messages.push({ role: 'user', display: text, content: text });
+    }
+    input.value = '';
+    aiRender();
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({ model: aiGetModel(), max_completion_tokens: 4000,
+        messages: [{ role: 'system', content: system }, ...ai.messages.map(m => ({ role: m.role, content: m.content }))] })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data.error && data.error.message) || `HTTP ${res.status}`);
+    const reply = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    if (!reply.trim()) throw new Error('Empty reply (try again, or raise the model in settings).');
+    ai.messages.push({ role: 'assistant', display: reply, content: reply });
+    if (!ai.firstDraft) ai.firstDraft = aiParseProposal(reply);
+    aiRender();
+    setStatus('aiStatus', '');
+  } catch (e){
+    // Drop the unanswered user turn so a retry doesn't send it twice.
+    if (ai.messages.length && ai.messages[ai.messages.length - 1].role === 'user'){
+      const last = ai.messages.pop();
+      input.value = typeof last.content === 'string' ? last.content : text;
+    }
+    aiRender();
+    setStatus('aiStatus', 'OpenAI: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function aiReset(){
+  ai.messages = []; ai.firstDraft = null; ai.accepted = null;
+  document.getElementById('aiCopyLog').hidden = true;
+  aiRender(); setStatus('aiStatus', '');
+}
+
+// Keeps the sveta-writing learning loop alive: the browser can't write to the
+// repo, so this copies a ready corrections.md entry (first draft → final, with
+// what Sveta said) for pasting into .claude/skills/sveta-writing/corrections.md.
+function aiCopyCorrection(){
+  if (!ai.firstDraft || !ai.accepted) return;
+  const said = ai.messages.filter(m => m.role === 'user').slice(1).map(m => m.content).join(' / ');
+  const today = new Date().toISOString().slice(0, 10);
+  const entry = `### ${today} — description: ${ai.accepted.title} — \`CATEGORY\`\n` +
+    `- **I wrote:** ${ai.firstDraft.title} — ${ai.firstDraft.description}\n` +
+    `- **She said:** ${said || '(accepted the first draft)'}\n` +
+    `- **She meant:** <fill in>\n` +
+    `- **Fix applied:** final — ${ai.accepted.title} — ${ai.accepted.description}\n`;
+  navigator.clipboard.writeText(entry).then(
+    () => setStatus('aiStatus', 'Correction entry copied. Paste it into corrections.md (or give it to Claude).', 'ok'),
+    () => setStatus('aiStatus', 'Could not copy to the clipboard.', 'err'));
+}
+
+document.getElementById('aiModel').value = aiGetModel();
+if (aiGetKey()) document.getElementById('aiKey').placeholder = 'key saved — paste a new one to replace';
+document.getElementById('aiInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); aiSend(); }
+});
 </script>
 </body>
 </html>
