@@ -53,7 +53,7 @@ client-side with a case-insensitive `get('column')` helper, and renders. Every f
 degrades gracefully; JS constants are the safety net (`HERO_PIN_TITLE`,
 `FEATURED_TITLES`) so an emptied column never blanks the home page.
 
-**Sheet schema — 11 columns, in order** (plus optional `cover`, `order` after them; `push_painting.py` preserves extra columns):
+**Sheet schema — 11 columns, in order** (plus `slug` in column L, and optional `cover`, `order`; `push_painting.py` preserves extra columns):
 `title, medium, price, sold, size, image, description, collection, orientation, hero, recent`
 
 | Column | Semantics |
@@ -64,6 +64,7 @@ degrades gracefully; JS constants are the safety net (`HERO_PIN_TITLE`,
 | `hero` | `TRUE` or empty. **Exactly one at a time**; `--hero` does not unset the old one |
 | `recent` | `1`–`6`, a *position* in the home carousel, not a boolean |
 | `collection` | Comma-separated, no spaces. Values: `Big City`, `Flowers`, `Forest`, `Seasons` |
+| `slug` *(column L, after `recent`)* | Permanent link key, e.g. `noise-and-silence` (site `slugify()` of the title). Written once, **never changed**, even when the title is. Unique; `audit_gallery.py` checks. `photo_manager.html` writes it for new paintings; `push_painting.py` does **not** yet (it reads/writes A:K only) |
 | `cover` *(optional, after `recent`)* | Collection name(s) this painting is the button picture for, e.g. `Forest`. Blank → first available painting in the collection's order |
 | `order` *(optional)* | Position inside collections: `3` (every collection) or `Forest:2,Seasons:5`. Also accepted inline in `collection`: `Big City:1` (wins over `order`). Numbered first, then the rest in sheet order |
 

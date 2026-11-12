@@ -307,11 +307,18 @@ def find_phrases(text: str, phrases: Iterable[str]) -> list[str]:
 # Checks
 # --------------------------------------------------------------------------
 
+# Optional columns allowed after the 11 required ones, in any order.
+OPTIONAL_COLUMNS: tuple[str, ...] = ("cover", "order", "slug")
+
+
 def check_header(header: Sequence[str]) -> list[Finding]:
-    """ERROR: header row does not match the expected 11 columns, in order."""
+    """ERROR: the first 11 columns are not the expected ones, in order, or an
+    extra column is not one of OPTIONAL_COLUMNS."""
     actual = [normalize_header(h) for h in header]
     expected = [normalize_header(h) for h in EXPECTED_HEADER]
-    if actual == expected:
+    extra = actual[len(expected):]
+    if actual[:len(expected)] == expected and all(
+            h in OPTIONAL_COLUMNS or h == "" for h in extra):
         return []
     return [Finding(
         "ERROR", "header-mismatch", "", "header",
@@ -484,6 +491,7 @@ def check_rows(header: Sequence[str], rows: Sequence[Sequence[str]]) -> list[Fin
         findings.extend(check_description(label, d.get("description", ""), sheet_row))
 
     findings.extend(check_duplicates(records))
+    findings.extend(check_slugs(records))
     findings.extend(check_hero(records))
     findings.extend(check_recent(records))
     return findings
@@ -570,6 +578,36 @@ def check_duplicates(records: Sequence[tuple[int, str, dict[str, str]]]) -> list
             ))
         else:
             seen[key] = sheet_row
+    return out
+
+
+SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+
+
+def check_slugs(records: Sequence[tuple[int, str, dict[str, str]]]) -> list[Finding]:
+    """When the sheet has a `slug` column: every painting has one, it is
+    lower-case-dashed, and no two are the same. Slugs are permanent link keys."""
+    if not records or "slug" not in records[0][2]:
+        return []
+    seen: dict[str, int] = {}
+    out: list[Finding] = []
+    for sheet_row, label, d in records:
+        if not d.get("title", "").strip():
+            continue
+        slug = d.get("slug", "").strip()
+        if not slug:
+            out.append(Finding("ERROR", "slug-missing", label, "slug",
+                               "no slug: links and the future /paintings/<slug> URL need one",
+                               sheet_row))
+        elif not SLUG_RE.match(slug):
+            out.append(Finding("ERROR", "slug-format", label, "slug",
+                               f"{slug!r} must be lower-case letters, digits and single dashes",
+                               sheet_row))
+        elif slug in seen:
+            out.append(Finding("ERROR", "slug-duplicate", label, "slug",
+                               f"{slug!r} is also used on row {seen[slug]}", sheet_row))
+        else:
+            seen[slug] = sheet_row
     return out
 
 
