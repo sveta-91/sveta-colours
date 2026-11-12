@@ -385,17 +385,19 @@ Local Selenium runs can show every Drive image broken: `lh3.googleusercontent.co
 sometimes refuses requests from a `localhost` page. Confirm image loading
 against the deployed site before calling it a bug.
 
-### AI chat needs a proxy, never a key in the page
+### Visitor AI chat: built, then removed (2026-11-11)
 
-The site has no server, so an OpenAI key in `index.html` would be public.
-The chat widget (`initChat()`) posts to a Cloudflare Worker (`worker/`) that
-holds the key, builds the system prompt from studio facts plus the live sheet
-CSV, and forwards to OpenAI. The conversation lives in the visitor's
-`sessionStorage` and is sent whole each turn, and the Worker stores nothing.
-`CHAT_ENDPOINT_PROD = ''` hides the widget completely, which is the safe default
-until the Worker is deployed. On localhost, `?chat=<url>` points the widget at a
-test Worker. The panel is a `div`, not a `<section>`, because the global
-`section` padding blew up its layout.
+A floating "Ask about the paintings" chat (OpenAI behind a Cloudflare Worker
+that held the key) was built and tested but never deployed, then removed. Why:
+buyers of an original want the artist, not a bot, and the site's weak point is
+already trust. It also stored nothing, so it couldn't even show what visitors
+ask. The AI that earns its keep is on the artist's side: the title/description
+dialog in `tools/photo_manager.html`. To bring the chat back: `git show 74a5d5b`.
+If it ever returns: log the questions, and hand buying/commission intent to the
+inquiry form instead of answering it.
+
+**Rule that still holds:** an API key never goes in a public page. A private
+local tool (the photo manager on localhost) may keep one in its own browser storage.
 
 ### Modal class names
 
@@ -546,17 +548,16 @@ is the extra admin that comes with it. This section maps the features already
 queued up (the external review in `docs/review.txt`) onto the code: where each
 one attaches and what it needs.
 
-### What already exists: three half-backends
+### What already exists: two half-backends
 
-The site already needs a server and has grown one in three places:
+The site already needs a server and has grown one in two places:
 
 | Piece | Where | Job | State |
 | --- | --- | --- | --- |
 | Inquiry form | `inquiry/Code.gs` (Apps Script) | form → private sheet + email | not wired: `FORM_ENDPOINT = ''` |
-| AI chat proxy | `worker/` (Cloudflare Worker) | holds the OpenAI key | not wired: `CHAT_ENDPOINT_PROD = ''` |
 | Publishing | `tools/image_pipeline/push_painting.py` | Drive upload + sheet upsert | live |
 
-**Decision:** one Spring Boot app takes over the first two and anything new.
+**Decision:** one Spring Boot app takes over the inquiry form and anything new.
 `push_painting.py` stays a local CLI (Grok is web-only anyway). It gains one
 call to the backend to refresh its cache after a push. Don't build a third and
 fourth serverless piece for payments and images.
@@ -589,7 +590,6 @@ Cloudflare (DNS + cache)
          GET  /sitemap.xml, /robots.txt
          GET  /img/{slug}-{w}.webp    resized from the Drive original, cached
          POST /api/inquiry            replaces inquiry/Code.gs
-         POST /api/chat               replaces worker/
          POST /api/checkout/{slug}    Stripe Checkout session (holds the painting)
          POST /api/stripe/webhook     paid → mark sold in the sheet
          POST /api/admin/refresh      called by push_painting.py
@@ -625,7 +625,6 @@ Pages deploy as the fallback until the backend has run cleanly for a few weeks.
 | Structured data + sitemap | `injectPaintingsLD()` (client-side, first 12 only) | server emits per-page `VisualArtwork`/`Offer`; `/sitemap.xml` from the sheet | small |
 | Web images (WebP, sizes, zoom) | `driveImageURL()`, `paintingImage()` srcset, `collectionThumb()`, hard-coded `lh3…` URL in `renderHero()` | `/img/{slug}-{w}.webp`; swap the URL builder in one place | small in code, medium in ops (cache, disk) |
 | Buy / Reserve | `cardHTML()`, `openModal()` CTA, `formatPrice()` | Checkout + webhook + sold-sync | medium. See below |
-| AI chat | `initChat()`, `CHAT_ENDPOINT_PROD` | `/api/chat` (port of `worker/chat-worker.js`) | small |
 | Prices by size, shipping | `formatPrice()`, `SHIPPING_NOTE`, sheet `price` | data only, no code | none |
 
 ### The trap with selling originals
@@ -642,7 +641,7 @@ inquiry, not a payment.
 ### Order of work
 
 1. `slug` column + `push_painting.py` writes it (no visible change).
-2. Spring app with `/api/inquiry` + `/api/chat` + `/api/admin/refresh`, deployed;
+2. Spring app with `/api/inquiry` + `/api/admin/refresh`, deployed;
    the site still on GitHub Pages and pointing at it.
 3. Routes + head injection + sitemap; Cloudflare switched to the app;
    hash URLs redirect.

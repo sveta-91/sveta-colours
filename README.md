@@ -18,10 +18,6 @@ images/                          — local fallbacks for site photos served from
   og-image.jpg                   — 1200×630 link-preview picture (og:image / twitter:image): Held Summer, Where the Forest Breathes, Autumn Light on --bg
 inquiry/
   Code.gs                        — Apps Script backend for the inquiry form (not wired yet: FORM_ENDPOINT is empty)
-worker/                          — Cloudflare Worker that proxies the site's AI chat to OpenAI
-  chat-worker.js                 — holds the OpenAI key; system prompt + live catalogue from the sheet CSV
-  wrangler.toml                  — Worker config (model, per-IP rate limit)
-  README.md                      — deploy steps and how the chat is wired into index.html
 docs/
   roadmap.md                     — image pipeline implementation roadmap
   photo-manager-setup.md         — one-time Google setup + acceptance checklist
