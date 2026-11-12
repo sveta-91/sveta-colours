@@ -5,6 +5,8 @@ Live single-artist portfolio at **www.sveta-colours.com** — a single-file `ind
 DNS fronted by Cloudflare). Gallery data comes from a Google Sheet published as CSV;
 painting images live in one public Google Drive folder. No server, no build step.
 The repo also holds local Python tooling for getting a painting photo onto the site.
+"No server" describes today, not a rule: a Java/Spring Boot backend is accepted
+for future work. Plan any extension from the playbook's **"Extending the site"** section.
 
 Most accurate document in the repo: **`docs/portfolio-playbook.md`**. Read it before
 any design- or layout-bearing change. Don't re-derive what it already answers.

@@ -19,6 +19,9 @@ via a Python CLI (`push_painting.py`) talking to Sheets/Drive via OAuth.
 Result: zero servers, zero build step, instant publishing from anywhere with
 the Sheet open.
 
+That was the starting point, not a rule: a Spring Boot backend is now on the
+table. See "Extending the site" at the end.
+
 ---
 
 ## Data layer
@@ -532,3 +535,126 @@ A flat list, ordered by how long the fix took.
   constants to sheet columns paid off the first time the artist edited
   it solo. `hero`, `recent`, `orientation`, `collections` — all
   sheet-driven, all fallback-protected with constants.
+
+---
+
+## Extending the site (decided 2026-11-11)
+
+**The constraint changed.** "No server, no build step" was how the site
+happened, not a value. A **Java / Spring Boot backend is acceptable**, and so
+is the extra admin that comes with it. This section maps the features already
+queued up (the external review in `docs/review.txt`) onto the code: where each
+one attaches and what it needs.
+
+### What already exists: three half-backends
+
+The site already needs a server and has grown one in three places:
+
+| Piece | Where | Job | State |
+| --- | --- | --- | --- |
+| Inquiry form | `inquiry/Code.gs` (Apps Script) | form → private sheet + email | not wired: `FORM_ENDPOINT = ''` |
+| AI chat proxy | `worker/` (Cloudflare Worker) | holds the OpenAI key | not wired: `CHAT_ENDPOINT_PROD = ''` |
+| Publishing | `tools/image_pipeline/push_painting.py` | Drive upload + sheet upsert | live |
+
+**Decision:** one Spring Boot app takes over the first two and anything new.
+`push_painting.py` stays a local CLI (Grok is web-only anyway). It gains one
+call to the backend to refresh its cache after a push. Don't build a third and
+fourth serverless piece for payments and images.
+
+### Two defects to fix before building on them
+
+1. **Painting identity is the sheet row number.** `sheetRowToPainting()` sets
+   `id: index + 1`, so `#painting/10` means "the 10th row right now".
+   Inserting or reordering a row silently retargets every shared link. Real
+   URLs, a Stripe order and a sitemap all need a **stable key**. Add a `slug`
+   column (`noise-and-silence`) that `push_painting.py` writes once and never
+   changes, and keep accepting `#painting/N` as a legacy redirect.
+2. **Inquiry contract mismatch.** `Code.gs` says the site posts
+   `Content-Type: text/plain` to avoid a CORS preflight (Apps Script can't answer
+   `OPTIONS`). `sendInquiry()` posts `application/json`, so the form would
+   fail the moment `FORM_ENDPOINT` is set. `Code.gs` also checks `elapsedMs`,
+   which the form never sends, and points to an `inquiry/README.md` that
+   doesn't exist. This is the same class of bug as "Spec-vs-renderer drift"
+   above. It's moot if the Spring app replaces Apps Script, but fix it if Apps
+   Script ships first.
+
+### Target shape
+
+```
+Cloudflare (DNS + cache)
+   └── Spring Boot app (one service)
+         GET  /                       index.html shell, per-route <head> injected
+         GET  /paintings/{slug}       same shell, painting's title/description/og:image/JSON-LD
+         GET  /collections/{slug}     same shell
+         GET  /sitemap.xml, /robots.txt
+         GET  /img/{slug}-{w}.webp    resized from the Drive original, cached
+         POST /api/inquiry            replaces inquiry/Code.gs
+         POST /api/chat               replaces worker/
+         POST /api/checkout/{slug}    Stripe Checkout session (holds the painting)
+         POST /api/stripe/webhook     paid → mark sold in the sheet
+         POST /api/admin/refresh      called by push_painting.py
+   reads: Paintings sheet (Sheets API, cached in memory), Drive originals
+```
+
+**The key choice is a shell plus injected `<head>`, not a rewrite.**
+`index.html` stays the client app it is now. The server only fills `<title>`,
+meta, `og:*`, `JSON-LD` and a `<noscript>` text block for the route it serves.
+Link previews (Telegram, WhatsApp, Facebook) don't run JS, so the **head** is
+the part that must come from the server. Google does run JS, but slowly.
+Server-rendering the whole UI (Thymeleaf etc.) is not needed for these goals.
+
+**The sheet stays the source of truth.** "Sheet-driven config wins" still
+holds: she edits it solo. The backend reads it through the Sheets API and
+caches it. That also removes the published-CSV cache lag (see "CSV cache
+invalidation"), because `push_painting.py` calls `/api/admin/refresh`. Move to
+a database only when the backend writes state the sheet shouldn't hold (orders,
+inquiries). Even then, the paintings stay in the sheet.
+
+**Hosting** is outside GitHub Pages. GitHub Pages can't run Java. Any small
+JVM host behind the existing Cloudflare DNS works. Cache the HTML and images at
+Cloudflare so a backend restart doesn't take the gallery down. Keep the GitHub
+Pages deploy as the fallback until the backend has run cleanly for a few weeks.
+
+### Feature → seam map
+
+| Feature (from review) | Seam in code today | Needs | Effort |
+| --- | --- | --- | --- |
+| On-site inquiry form | `inquiryHTML()`, `sendInquiry()`, `FORM_ENDPOINT` | `/api/inquiry` | small: the UI exists |
+| Real URLs per painting/collection | router: `SIMPLE_ROUTES`, `hashForPage()`, `pageFromHash()`, `showPage()`, `hydrateFromHash()`, `closeModal()` | `slug` column; `pushState('/paintings/slug')` instead of hashes; server routes return the shell; old hashes redirect | **medium, the largest one.** Every `#…` href and the modal's open/close history logic changes together |
+| Per-page title/description/og:image | `pageTitleFor()` sets the tab title client-side; static `<meta og:*>` in `<head>` | server-side head injection | small once routes exist |
+| Structured data + sitemap | `injectPaintingsLD()` (client-side, first 12 only) | server emits per-page `VisualArtwork`/`Offer`; `/sitemap.xml` from the sheet | small |
+| Web images (WebP, sizes, zoom) | `driveImageURL()`, `paintingImage()` srcset, `collectionThumb()`, hard-coded `lh3…` URL in `renderHero()` | `/img/{slug}-{w}.webp`; swap the URL builder in one place | small in code, medium in ops (cache, disk) |
+| Buy / Reserve | `cardHTML()`, `openModal()` CTA, `formatPrice()` | Checkout + webhook + sold-sync | medium. See below |
+| AI chat | `initChat()`, `CHAT_ENDPOINT_PROD` | `/api/chat` (port of `worker/chat-worker.js`) | small |
+| Prices by size, shipping | `formatPrice()`, `SHIPPING_NOTE`, sheet `price` | data only, no code | none |
+
+### The trap with selling originals
+
+Every painting is **one unit**. A shop plugin assumes stock. The expert
+question is: what happens when two people pay for the same original within the
+same minute? A static Payment Link per painting can't prevent that, and a
+manual "sold" flip in the sheet is too slow. **Rule:** creating a Checkout
+session puts a short hold on the slug (e.g. 30 min, in memory or a tiny table).
+A second buyer sees "Reserved". The paid webhook writes `sold=yes` to the sheet.
+An expired session releases the hold. Until that exists, keep "Reserve" as an
+inquiry, not a payment.
+
+### Order of work
+
+1. `slug` column + `push_painting.py` writes it (no visible change).
+2. Spring app with `/api/inquiry` + `/api/chat` + `/api/admin/refresh`, deployed;
+   the site still on GitHub Pages and pointing at it.
+3. Routes + head injection + sitemap; Cloudflare switched to the app;
+   hash URLs redirect.
+4. Images.
+5. Checkout with holds.
+
+Each step ships alone, and the earlier ones are useful without the later ones.
+
+### How to check a change against this section
+
+- `scripts/verify_site.py` and `scripts/verify_collection_order.py` still pass.
+- For each new route: `curl -s <url> | grep og:image` returns the painting's
+  own image. Run it with curl, not a browser, because previews don't run JS.
+- Every legacy `#painting/N` and `#collections/x` link from before the switch
+  still lands on the same painting or collection.

@@ -16,6 +16,8 @@ texts/                           — backup copies of the long site texts ([labe
 images/                          — local fallbacks for site photos served from Drive
   sveta-portrait.jpg             — painter photo (home hero); live copy is Drive file 1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm
   og-image.jpg                   — 1200×630 link-preview picture (og:image / twitter:image): Held Summer, Where the Forest Breathes, Autumn Light on --bg
+inquiry/
+  Code.gs                        — Apps Script backend for the inquiry form (not wired yet: FORM_ENDPOINT is empty)
 worker/                          — Cloudflare Worker that proxies the site's AI chat to OpenAI
   chat-worker.js                 — holds the OpenAI key; system prompt + live catalogue from the sheet CSV
   wrangler.toml                  — Worker config (model, per-IP rate limit)
@@ -23,7 +25,8 @@ worker/                          — Cloudflare Worker that proxies the site's A
 docs/
   roadmap.md                     — image pipeline implementation roadmap
   photo-manager-setup.md         — one-time Google setup + acceptance checklist
-  portfolio-playbook.md          — how to build a similar site from scratch
+  portfolio-playbook.md          — how to build a similar site from scratch; ends with "Extending the site" (backend plan)
+  review.txt                     — external review of the site (sales, SEO, images), in Russian
   watermark-removal-playbook.md  — techniques for clearing watermarks off artwork photos
   superpowers/                   — design/spec docs and rewrite plans
 scripts/
