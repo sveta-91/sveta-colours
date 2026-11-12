@@ -149,6 +149,7 @@ others):
 | `--sold` | store_true → `sold=yes`. No flag: `no` for new, preserved for existing. Reverting to `no` is a manual sheet edit |
 | `--hero` | store_true → `hero=TRUE`. No flag: `''` for new, preserved for existing |
 | `--recent N` | string, positions `'1'`–`'6'`. `--recent ''` clears it |
+| `--slug ...` | link key for a **new** painting; default `slugify(title)` (`Before the Thaw` → `before-the-thaw`). An existing slug is never changed (flag ignored, says so). A slug taken by another row exits **before upload**: pick another with `--slug` |
 | `--dry-run` | store_true; prints, mutates nothing |
 
 ### The three behaviors that matter
@@ -237,7 +238,7 @@ Each of these has cost real time.
 | Portfolio Drive folder | `1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX` |
 | Paintings sheet | `170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI` |
 | Sheet tab | `Paintings` |
-| Columns (11, in order) | `title, medium, price, sold, size, image, description, collection, orientation, hero, recent` |
+| Columns (in order) | `title, medium, price, sold, size, image, description, collection, orientation, hero, recent, slug`. The script reads/writes the whole tab by the sheet's own header, so extra columns survive |
 | Row match | case-insensitive on `title`, column A |
 | File extension | `.jpeg` everywhere (`.jpg` normalized by the CLI) |
 | `sold` | `yes` / `no` |

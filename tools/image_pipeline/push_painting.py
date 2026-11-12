@@ -5,7 +5,7 @@ Usage:
   push_painting.py <image> --title "..." [--description "..."] [--medium "..."]
                           [--size "..."] [--price "..."] [--collection "..."]
                           [--orientation portrait|landscape]
-                          [--hero] [--sold] [--recent N]
+                          [--hero] [--sold] [--recent N] [--slug ...]
                           [--crop-from top|center|bottom|left|right]
                           [--dry-run]
 
@@ -13,9 +13,14 @@ Mirrors the Drive folder + Paintings sheet conventions. Replaces an existing
 Drive file with the same name in-place (file ID stable), upserts the row by
 case-insensitive title.
 
-Schema (11 columns, as of 2026-06-09):
+Schema (11 columns, as of 2026-06-09, plus `slug` in column L since 2026-11-11):
   title, medium, price, sold, size, image, description, collection,
-  orientation, hero, recent
+  orientation, hero, recent, slug
+
+The whole tab is read and written by the sheet's own header, so extra columns
+(slug, cover, order) are preserved. `slug` is the painting's permanent link key
+(#painting/<slug>): a new row gets slugify(title) or --slug; an existing slug is
+never changed. A slug already used by another row stops the push before upload.
 
 For an existing row, columns not explicitly passed on the CLI are preserved
 from the sheet — so manual edits to hero/recent/orientation survive a re-push.
@@ -286,11 +291,56 @@ def upload_or_replace(drive, image: Path, name: str, dry_run: bool) -> str:
     return file["id"]
 
 
+def col_letter(i: int) -> str:
+    """0-based column index -> A1 letter(s): 0 -> A, 11 -> L, 26 -> AA."""
+    s, i = "", i + 1
+    while i > 0:
+        i, r = divmod(i - 1, 26)
+        s = chr(65 + r) + s
+    return s
+
+
+def slugify(name: str) -> str:
+    """Same rule as index.html's slugify(), so site and sheet agree."""
+    return re.sub(r"^-|-$", "", re.sub(r"[^a-z0-9]+", "-", name.lower()))
+
+
+SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+
+
+def resolve_slug(args, header: list, rows: list, found_idx: int,
+                 existing: dict) -> str:
+    """The slug to write, '' when the sheet has no `slug` column.
+
+    Written once, never changed: an existing row keeps its slug even if the
+    title or --slug changed. Exits (before any upload) on a bad or taken slug.
+    """
+    if "slug" not in header:
+        return ""
+    kept = existing.get("slug", "").strip()
+    if kept:
+        if args.slug and args.slug != kept:
+            print(f"slug:           keeping {kept!r} (slugs never change; --slug ignored)")
+        return kept
+    slug = (args.slug or slugify(args.title)).strip()
+    if not SLUG_RE.match(slug):
+        sys.exit(f"slug {slug!r} must be lower-case letters, digits and single dashes. Pass --slug.")
+    si = header.index("slug")
+    for i in range(1, len(rows)):
+        if i == found_idx:
+            continue
+        other = rows[i][si].strip() if si < len(rows[i]) else ""
+        if other == slug:
+            title = rows[i][0] if rows[i] else "?"
+            sys.exit(f"slug {slug!r} is already used by {title!r} (row {i + 1}). "
+                     f"Pass a different --slug.")
+    return slug
+
+
 def read_sheet(sheets):
-    """Read all rows. Returns (header_list, all_rows_including_header)."""
-    last_col = chr(64 + len(COLS))
+    """Read the whole tab. Returns (header_list, all_rows_including_header)."""
     resp = sheets.spreadsheets().values().get(
-        spreadsheetId=SHEET_ID, range=f"{SHEET_TAB}!A:{last_col}",
+        spreadsheetId=SHEET_ID, range=SHEET_TAB,
     ).execute()
     rows = resp.get("values", [])
     header = rows[0] if rows else list(COLS)
@@ -315,7 +365,7 @@ def find_match(rows: list, title: str):
 
 
 def build_row(args, header: list, file_id: str, existing: dict,
-              orientation_auto: str) -> list:
+              orientation_auto: str, slug: str = "") -> list:
     """Build a row list aligned to the sheet's actual header.
 
     Rule per column:
@@ -344,6 +394,8 @@ def build_row(args, header: list, file_id: str, existing: dict,
     out["orientation"] = merge(args.orientation, "orientation", orientation_auto)
     out["hero"] = "TRUE" if args.hero else merge(None, "hero", "")
     out["recent"] = merge(args.recent, "recent")
+    if slug:
+        out["slug"] = slug
 
     # Align to the actual sheet header (in case columns are reordered or extra
     # columns exist beyond COLS — those get preserved-or-empty per merge rule).
@@ -359,7 +411,7 @@ def build_row(args, header: list, file_id: str, existing: dict,
 
 def write_row(sheets, row_values: list, header: list, found_idx: int,
               rows_count: int, dry_run: bool) -> str:
-    last_col = chr(64 + len(header))
+    last_col = col_letter(len(header) - 1)
     if found_idx >= 0:
         row_num = found_idx + 1
         target = f"{SHEET_TAB}!A{row_num}:{last_col}{row_num}"
@@ -423,6 +475,9 @@ def main() -> int:
                    help="Set hero=TRUE. Without this flag: '' for new, preserved for existing.")
     p.add_argument("--recent", default=None,
                    help="Set recent position '1'..'6'. Use empty string to clear.")
+    p.add_argument("--slug", default=None,
+                   help="Link key for a NEW painting (default: from the title). "
+                        "Ignored when the row already has a slug: slugs never change.")
     p.add_argument("--crop-from",
                    choices=["top", "center", "bottom", "left", "right"],
                    default="top",
@@ -464,6 +519,9 @@ def main() -> int:
         header = ensure_header(sheets, header, args.dry_run)
         found_idx, existing = find_match(rows, args.title)
         old_image_id = existing.get("image", "").strip()
+        slug = resolve_slug(args, header, rows, found_idx, existing)
+        if slug:
+            print(f"slug:           {slug}")
 
         size_for_check = args.size or existing.get("size", "")
         if size_for_check and not args.size:
@@ -473,7 +531,7 @@ def main() -> int:
         file_id = upload_or_replace(drive, image_for_upload, name, args.dry_run)
         print(f"drive file id:  {file_id}")
 
-        row_values = build_row(args, header, file_id, existing, orientation_auto)
+        row_values = build_row(args, header, file_id, existing, orientation_auto, slug)
         action = write_row(sheets, row_values, header, found_idx,
                            len(rows), args.dry_run)
         print(f"sheet:          {action}")

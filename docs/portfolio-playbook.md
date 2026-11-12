@@ -570,7 +570,7 @@ fourth serverless piece for payments and images.
    L `slug` (written once, never changed); links are `#painting/<slug>`. Old
    numeric links open nothing (none had been shared), so no painting data
    lives in the code. `p.id` is still the row number but only used inside the page.
-   Still open: `push_painting.py` doesn't write the slug (the photo manager does).
+   `push_painting.py` and the photo manager both write it for new paintings.
 2. **Inquiry contract mismatch.** `Code.gs` says the site posts
    `Content-Type: text/plain` to avoid a CORS preflight (Apps Script can't answer
    `OPTIONS`). `sendInquiry()` posts `application/json`, so the form would
@@ -641,7 +641,7 @@ inquiry, not a payment.
 
 ### Order of work
 
-1. ~~`slug` column~~ done; `#painting/<slug>` links done; `push_painting.py` writing it is still open.
+1. ~~`slug` column, `#painting/<slug>` links, both publishing tools write it~~ done 2026-11-11.
 2. Spring app with `/api/inquiry` + `/api/admin/refresh`, deployed;
    the site still on GitHub Pages and pointing at it.
 3. Routes + head injection + sitemap; Cloudflare switched to the app;
