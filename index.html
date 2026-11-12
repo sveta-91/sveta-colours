@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- SITE:BEGIN ===========================================================
+     Everything that belongs to one artist lives between these markers:
+     identity meta, fonts, theme tokens and the SITE object. The rest of
+     the page is shared code. scripts/build_site.py <site> replaces this
+     block from sites/<site>/; this file keeps Sveta's values, so GitHub
+     Pages still serves it as is, with no build step.
+     ===================================================================== -->
 <title>Sveta Colours — Original Paintings</title>
 
 <!-- SEO -->
@@ -52,21 +59,7 @@
 }
 </script>
 
-<style>
-/* ========================================================
-   SVETA COLOURS — V2 EDITORIAL GALLERY DESIGN
-   ========================================================
-   Palette: bone/oat with a single deep ink-blue accent.
-   Rationale: rose-dust + clay + terracotta together read
-   too "warm-craft / Etsy". Bone (#EAE6DE) is a classic
-   gallery wall tone; ink-blue (#1A2640) gives a single,
-   restrained editorial accent — used only for links and
-   the rare CTA. Sold and Available no longer have
-   competing colors; "Sold" is just italic strikethrough.
-   ======================================================== */
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+<style id="site-theme">
 :root {
   /* Editorial bone/oat palette */
   --bg: #EAE6DE;
@@ -100,8 +93,141 @@
   /* Font rules (Sveta, 2026-11-09): two fonts per page. Names and headings
      → --font-brand, upright. Everything else (body, notes, counts, menu,
      prices) → --font-body. No italic anywhere. Fraunces is no longer loaded. */
+}
+</style>
 
-  /* Layout */
+<script>
+const SITE = {
+  name: "Sveta Colours",                 // logo, footer, tab titles
+  domain: "sveta-colours.com",
+  artist: {
+    name: "Sveta",
+    location: "Thornhill, Ontario, Canada",        // e.g. "Toronto, Canada" — appears in Footer (home "From the studio" text is in texts/home.txt)
+    yearsPracticing: 8, // e.g. 8                  — not shown; the years are written in texts/home.txt
+    schooling: "self-taught",       // e.g. "self-taught"      — appears in About full
+    influences: null,      // e.g. "Lois Dodd, Vuillard, Peter Doig" — About full
+    exhibitions: [],       // [{year:2024, title:"Group show", venue:"Gallery X", city:"Berlin"}]
+    instagram: null,       // e.g. "https://instagram.com/sveta.colours"
+    studioPhotoUrl: "https://drive.google.com/file/d/1zgwCypofyOuySa-O4QKiIck-3AXysKw9/view?usp=drive_link"   // e.g. "/studio.jpg" — used by Process section
+  },
+  testimonials: [],        // [{quote, name, city, year}] — start EMPTY, no fake data.
+  newsletter: {
+    serviceUrl: null       // e.g. Buttondown / Mailchimp form action URL.
+                           // If null → form is hidden everywhere (no alert).
+  },
+  shipping: {
+    fromCountry: "Canada"      // e.g. "Canada" — not shown; the FAQ answer text is in texts/faq.txt
+  },
+  contactEmail: "sveta.colours@gmail.com",
+  currency: "$",
+  // Prices in the sheet are Canadian dollars (playbook).
+  currencyCode: "CAD",
+  formEndpoint: "https://script.google.com/macros/s/AKfycbwR1BEbGz6-hrPNqPA58dHhwz9IYgVO7UyKwoqh7YE6r8hxZHpM4MM7jpEkgNxgMZr_/exec",
+  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv",
+  // The long texts: published Google Docs; texts/ is the backup.
+  textDocs: {
+    home:  'https://docs.google.com/document/d/e/2PACX-1vQJB9Itmyifx3EQ87SFrNYlPOEKNSEBd-gklsTlaA7zea5iF4iVa-3RFKEA2z7b_KW4e4KvSCdOxyjI/pub',
+    about: 'https://docs.google.com/document/d/e/2PACX-1vQCN_-haahrm03cy6o-F4WZdTSHQqwDYJsTq_pxMCu57mScljGm_ZaZ7L1kRU9pptMjdFebGhONF6TC/pub',
+    faq:   'https://docs.google.com/document/d/e/2PACX-1vR8NnB4A1Qf5DPfNK7i0D4Rr_OtxZ7PpHX0MVeAt17kbO7dHxKNqwuTSaJtWTAbfQvEJxG8zXUs8Uq3/pub',
+  },
+  // Safety nets when the sheet's `hero` / `recent` columns are empty.
+  heroPinTitle: "Held Summer",
+  featuredTitles: [
+    'Where the Forest Breathes',
+    'Autumn Light',
+    'Morning Coffee',
+    'Walking Home',
+    'Frost and Sun',
+  ],
+  portrait: {
+    src: "https://lh3.googleusercontent.com/d/1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm=w600",
+    fallback: "images/sveta-portrait.jpg",
+    alt: "Sveta, the painter",
+    width: 604, height: 572
+  },
+  // Short copy that is this artist's own wording.
+  strings: {
+    logoLabel: "Sveta Colours — home",
+    navNote: "Original paintings<br>Thornhill, Ontario",
+    shippingNote: "Shipping quoted to your address. Insured, from Canada.",
+    replyNote: "Replies within a day or two.",
+    replyWhen: "within a day or two",
+    contactLede: "A question, a commission, a studio visit. I usually answer within a day or two.",
+    studioAlt: "Inside Sveta's studio",
+    chapterLarge: "Large works &mdash; 16 &times; 20 in",
+    chapterSmall: "Small works &mdash; 11 &times; 14 in",
+    worksIntro: "Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.",
+    footerTagline: "Original paintings &mdash;<br>made slowly, one at a time.",
+    mailSubject: "Hello from sveta-colours.com"
+  },
+  // Shown only when the sheet can't be read.
+  fallbackPaintings: [
+    {
+      id: 1,
+      title: "Holding On in Winter",
+      medium: "acrylic",
+      price: 500,
+      sold: false,
+      size: "16 x 20 in",
+      image: "",
+      description: "A family stands as a point of warmth and color against towering high-rises and the cold air.",
+      collections: ["Seasons", "City"],
+      available: true,
+      featured: true,
+      year: "",
+      surface: "",
+      signed: "",
+      framed: "",
+      shippingFrom: "",
+      certificate: "",
+      widthIn: null,
+      heightIn: null,
+      dominantColor: ""
+    },
+    {
+      id: 2,
+      title: "Small Rain",
+      medium: "watercolor",
+      price: 120,
+      sold: false,
+      size: "5 x 7 in",
+      image: "",
+      description: "A small watercolor — drizzle on a windowpane, late afternoon light.",
+      collections: ["Postcards"],
+      available: true,
+      featured: false,
+      year: "",
+      surface: "paper",
+      signed: "",
+      framed: "",
+      shippingFrom: "",
+      certificate: "",
+      widthIn: null,
+      heightIn: null,
+      dominantColor: ""
+    }
+  ]
+};
+</script>
+<!-- SITE:END -->
+
+<style>
+/* ========================================================
+   SVETA COLOURS — V2 EDITORIAL GALLERY DESIGN
+   ========================================================
+   Palette: bone/oat with a single deep ink-blue accent.
+   Rationale: rose-dust + clay + terracotta together read
+   too "warm-craft / Etsy". Bone (#EAE6DE) is a classic
+   gallery wall tone; ink-blue (#1A2640) gives a single,
+   restrained editorial accent — used only for links and
+   the rare CTA. Sold and Available no longer have
+   competing colors; "Sold" is just italic strikethrough.
+   ======================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Layout (shared; the theme tokens are in the SITE block above) */
   --max-w: 1280px;
   --max-w-text: 680px;
   --transition: 0.28s ease;
@@ -1862,8 +1988,8 @@ body.cursor-hide * { cursor: none !important; }
 <!-- Navigation -->
 <nav aria-label="Primary">
   <div class="nav-inner">
-    <a href="#home" class="logo" onclick="event.preventDefault(); showPage('home');" aria-label="Sveta Colours — home">
-      <span>Sveta Colours</span>
+    <a href="#home" class="logo" onclick="event.preventDefault(); showPage('home');" aria-label="Sveta Colours — home" data-site-aria="logoLabel">
+      <span data-site-text="name">Sveta Colours</span>
     </a>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
       <span></span><span></span><span></span>
@@ -1877,7 +2003,7 @@ body.cursor-hide * { cursor: none !important; }
       <li><a href="#about" data-page="about" onclick="event.preventDefault(); showPage('about'); closeMenu();">About</a></li>
       <li><a href="#faq" data-page="faq" onclick="event.preventDefault(); showPage('faq'); closeMenu();">FAQ</a></li>
     </ul>
-    <p class="nav-note">Original paintings<br>Thornhill, Ontario</p>
+    <p class="nav-note" data-site-html="navNote">Original paintings<br>Thornhill, Ontario</p>
   </div>
 </nav>
 
@@ -1908,100 +2034,42 @@ body.cursor-hide * { cursor: none !important; }
 <script type="application/ld+json" id="paintings-ld">{}</script>
 
 <script>
+/* Static nav text comes from SITE too, so a site built from another block
+   is right even before scripts/build_site.py fills the HTML in. */
+document.querySelectorAll('[data-site-text]').forEach(e => { e.textContent = SITE[e.dataset.siteText] ?? SITE.strings[e.dataset.siteText]; });
+document.querySelectorAll('[data-site-html]').forEach(e => { e.innerHTML = SITE.strings[e.dataset.siteHtml]; });
+document.querySelectorAll('[data-site-aria]').forEach(e => { e.setAttribute('aria-label', SITE.strings[e.dataset.siteAria]); });
+
 /* ========================================================
-   SITE_DATA — single source of truth for studio/copy info.
+   SITE_DATA — studio/copy info, now kept in the SITE block in <head>.
    Sveta: fill these in when ready. Empty / null values trigger
    graceful degradation — sections, sentences, links simply
    don't render. There are NEVER visible [TODO] markers
    to the visitor.
    ======================================================== */
-const SITE_DATA = {
-  artist: {
-    name: "Sveta",
-    location: "Thornhill, Ontario, Canada",        // e.g. "Toronto, Canada" — appears in Footer (home "From the studio" text is in texts/home.txt)
-    yearsPracticing: 8, // e.g. 8                  — not shown; the years are written in texts/home.txt
-    schooling: "self-taught",       // e.g. "self-taught"      — appears in About full
-    influences: null,      // e.g. "Lois Dodd, Vuillard, Peter Doig" — About full
-    exhibitions: [],       // [{year:2024, title:"Group show", venue:"Gallery X", city:"Berlin"}]
-    instagram: null,       // e.g. "https://instagram.com/sveta.colours"
-    studioPhotoUrl: "https://drive.google.com/file/d/1zgwCypofyOuySa-O4QKiIck-3AXysKw9/view?usp=drive_link"   // e.g. "/studio.jpg" — used by Process section
-  },
-  testimonials: [],        // [{quote, name, city, year}] — start EMPTY, no fake data.
-  newsletter: {
-    serviceUrl: null       // e.g. Buttondown / Mailchimp form action URL.
-                           // If null → form is hidden everywhere (no alert).
-  },
-  shipping: {
-    fromCountry: "Canada"      // e.g. "Canada" — not shown; the FAQ answer text is in texts/faq.txt
-  }
-};
+const SITE_DATA = SITE;
 
 /* ========================================================
-   FALLBACK DATA
+   FALLBACK DATA (the artist's own fallback list is SITE.fallbackPaintings)
    ======================================================== */
-let PAINTINGS = [
-  {
-    id: 1,
-    title: "Holding On in Winter",
-    medium: "acrylic",
-    price: 500,
-    sold: false,
-    size: "16 x 20 in",
-    image: "",
-    description: "A family stands as a point of warmth and color against towering high-rises and the cold air.",
-    collections: ["Seasons", "City"],
-    available: true,
-    featured: true,
-    year: "",
-    surface: "",
-    signed: "",
-    framed: "",
-    shippingFrom: "",
-    certificate: "",
-    widthIn: null,
-    heightIn: null,
-    dominantColor: ""
-  },
-  {
-    id: 2,
-    title: "Small Rain",
-    medium: "watercolor",
-    price: 120,
-    sold: false,
-    size: "5 x 7 in",
-    image: "",
-    description: "A small watercolor — drizzle on a windowpane, late afternoon light.",
-    collections: ["Postcards"],
-    available: true,
-    featured: false,
-    year: "",
-    surface: "paper",
-    signed: "",
-    framed: "",
-    shippingFrom: "",
-    certificate: "",
-    widthIn: null,
-    heightIn: null,
-    dominantColor: ""
-  }
-];
+let PAINTINGS = SITE.fallbackPaintings;
 
 /* ========================================================
    CONFIGURATION
    ======================================================== */
-const CONTACT_EMAIL = "sveta.colours@gmail.com";
-const CURRENCY = "$";
+const CONTACT_EMAIL = SITE.contactEmail;
+const CURRENCY = SITE.currency;
 // Prices in the sheet are Canadian dollars (playbook). Shown next to every
 // price so buyers don't guess CAD vs USD; JSON-LD uses it too.
-const CURRENCY_CODE = "CAD";
+const CURRENCY_CODE = SITE.currencyCode;
 // The shipping line under the modal price. Wording only, no policy beyond the FAQ.
-const SHIPPING_NOTE = "Shipping quoted to your address. Insured, from Canada.";
+const SHIPPING_NOTE = SITE.strings.shippingNote;
 // Inquiry form endpoint (Formspree-compatible: POST JSON, {ok:true} back).
 // Empty → the modal shows the email address + Copy instead of the form.
 // To turn on: create a form at formspree.io for the studio address and
 // paste its URL here, e.g. "https://formspree.io/f/abcdwxyz".
-const FORM_ENDPOINT = "https://script.google.com/macros/s/AKfycbwR1BEbGz6-hrPNqPA58dHhwz9IYgVO7UyKwoqh7YE6r8hxZHpM4MM7jpEkgNxgMZr_/exec";
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv";
+const FORM_ENDPOINT = SITE.formEndpoint;
+const SHEET_CSV_URL = SITE.sheetCsvUrl;
 
 // ---- Long site texts: plain .txt files in texts/ (Sveta edits them, not this code).
 // Format: a "[label]" line, then the text. Blank line = new paragraph,
@@ -2034,11 +2102,8 @@ function parseTextFile(name, raw) {
 // Drive won't let a page read an uploaded .txt (403), but a published Doc is
 // readable (CORS allowed). The site takes the Doc's paragraphs as lines; the
 // texts/ files are the backup when a Doc is slow or unreachable.
-const TEXT_DOCS = {
-  home:  'https://docs.google.com/document/d/e/2PACX-1vQJB9Itmyifx3EQ87SFrNYlPOEKNSEBd-gklsTlaA7zea5iF4iVa-3RFKEA2z7b_KW4e4KvSCdOxyjI/pub',
-  about: 'https://docs.google.com/document/d/e/2PACX-1vQCN_-haahrm03cy6o-F4WZdTSHQqwDYJsTq_pxMCu57mScljGm_ZaZ7L1kRU9pptMjdFebGhONF6TC/pub',
-  faq:   'https://docs.google.com/document/d/e/2PACX-1vR8NnB4A1Qf5DPfNK7i0D4Rr_OtxZ7PpHX0MVeAt17kbO7dHxKNqwuTSaJtWTAbfQvEJxG8zXUs8Uq3/pub',
-};
+
+const TEXT_DOCS = SITE.textDocs;
 // Published Doc page → plain text: one line per paragraph, empty paragraph = blank line.
 function docPageToText(html) {
   const root = new DOMParser().parseFromString(html, 'text/html').getElementById('contents');
@@ -2479,7 +2544,7 @@ function placeholderGradient(id) {
 
 function paintingImage(p, opts) {
   opts = opts || {};
-  const alt = `${p.title} — original ${p.medium || 'painting'} painting by Sveta`;
+  const alt = `${p.title} — original ${p.medium || 'painting'} painting by ${SITE.artist.name}`;
   if (p.image) {
     const loadAttr = (opts.isHero || opts.isModal) ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"';
     const crossOrigin = opts.crossOrigin ? 'crossorigin="anonymous"' : '';
@@ -2680,7 +2745,7 @@ function openModal(id, opts) {
        </div>`
     : `<div class="modal-cta">
          ${inquiryHTML(p, `Inquiry about "${p.title}"`)}
-         <div class="cta-note">Replies within a day or two.</div>
+         <div class="cta-note">${SITE.strings.replyNote}</div>
        </div>`;
 
   const collectionsHTML = (p.collections || []).length
@@ -2722,7 +2787,7 @@ function openModal(id, opts) {
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow = 'hidden';
   // Tab title / history entry / bookmark name the painting, not the page under it.
-  document.title = `${p.title} · Sveta Colours`;
+  document.title = `${p.title} · ${SITE.name}`;
 
   // Focus management
   setTimeout(() => {
@@ -2795,7 +2860,7 @@ async function sendInquiry(e) {
     // Apps Script answers 200 even on failure; the verdict is in the body.
     const reply = await res.json().catch(() => ({}));
     if (!reply.ok) throw new Error(reply.error || 'no confirmation');
-    form.innerHTML = `<div class="inquiry-done">Thank you. Your message is with the studio; I'll reply to ${data.email.replace(/</g, '&lt;')} within a day or two.</div>`;
+    form.innerHTML = `<div class="inquiry-done">Thank you. Your message is with the studio; I'll reply to ${data.email.replace(/</g, '&lt;')} ${SITE.strings.replyWhen}.</div>`;
   } catch (err) {
     btn.disabled = false;
     status.textContent = `Couldn't send just now. Please write to ${CONTACT_EMAIL} directly.`;
@@ -2813,7 +2878,7 @@ function openContact(e) {
   contactReturnFocus = document.activeElement;
   document.getElementById('contactBody').innerHTML = `
     <h2 id="contactTitle">Write to the studio</h2>
-    <p class="contact-lede">A question, a commission, a studio visit. I usually answer within a day or two.</p>
+    <p class="contact-lede">${SITE.strings.contactLede}</p>
     <form class="inquiry-form" onsubmit="return sendInquiry(event)">
       <input type="hidden" name="intent" value="contact">
       <input type="hidden" name="painting" value="">
@@ -2987,7 +3052,7 @@ function injectPaintingsLD() {
         "artMedium": p.medium ? capitalize(p.medium) : undefined,
         "artworkSurface": p.surface || undefined,
         "artform": "Painting",
-        "creator": { "@type": "Person", "name": "Sveta" },
+        "creator": { "@type": "Person", "name": SITE.artist.name },
         "dateCreated": p.year || undefined,
         "image": p.image || undefined,
         "width": p.widthIn ? `${p.widthIn} in` : undefined,
@@ -3014,13 +3079,7 @@ function injectPaintingsLD() {
 // Fallback list if the Sheet's `recent` column is empty across every row.
 // Sheet wins when populated; this is the safety net so "Recent paintings"
 // never empties out. Sold pieces ARE allowed — the home wall is editorial.
-const FEATURED_TITLES = [
-  'Where the Forest Breathes',
-  'Autumn Light',
-  'Morning Coffee',
-  'Walking Home',
-  'Frost and Sun',
-];
+const FEATURED_TITLES = SITE.featuredTitles;
 
 /* selectFeatured — picks the home-page "Recent paintings" set.
 
@@ -3106,7 +3165,7 @@ function assignCatalogNumbers() {
 // Fallback hero pin if the Sheet's `hero` column is unset. Sheet wins
 // when populated; this is just the safety net so the home page never
 // blanks if the column is empty or the editor forgot to tick a row.
-const HERO_PIN_TITLE = 'Held Summer';
+const HERO_PIN_TITLE = SITE.heroPinTitle;
 
 function getHeroPiece() {
   // Sold pieces are NEVER the hero — never put a "Sold" piece front-and-centre.
@@ -3184,7 +3243,7 @@ function renderHero() {
   return `
     <section class="hero" aria-label="Featured painting">
       <div class="hero-text">
-        <img class="hero-portrait" src="https://lh3.googleusercontent.com/d/1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm=w600" onerror="this.onerror=null; this.src='images/sveta-portrait.jpg'" alt="Sveta, the painter" width="604" height="572" fetchpriority="high">
+        <img class="hero-portrait" src="${SITE.portrait.src}" onerror="this.onerror=null; this.src='${SITE.portrait.fallback}'" alt="${SITE.portrait.alt}" width="${SITE.portrait.width}" height="${SITE.portrait.height}" fetchpriority="high">
         ${textBlock('home', 'headline') ? `<h1 class="hero-title">${textLines(textBlock('home', 'headline'))}</h1>` : ''}
         ${textBlock('home', 'under headline') ? `<p class="hero-lede">${textBlock('home', 'under headline').split('\n').map(l => l.trim()).filter(Boolean).map(l => `<span>${escText(l)}</span>`).join(' ')}</p>` : ''}
         ${creditStat ? `<p class="hero-stat">${creditStat}</p>` : ''}
@@ -3308,7 +3367,7 @@ function renderProcessSection() {
   //      is a draft. Edit in source if it doesn't sound like you. -->
   const photo = driveImageURL(SITE_DATA.artist.studioPhotoUrl);
   const imageHTML = photo
-    ? `<div class="process-image" style="padding:0; background:var(--surface-alt);"><img src="${photo}" alt="Inside Sveta's studio" loading="lazy" style="width:100%; height:100%; object-fit:cover;"></div>`
+    ? `<div class="process-image" style="padding:0; background:var(--surface-alt);"><img src="${photo}" alt="${SITE.strings.studioAlt}" loading="lazy" style="width:100%; height:100%; object-fit:cover;"></div>`
     : '';
   return `
     <section>
@@ -3431,8 +3490,8 @@ function renderPaintings() {
     // No dimensions on any painting — fall back to one undifferentiated grid.
     body = `<section><div class="section-inner"><div class="gallery-grid" data-masonry>${unknown.map(cardHTML).join('')}</div></div></section>`;
   } else {
-    body = chapter('Large works &mdash; 16 &times; 20 in', large, 'works-large')
-         + chapter('Small works &mdash; 11 &times; 14 in', small, 'works-small')
+    body = chapter(SITE.strings.chapterLarge, large, 'works-large')
+         + chapter(SITE.strings.chapterSmall, small, 'works-small')
          + chapter('Other works', interleaveByOrientation(unknown), 'works-other');
   }
 
@@ -3440,7 +3499,7 @@ function renderPaintings() {
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
       <h1>All paintings</h1>
-      <p>Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.</p>
+      <p>${SITE.strings.worksIntro}</p>
     </div>
     ${body}
     ${renderContactSection()}
@@ -3700,7 +3759,7 @@ function renderPastWork() {
 }
 
 function pageTitleFor(page) {
-  const SUFFIX = 'Sveta Colours';
+  const SUFFIX = SITE.name;
   if (page === 'home')        return `${SUFFIX} — Original Paintings`;
   if (page === 'recent')      return `Recent · ${SUFFIX}`;
   if (page === 'paintings')   return `All Paintings · ${SUFFIX}`;
@@ -3838,8 +3897,8 @@ function renderFooter() {
     <div class="footer-inner">
       <div class="footer-grid ${newsletterHTML ? '' : 'no-newsletter'}">
         <div class="footer-col">
-          <div class="footer-mark">Sveta Colours</div>
-          <div class="footer-tagline">Original paintings &mdash;<br>made slowly, one at a time.</div>
+          <div class="footer-mark">${SITE.name}</div>
+          <div class="footer-tagline">${SITE.strings.footerTagline}</div>
         </div>
         <div class="footer-col">
           <h4>Browse</h4>
@@ -3863,7 +3922,7 @@ function renderFooter() {
         ${newsletterCol}
       </div>
       <div class="footer-bottom">
-        <div>&copy; ${year} Sveta Colours${studioLocation}</div>
+        <div>&copy; ${year} ${SITE.name}${studioLocation}</div>
         <div>All works one-of-a-kind. Shipped worldwide.</div>
       </div>
     </div>`;
@@ -3963,7 +4022,7 @@ function initMobileCTA() {
   const cta = document.getElementById('mobileCTA');
   if (!cta) return;
   // mailto stays as the href (long-press, no JS); a tap opens the form.
-  cta.setAttribute('href', `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Hello from sveta-colours.com')}`);
+  cta.setAttribute('href', `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(SITE.strings.mailSubject)}`);
   cta.addEventListener('click', openContact);
   let ticking = false;
   const onScroll = () => {
