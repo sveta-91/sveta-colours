@@ -1016,6 +1016,12 @@ button.hero-image-wrap {
 
 .contact-meta a { color: var(--text); text-decoration: underline; text-underline-offset: 4px; }
 .contact-meta a:hover { color: var(--accent); }
+.contact-write {
+  display: block; margin: 0 0 0.6rem; padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: 1.15rem; color: var(--text);
+  text-decoration: underline; text-underline-offset: 4px; text-align: left;
+}
+.contact-write:hover { color: var(--accent); }
 
 @media (max-width: 768px) {
   .contact-inner { grid-template-columns: 1fr; gap: 1.5rem; }
@@ -3368,6 +3374,7 @@ function renderContactSection() {
       <div class="contact-inner">
         <h2><span class="italic">Inquiries</span><br>&amp; studio visits</h2>
         <div class="contact-meta">
+          ${FORM_ENDPOINT ? '<button type="button" class="contact-write" onclick="openContact(event)">Write to the studio &rarr;</button>' : ''}
           <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>
           Studio visits by appointment.
         </div>
