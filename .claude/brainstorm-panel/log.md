@@ -51,3 +51,16 @@ Append-only record of what each panel run produced and what got tuned at the use
 - **Promoting the "preserve flavor over minimalism" pattern to CLAUDE.md.** Three panels now: gallery grid kept meta + price, About kept "learning to really see," descriptions promoted "the small thing" over efficiency. Confirmed enough.
 - Domain quirk for next time: **Sveta switches into Russian when she means it most.** Build that into the prompt-reading layer (now codified in `feedback_bilingual_prompts.md` memory + the sveta-writing skill).
 - Process note: skill-as-deliverable is durable. Earlier panels left lessons in the log; this one left a callable spec at `.claude/skills/sveta-writing/SKILL.md` that the next writing task picks up automatically. Worth doing this for future voice/style/UX panels here.
+
+---
+
+## 2026-11-12 — second site olgazai.com (Olga Zai): repo strategy + identity (greenfield architecture + design)
+
+- Proposed: Curator (director), Visual designer, Buildable-in-this-codebase engineer, Practitioner (person running both sites), Collector/buyer, UX/UI auditor, Skeptic. User added: none. User removed: none. User supplied facts at the gate instead: watercolor + acrylic, ~same count, Olga's own Google account, she configures it.
+- Style: swarm → director-led, 1 round + synthesis. Fit well; 6 seats ~20s each on sonnet, director on opus.
+- Rounds: 1 (cap 2). Stop reason: bar met in synthesis.
+- Unanimity in R1: none — 5/6 shared codebase vs Skeptic's disciplined fork; Buyer (different home skeleton) vs Skeptic (identical structure).
+- Steelman: n/a — pushback present in R1.
+- Outcome: one shared index.html with a marked SITE block (rendered, not fetched); sveta-colours stays on GitHub Pages untouched; olgazai.com = Cloudflare Pages project with a tiny build swap from sites/olga/; first commit = zero-visual-diff tokenization proven by Selenium; --site required, no default; one optional `framing` column. Home-skeleton difference deferred until Olga has paintings.
+- Recurring: Skeptic again won HOW not WHETHER (rule 3 in roster held — 3rd panel). Auditor again found a mechanism nobody else did (28 stray beige hex values incl. bone RGB in JS desaturation).
+- Note: practitioner seat (two-site operator) earned its place — only seat to flag the silent wrong-sheet push from a bare "publish this" and the 7-day Testing-mode token expiry.

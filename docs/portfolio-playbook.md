@@ -554,13 +554,19 @@ The site already needs a server and has grown one in two places:
 
 | Piece | Where | Job | State |
 | --- | --- | --- | --- |
-| Inquiry form | `inquiry/Code.gs` (Apps Script) | form → private sheet + email | not wired: `FORM_ENDPOINT = ''` |
+| Inquiry form | `inquiry/Code.gs` (Apps Script) | form → private sheet + email | live since 2026-11-11 |
 | Publishing | `tools/image_pipeline/push_painting.py` | Drive upload + sheet upsert | live |
 
 **Decision:** one Spring Boot app takes over the inquiry form and anything new.
 `push_painting.py` stays a local CLI (Grok is web-only anyway). It gains one
 call to the backend to refresh its cache after a push. Don't build a third and
 fourth serverless piece for payments and images.
+
+**Update 2026-11-12:** for per-painting URLs, head injection and the sitemap,
+the plan is now a **Cloudflare Worker** in front of GitHub Pages, not Spring
+Boot (Spring isn't a goal in itself; checkout is low priority). Full plan:
+`docs/painting-pages-plan.md`. The Spring shape below stays as the reference
+for when real server state (orders, holds) arrives.
 
 ### Two defects to fix before building on them
 
@@ -643,7 +649,7 @@ inquiry, not a payment.
 2. Spring app with `/api/inquiry` + `/api/admin/refresh`, deployed;
    the site still on GitHub Pages and pointing at it.
 3. Routes + head injection + sitemap; Cloudflare switched to the app;
-   hash URLs redirect.
+   hash URLs redirect. **Now planned as a Worker:** `docs/painting-pages-plan.md`.
 4. Images.
 5. Checkout with holds.
 

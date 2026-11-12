@@ -22,6 +22,8 @@ inquiry/
 docs/
   roadmap.md                     — image pipeline implementation roadmap
   photo-manager-setup.md         — one-time Google setup + acceptance checklist
+  painting-pages-plan.md         — planned: /paintings/<slug> pages with link previews via a Cloudflare Worker
+  olgazai-plan.md                — planned: second site olgazai.com from the same code (shared index.html + per-site block)
   portfolio-playbook.md          — how to build a similar site from scratch; ends with "Extending the site" (backend plan)
   review.txt                     — external review of the site (sales, SEO, images), in Russian
   watermark-removal-playbook.md  — techniques for clearing watermarks off artwork photos
