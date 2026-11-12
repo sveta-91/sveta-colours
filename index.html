@@ -1257,6 +1257,17 @@ button.hero-image-wrap {
 .inquiry-status { font-size: 0.8rem; color: var(--text-muted); min-height: 1em; }
 .inquiry-done { font-size: 0.92rem; color: var(--text); line-height: 1.6; }
 
+/* General "Write to studio" window (mobile bar + footer Contact): the same
+   form as a painting's, without a painting. */
+.contact-modal { position: relative; max-width: 480px; padding: 2.6rem 2rem 2rem; }
+.contact-modal h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.6rem; margin: 0 0 0.3rem; }
+.contact-modal .contact-lede { font-size: 0.9rem; color: var(--text-secondary); margin: 0 0 1.2rem; line-height: 1.5; }
+.contact-modal .inquiry-alt { margin-top: 1.2rem; }
+@media (max-width: 768px) {
+  #contactModal.open { padding: 1rem; }
+  .contact-modal { margin: 1rem auto; padding: 2.4rem 1.25rem 1.5rem; }
+}
+
 /* Modal overlay accent border + tinted bg when JS samples a dominant color */
 .modal {
   border-top: 2px solid var(--accent-tint);
@@ -1873,12 +1884,18 @@ body.cursor-hide * { cursor: none !important; }
   </div>
 </div>
 
+<div class="modal-overlay" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+  <div class="modal contact-modal">
+    <button type="button" class="modal-close" onclick="closeContact()" aria-label="Close">&times;</button>
+    <div id="contactBody"></div>
+  </div>
+</div>
+
 <!-- Editorial footer (content injected by JS so it can react to SITE_DATA) -->
 <footer id="footer" aria-label="Site footer"></footer>
 
 <!-- Sticky mobile CTA: visible only ≤768px once scrolled past the hero.
-     Hidden on /faq /about-only pages would be possible but we keep it
-     site-wide for the simple mailto. -->
+     Opens the "Write to studio" form (mailto when no FORM_ENDPOINT). -->
 <a id="mobileCTA" class="mobile-cta" aria-label="Write to studio">Write to studio</a>
 
 <!-- Painting JSON-LD slot (filled by JS) -->
@@ -2780,6 +2797,52 @@ async function sendInquiry(e) {
   return false;
 }
 
+/* ---- "Write to studio" window: the painting form without a painting ----
+   Opened by the mobile bar and the footer's Contact link. Without a
+   FORM_ENDPOINT it returns true, so the link's mailto still works. */
+let contactReturnFocus = null;
+function openContact(e) {
+  if (!FORM_ENDPOINT) return true;
+  if (e) e.preventDefault();
+  contactReturnFocus = document.activeElement;
+  document.getElementById('contactBody').innerHTML = `
+    <h2 id="contactTitle">Write to the studio</h2>
+    <p class="contact-lede">A question, a commission, a studio visit. I usually answer within a day or two.</p>
+    <form class="inquiry-form" onsubmit="return sendInquiry(event)">
+      <input type="hidden" name="intent" value="contact">
+      <input type="hidden" name="painting" value="">
+      <label class="inquiry-hp" aria-hidden="true">Leave empty<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+      <label>Your name<input type="text" name="name" required autocomplete="name"></label>
+      <label>Email<input type="email" name="email" required autocomplete="email"></label>
+      <label>Message<textarea name="message" rows="5" required></textarea></label>
+      <button type="submit" class="inquiry-send">Send</button>
+      <div class="inquiry-status" role="status" aria-live="polite"></div>
+    </form>
+    <div class="inquiry-alt">or write directly:</div>
+    <div class="inquiry-email">
+      <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
+      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">Copy</button>
+    </div>`;
+  const form = document.querySelector('#contactBody form');
+  form.dataset.openedAt = String(Date.now());
+  document.getElementById('contactModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const mainEl = document.querySelector('main');
+  if (mainEl) { mainEl.setAttribute('inert', ''); mainEl.setAttribute('aria-hidden', 'true'); }
+  setTimeout(() => { const n = form.querySelector('input[name="name"]'); if (n) n.focus(); }, 50);
+  return false;
+}
+function closeContact() {
+  const el = document.getElementById('contactModal');
+  if (!el.classList.contains('open')) return;
+  el.classList.remove('open');
+  document.body.style.overflow = '';
+  const mainEl = document.querySelector('main');
+  if (mainEl) { mainEl.removeAttribute('inert'); mainEl.removeAttribute('aria-hidden'); }
+  if (contactReturnFocus && contactReturnFocus.isConnected) contactReturnFocus.focus();
+}
+document.getElementById('contactModal').addEventListener('click', function(e) { if (e.target === this) closeContact(); });
+
 function copyStudioEmail(btn) {
   const done = () => { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = 'Copy'; }, 1800); };
   try {
@@ -2892,7 +2955,7 @@ function hydrateFromHash() {
 
 document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Escape') { closeContact(); closeModal(); }
   // Focus trap inside modal
   if (e.key === 'Tab' && document.getElementById('modal').classList.contains('open')) {
     const focusables = Array.from(document.querySelectorAll('.modal a, .modal button, .modal input:not([type="hidden"]):not([tabindex="-1"]), .modal textarea, .modal [tabindex]:not([tabindex="-1"])'))
@@ -3786,7 +3849,7 @@ function renderFooter() {
           <ul>
             <li><a href="#about" onclick="event.preventDefault(); showPage('about');">About</a></li>
             <li><a href="#faq" onclick="event.preventDefault(); showPage('faq');">FAQ &amp; Shipping</a></li>
-            <li><a href="mailto:${CONTACT_EMAIL}">Contact</a></li>
+            <li><a href="mailto:${CONTACT_EMAIL}" onclick="return openContact(event)">Contact</a></li>
             ${instagramLink}
           </ul>
         </div>
@@ -3892,8 +3955,9 @@ function wireCustomCursor() {
 function initMobileCTA() {
   const cta = document.getElementById('mobileCTA');
   if (!cta) return;
-  // mailto: with subject — same wiring as the modal CTA.
+  // mailto stays as the href (long-press, no JS); a tap opens the form.
   cta.setAttribute('href', `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Hello from sveta-colours.com')}`);
+  cta.addEventListener('click', openContact);
   let ticking = false;
   const onScroll = () => {
     if (ticking) return;
