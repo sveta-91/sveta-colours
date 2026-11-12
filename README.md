@@ -17,7 +17,7 @@ images/                          — local fallbacks for site photos served from
   sveta-portrait.jpg             — painter photo (home hero); live copy is Drive file 1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm
   og-image.jpg                   — 1200×630 link-preview picture (og:image / twitter:image): Held Summer, Where the Forest Breathes, Autumn Light on --bg
 inquiry/
-  Code.gs                        — Apps Script backend for the inquiry form (not wired yet: FORM_ENDPOINT is empty)
+  Code.gs                        — Apps Script backend for the inquiry form (deployed under sveta.colours; URL in FORM_ENDPOINT)
   README.md                      — site ↔ script contract and the one-time deploy steps
 docs/
   roadmap.md                     — image pipeline implementation roadmap
