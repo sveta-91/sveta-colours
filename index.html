@@ -2265,8 +2265,7 @@ let currentPage = 'home';
 /* ROUTING — every page has a hash URL so reload, share and Back work.
    home → no hash · paintings → #paintings (legacy #works accepted)
    collections → #collections · collection:<Name> → #collections/<slug>
-   about/faq/postcards/past → #<page>. #painting/<slug> stays the modal's
-   (old #painting/N links still resolve: see LEGACY_PAINTING_IDS).
+   about/faq/postcards/past → #<page>. #painting/<slug> stays the modal's.
    Unknown hashes (#main skip link, etc.) are ignored, never routed home. */
 const SIMPLE_ROUTES = ['recent', 'paintings', 'collections', 'postcards', 'about', 'faq', 'past'];
 
@@ -2277,32 +2276,15 @@ const SIMPLE_ROUTES = ['recent', 'paintings', 'collections', 'postcards', 'about
 function paintingSlug(p) { return (p && (p.slug || slugify(p.title))) || ''; }
 function paintingHash(p) { return '#painting/' + paintingSlug(p); }
 
-// Links shared before 2026-11-11 used the row number. Frozen here, as the rows
-// stood on that day, so those links keep opening the same painting no matter
-// how the sheet changes later. Never add to this list.
-const LEGACY_PAINTING_IDS = {
-  1: 'all-colors-of-fall', 2: 'autumn-light', 3: 'downtown', 4: 'from-under-eyelashes',
-  5: 'held-summer', 6: 'holding-on-in-winter', 7: 'lost-in-the-fog', 8: 'mistress-of-the-forest',
-  9: 'morning-coffee', 10: 'noise-and-silence', 11: 'purple-sun', 12: 'snowfall',
-  13: 'summer-hut', 14: 'waiting-for-rain', 15: 'walking-home', 16: 'where-the-forest-breathes',
-  17: 'frost-and-sun', 18: 'inner-spring', 19: 'vancouver', 20: 'sunset-in-vancouver',
-  21: 'warkworth-lilac-festival', 22: 'under-vancouver-sky'
-};
-
-// The painting a #painting/... hash points at, or null. `legacy` is true for an
-// old numeric link, so the caller can rewrite the address bar to the slug form.
+// The painting a #painting/<slug> hash points at, or null. Old numeric links
+// (#painting/10) are not supported: none were shared, and the painting list
+// stays free to change with no painting data in the code.
 function paintingFromHash(hash) {
   const m = (hash || '').match(/^#painting\/([^/?#]+)$/);
   if (!m) return null;
   let key = m[1];
   try { key = decodeURIComponent(key); } catch (e) { /* keep raw */ }
-  if (/^\d+$/.test(key)) {
-    const slug = LEGACY_PAINTING_IDS[key];
-    const p = slug ? PAINTINGS.find(x => paintingSlug(x) === slug) : PAINTINGS.find(x => x.id === +key);
-    return p ? { painting: p, legacy: true } : null;
-  }
-  const p = PAINTINGS.find(x => paintingSlug(x) === key.toLowerCase());
-  return p ? { painting: p, legacy: false } : null;
+  return PAINTINGS.find(x => paintingSlug(x) === key.toLowerCase()) || null;
 }
 
 function slugify(name) {
@@ -2881,10 +2863,9 @@ function closeModal(fromPopstate) {
 // popstate: drive the modal from the URL. If the hash resolves to a painting,
 // open it (without re-pushing); else close any open modal.
 window.addEventListener('popstate', () => {
-  const hit = paintingFromHash(window.location.hash);
-  if (hit) {
-    if (hit.legacy) rewriteLegacyHash(hit.painting);
-    openModal(hit.painting.id, { pushHistory: false });
+  const p = paintingFromHash(window.location.hash);
+  if (p) {
+    openModal(p.id, { pushHistory: false });
     return;
   }
   closeModal(true);
@@ -2892,21 +2873,11 @@ window.addEventListener('popstate', () => {
   if (page && page !== currentPage) showPage(page, { fromHistory: true });
 });
 
-// Old numeric link (#painting/10) → show the slug form in the address bar,
-// without adding a history entry.
-function rewriteLegacyHash(p) {
-  try { history.replaceState(history.state, '', window.location.pathname + window.location.search + paintingHash(p)); }
-  catch (e) { /* non-fatal */ }
-}
-
-// Direct-link arrival: if the page loads with #painting/<slug> (or an old
-// #painting/N), open that modal once paintings are available.
-// Called from loadFromSheet / the no-Sheet boot.
+// Direct-link arrival: if the page loads with #painting/<slug>, open that modal
+// once paintings are available. Called from loadFromSheet / the no-Sheet boot.
 function hydrateFromHash() {
-  const hit = paintingFromHash(window.location.hash);
-  if (!hit) return;
-  if (hit.legacy) rewriteLegacyHash(hit.painting);
-  openModal(hit.painting.id, { pushHistory: false });
+  const p = paintingFromHash(window.location.hash);
+  if (p) openModal(p.id, { pushHistory: false });
 }
 
 document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });

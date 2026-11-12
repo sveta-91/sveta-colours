@@ -339,7 +339,7 @@ and the painting modal; boot reads the hash before the first `render()`.
 | `collections` | `#collections` |
 | `collection:<Name>` | `#collections/<slug>` (`Big City` → `big-city`) |
 | `about`, `faq`, `postcards`, `past` | `#<page>` |
-| painting modal | `#painting/<slug>` — layered on top of whatever page is showing. Old `#painting/N` links resolve through the frozen `LEGACY_PAINTING_IDS` and the address bar is rewritten to the slug |
+| painting modal | `#painting/<slug>` — layered on top of whatever page is showing. Numeric `#painting/N` links are not supported (none were shared) |
 
 Traps, each one hit while building it:
 
@@ -567,9 +567,9 @@ fourth serverless piece for payments and images.
 1. **Painting identity was the sheet row number** (`id: index + 1`), so
    `#painting/10` meant "the 10th row right now" and inserting or reordering a
    row silently retargeted every shared link. **Fixed 2026-11-11:** sheet column
-   L `slug` (written once, never changed); links are `#painting/<slug>`; old
-   numeric links go through `LEGACY_PAINTING_IDS`, frozen as the rows stood
-   that day. `p.id` is still the row number but only used inside the page.
+   L `slug` (written once, never changed); links are `#painting/<slug>`. Old
+   numeric links open nothing (none had been shared), so no painting data
+   lives in the code. `p.id` is still the row number but only used inside the page.
    Still open: `push_painting.py` doesn't write the slug (the photo manager does).
 2. **Inquiry contract mismatch.** `Code.gs` says the site posts
    `Content-Type: text/plain` to avoid a CORS preflight (Apps Script can't answer
@@ -656,5 +656,5 @@ Each step ships alone, and the earlier ones are useful without the later ones.
 - `scripts/verify_site.py` and `scripts/verify_collection_order.py` still pass.
 - For each new route: `curl -s <url> | grep og:image` returns the painting's
   own image. Run it with curl, not a browser, because previews don't run JS.
-- Every legacy `#painting/N` and `#collections/x` link from before the switch
+- Every `#painting/<slug>` and `#collections/x` link from before the switch
   still lands on the same painting or collection.
