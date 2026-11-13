@@ -1,11 +1,10 @@
-/* Olga Zai, look A ("white paper"). Loaded after the shared styles. */
+/* Olga Zai, look B ("grey wall"). Loaded after the shared styles. */
 
-/* Logo: lowercase, slightly open, with a small teal dot like a drop of paint */
-nav .logo { text-transform: lowercase; letter-spacing: 0.04em; font-size: 1.55rem; }
-nav .logo span::after {
-  content: ''; display: inline-block; width: 7px; height: 7px; margin-left: 0.18em;
-  border-radius: 55% 45% 50% 50%; background: var(--accent); vertical-align: 0.12em; opacity: 0.85;
-}
+/* Logo: spaced capitals, like a name on a gallery wall */
+nav .logo { text-transform: uppercase; letter-spacing: 0.24em; font-size: 1.12rem; font-weight: 600; }
+/* Cormorant reads small: a larger home title than the shared one */
+.hero-title { font-weight: 500; font-size: clamp(2.1rem, 2.7vw, 3.1rem); }
+@media (min-width: 1800px) { .hero-title { font-size: clamp(3rem, 2.6vw, 3.9rem); } }
 
 /* Watercolors hang matted. The photo is cropped to the painted area; the
    page draws the mat: white ground, 9% margin, hairline edge.

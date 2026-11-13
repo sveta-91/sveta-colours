@@ -70,7 +70,7 @@ The bar:
 11. **The sites acknowledge each other** with one human line in each About page.
     No shared footer, no badges.
 
-## Look (prototype; Olga chooses)
+## Look (B is live in sites/olga since 2026-11-12; Olga still confirms)
 
 Both looks keep the same layout. Watercolors hang on a white mat drawn by CSS
 (white ground, 9% padding around the image, hairline edge, soft shadow).
@@ -190,7 +190,7 @@ portrait URL, alt texts, `document.title` suffix):
   returns; whether the frame is in the price). The draft is in the letter.
 - The sheet filled in by her first: title, medium, size, price, sold,
   collection, framing, description. The first version shows every row.
-- Her choice of look (A, B or a mix) and her OK on the fonts and logo.
+- Her OK on look B (now in `sites/olga`; A stays in git, commit 595ac3a), the fonts and the logo.
 - Photos taken to the guide: diffuse daylight, no glass, white balance set off
   the paper margin or a gray card, crop to the painted area.
 

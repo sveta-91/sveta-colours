@@ -1,37 +1,38 @@
 :root {
-  /* Look A, "white paper" (prototype; Olga hasn't chosen yet).
-     Contrast on --bg: --text-muted 5.28, --accent 5.38 (WCAG AA ≥ 4.5). */
-  --bg: #F8F7F4;
-  --surface: #FFFFFF;
-  --surface-alt: #EFEEEA;
-  --paper: #FFFFFF;
-  --border: #E2E0DA;
-  --border-strong: #C9C6BD;
-  --hairline: rgba(31, 35, 38, 0.12);
+  /* Look B, "grey wall" (chosen 2026-11-12; look A, "white paper", is in git
+     history: commit 595ac3a). A gallery-grey page with a madder-red accent.
+     Run scripts/check_contrast.py --site olga after any change here. */
+  --bg: #D9DCDA;
+  --surface: #E6E8E6;
+  --surface-alt: #CED2CF;
+  --paper: #F3F3F0;
+  --border: #BEC3C0;
+  --border-strong: #A2A8A5;
+  --hairline: rgba(25, 30, 30, 0.16);
 
-  --text: #1F2326;
-  --text-secondary: #444A4E;
-  --text-muted: #61686D;
-  --text-faint: #61686D;
+  --text: #1A1E1D;
+  --text-secondary: #323837;
+  --text-muted: #4A5250;
+  --text-faint: #4A5250;
 
-  /* Single accent: sea-teal */
-  --accent: #2F6F73;
-  --accent-hover: #3F858A;
-  --accent-tint: #2F6F73;
+  /* Single accent: madder */
+  --accent: #7A2E2A;
+  --accent-hover: #93403A;
+  --accent-tint: #7A2E2A;
 
   /* Surfaces built on the palette */
-  --nav-bg: rgba(248, 247, 244, 0.88);
-  --nav-menu-bg: rgba(248, 247, 244, 0.98);
-  --paper-veil: rgba(255, 255, 255, 0.92);
-  --paper-veil-strong: rgba(255, 255, 255, 0.94);
-  --overlay: rgba(31, 35, 38, 0.55);
-  --ink-bar: rgba(31, 35, 38, 0.96);
-  --placeholder: linear-gradient(160deg, #e4e6e4, #cdd1cf);
-  /* The white mat drawn around watercolors (site.css) */
-  --mat: #FFFFFF;
+  --nav-bg: rgba(217, 220, 218, 0.9);
+  --nav-menu-bg: rgba(217, 220, 218, 0.98);
+  --paper-veil: rgba(243, 243, 240, 0.92);
+  --paper-veil-strong: rgba(243, 243, 240, 0.95);
+  --overlay: rgba(26, 30, 29, 0.6);
+  --ink-bar: rgba(26, 30, 29, 0.96);
+  --placeholder: linear-gradient(160deg, #cfd3d1, #b9bfbc);
+  /* The mat drawn around watercolors (site.css): near-white on the grey wall */
+  --mat: #FBFBF8;
 
   /* Type */
   --font-display: var(--font-brand);
-  --font-body: 'Work Sans', system-ui, -apple-system, sans-serif;
-  --font-brand: 'Gilda Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'Karla', system-ui, -apple-system, sans-serif;
+  --font-brand: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
 }

@@ -13,7 +13,7 @@
     "ogImageAlt": "",
     "twitterTitle": "Olga Zai — Original Paintings",
     "twitterDescription": "Original watercolors and acrylics.",
-    "fontsHref": "https://fonts.googleapis.com/css2?family=Gilda+Display&family=Work+Sans:wght@400;500&display=swap",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Karla:wght@400;500&display=swap",
     "jsonLd": {
       "@context": "https://schema.org",
       "@type": "Person",
