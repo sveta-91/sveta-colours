@@ -22,6 +22,15 @@
      Falls back to accent. */
   --accent-tint: #1A2640;
 
+  /* Surfaces built on the palette (were literals in the shared CSS) */
+  --nav-bg: rgba(234, 230, 222, 0.86);
+  --nav-menu-bg: rgba(234, 230, 222, 0.98);
+  --paper-veil: rgba(247, 245, 239, 0.92);
+  --paper-veil-strong: rgba(247, 245, 239, 0.94);
+  --overlay: rgba(20, 19, 15, 0.55);
+  --ink-bar: rgba(20, 19, 15, 0.96);
+  --placeholder: linear-gradient(160deg, #d6cfc1, #bfb6a4);
+
   /* Type */
   --font-display: var(--font-brand); /* was Fraunces; kept as an alias */
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;

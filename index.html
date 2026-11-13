@@ -83,6 +83,15 @@
      Falls back to accent. */
   --accent-tint: #1A2640;
 
+  /* Surfaces built on the palette (were literals in the shared CSS) */
+  --nav-bg: rgba(234, 230, 222, 0.86);
+  --nav-menu-bg: rgba(234, 230, 222, 0.98);
+  --paper-veil: rgba(247, 245, 239, 0.92);
+  --paper-veil-strong: rgba(247, 245, 239, 0.94);
+  --overlay: rgba(20, 19, 15, 0.55);
+  --ink-bar: rgba(20, 19, 15, 0.96);
+  --placeholder: linear-gradient(160deg, #d6cfc1, #bfb6a4);
+
   /* Type */
   --font-display: var(--font-brand); /* was Fraunces; kept as an alias */
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
@@ -154,7 +163,10 @@ const SITE = {
     "chapterSmall": "Small works &mdash; 11 &times; 14 in",
     "worksIntro": "Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.",
     "footerTagline": "Original paintings &mdash;<br>made slowly, one at a time.",
-    "mailSubject": "Hello from sveta-colours.com"
+    "mailSubject": "Hello from sveta-colours.com",
+    "contactHeading": "<span class=\"italic\">Inquiries<\/span><br>&amp; studio visits",
+    "contactNote": "Studio visits by appointment.",
+    "footerBottom": "All works one-of-a-kind. Shipped worldwide."
   },
   "fallbackPaintings": [
     {
@@ -206,6 +218,17 @@ const SITE = {
       "heightIn": null,
       "dominantColor": ""
     }
+  ],
+  "placeholderGradients": [
+    "linear-gradient(160deg, #d6cfc1, #bfb6a4)",
+    "linear-gradient(160deg, #c8c2b3, #aea796)",
+    "linear-gradient(160deg, #ddd5c5, #c5bda9)",
+    "linear-gradient(160deg, #b8b0a0, #9c9384)",
+    "linear-gradient(160deg, #cec7b8, #b3aa97)",
+    "linear-gradient(160deg, #d4ccbd, #b8b09e)",
+    "linear-gradient(160deg, #b0a895, #918876)",
+    "linear-gradient(160deg, #c4bcab, #a89f8c)",
+    "linear-gradient(160deg, #d8d1c2, #c0b9a6)"
   ]
 };
 </script>
@@ -262,7 +285,7 @@ button { cursor: pointer; font-family: inherit; }
 /* --- Navigation --- */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(234, 230, 222, 0.86);
+  background: var(--nav-bg);
   backdrop-filter: blur(14px) saturate(1.1);
   -webkit-backdrop-filter: blur(14px) saturate(1.1);
   border-bottom: 1px solid var(--hairline);
@@ -462,7 +485,7 @@ section { padding: 6rem 2rem; }
   height: auto;
   aspect-ratio: 604 / 572;
   object-fit: cover;
-  background: var(--surface-alt, #E0DBD1);
+  background: var(--surface-alt);
 }
 /* Two sentences, one line each when the column has room; they wrap only
    when it doesn't. */
@@ -521,7 +544,7 @@ button.hero-image-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #d6cfc1, #bfb6a4);
+  background: var(--placeholder);
 }
 .hero-credit {
   font-family: var(--font-body);
@@ -794,7 +817,7 @@ button.hero-image-wrap {
 /* Picture on the left (the collection's first available painting), words
    on the right — same thumbnail rule as the rail's picture tabs. */
 .category-card { flex-direction: row; justify-content: flex-start; align-items: stretch; gap: 1.75rem; padding: 1.75rem; }
-.category-card .cat-thumb { flex: 0 0 auto; width: 128px; height: 160px; object-fit: cover; display: block; background: var(--surface-alt, #E0DBD1); }
+.category-card .cat-thumb { flex: 0 0 auto; width: 128px; height: 160px; object-fit: cover; display: block; background: var(--surface-alt); }
 .category-card .cat-text { display: flex; flex-direction: column; justify-content: space-between; gap: 0.4rem; min-width: 0; padding: 0.35rem 0; }
 @media (max-width: 480px) {
   .category-card { gap: 1.25rem; padding: 1.25rem; min-height: 0; }
@@ -1193,7 +1216,7 @@ button.hero-image-wrap {
 .modal-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(20, 19, 15, 0.55);
+  background: var(--overlay);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   overflow-y: auto;
@@ -1221,7 +1244,7 @@ button.hero-image-wrap {
 .modal-close {
   position: absolute;
   top: 0.6rem; right: 0.6rem;
-  background: rgba(247, 245, 239, 0.92);
+  background: var(--paper-veil);
   border: 1px solid var(--hairline);
   font-size: 1.4rem;
   color: var(--text-muted);
@@ -1319,9 +1342,11 @@ button.hero-image-wrap {
      single line — the natural break points around `/` and the unit caused
      the size string to wrap "cm" onto a stray second line. At very narrow
      viewports the mobile media query stacks the row so the full value
-     gets the full container width. */
-  white-space: nowrap;
+     gets the full container width. Only the size: a long medium
+     ("Watercolor on Arches cold-press, 300 lb") wraps instead of being cut. */
+  overflow-wrap: anywhere;
 }
+.modal-meta .row-size .value { white-space: nowrap; }
 
 .modal-price {
   font-family: var(--font-body);
@@ -1796,7 +1821,7 @@ footer {
     display: none;
     position: absolute;
     top: 100%; left: 0; right: 0;
-    background: rgba(234, 230, 222, 0.98);
+    background: var(--nav-menu-bg);
     backdrop-filter: blur(14px);
     flex-direction: column;
     padding: 1.5rem 2rem;
@@ -1875,7 +1900,7 @@ nav .logo {
   padding: 0.5rem 1rem;
   border-radius: 999px;
   border: none;
-  background: rgba(247, 245, 239, 0.94);
+  background: var(--paper-veil-strong);
   backdrop-filter: blur(6px);
   box-shadow: 0 2px 10px rgba(20, 19, 15, 0.08);
   pointer-events: none;
@@ -1940,7 +1965,7 @@ body.cursor-hide * { cursor: none !important; }
     justify-content: center;
     height: 56px;
     padding: 0 1.5rem;
-    background: rgba(20, 19, 15, 0.96);
+    background: var(--ink-bar);
     color: var(--paper);
     font-family: var(--font-body);
     font-style: normal;
@@ -1967,6 +1992,34 @@ body.cursor-hide * { cursor: none !important; }
   .mobile-cta { transition: none; }
 }
 
+/* --- Big screens: the gallery grows instead of floating in empty space.
+   Nothing changes below 1800px. (olgazai plan, "Big screens") --- */
+@media (min-width: 1800px) {
+  :root { --max-w: 1600px; --rail-w: 300px; }
+  .painting-card { flex-basis: 330px; }
+  .painting-card[data-orientation="landscape"] { flex-basis: 412px; }
+  .hero { max-width: 1900px; }
+  .hero-image-wrap { width: min(860px, 38vw, calc((100vh - 13rem) * var(--hero-ratio, 4/5))); }
+  .hero-portrait { width: min(340px, 16vw, 30vh); }
+  .hero-title { font-size: clamp(2.75rem, 2.4vw, 3.6rem); }
+  /* The window fits the painting: the image column is as wide as the
+     painting is at 84vh tall (from its own --ratio), so a portrait canvas
+     gets no empty bands beside it. */
+  .modal { width: fit-content; max-width: min(1480px, 100%); }
+  .modal-content { grid-template-columns: auto minmax(320px, 440px); }
+  .modal-image { width: min(1040px, calc(84vh * var(--ratio, 4/5))); min-height: 0; }
+  .modal-image img { max-height: 84vh; }
+}
+@media (min-width: 2300px) {
+  :root { --max-w: 1960px; --rail-w: 320px; }
+  html { font-size: 112.5%; }
+  .painting-card { flex-basis: 400px; }
+  .painting-card[data-orientation="landscape"] { flex-basis: 500px; }
+  .hero-image-wrap { width: min(1040px, 40vw, calc((100vh - 13rem) * var(--hero-ratio, 4/5))); }
+  .modal { max-width: min(1800px, 100%); }
+  .modal-image { width: min(1360px, calc(84vh * var(--ratio, 4/5))); }
+}
+
 /* Skip link */
 .skip-link {
   position: absolute;
@@ -1980,6 +2033,8 @@ body.cursor-hide * { cursor: none !important; }
 }
 .skip-link:focus { top: 0; }
 </style>
+<!-- SITE:CSS:BEGIN — sites/<site>/site.css: rules that override the shared styles -->
+<!-- SITE:CSS:END -->
 </head>
 <body>
 
@@ -2528,19 +2583,12 @@ function aspectRatioFor(p) {
 }
 
 function placeholderGradient(id) {
-  const grads = [
-    'linear-gradient(160deg, #d6cfc1, #bfb6a4)',
-    'linear-gradient(160deg, #c8c2b3, #aea796)',
-    'linear-gradient(160deg, #ddd5c5, #c5bda9)',
-    'linear-gradient(160deg, #b8b0a0, #9c9384)',
-    'linear-gradient(160deg, #cec7b8, #b3aa97)',
-    'linear-gradient(160deg, #d4ccbd, #b8b09e)',
-    'linear-gradient(160deg, #b0a895, #918876)',
-    'linear-gradient(160deg, #c4bcab, #a89f8c)',
-    'linear-gradient(160deg, #d8d1c2, #c0b9a6)',
-  ];
+  const grads = SITE.placeholderGradients;   // per site: sites/<name>/site.json
   return grads[id % grads.length];
 }
+
+// "watercolor" or "other", from the free-text medium; site CSS may mat watercolors.
+function mediumKind(p) { return /water/i.test((p && p.medium) || '') ? 'watercolor' : 'other'; }
 
 function paintingImage(p, opts) {
   opts = opts || {};
@@ -2622,7 +2670,7 @@ function cardHTML(p) {
     ? `Open details for ${p.title}, sold`
     : `Open details for ${p.title}${p.price ? ', ' + CURRENCY + p.price + ' ' + CURRENCY_CODE : ''}`;
   return `
-    <a class="painting-card reveal${p.sold ? ' is-sold' : ''}" href="${paintingHash(p)}" data-card-id="${p.id}"${dataSize}${dataOrient} style="grid-row: span ${span};" onclick="return cardClick(event, ${p.id});" aria-label="${aria}">
+    <a data-medium="${mediumKind(p)}" class="painting-card reveal${p.sold ? ' is-sold' : ''}" href="${paintingHash(p)}" data-card-id="${p.id}"${dataSize}${dataOrient} style="grid-row: span ${span};" onclick="return cardClick(event, ${p.id});" aria-label="${aria}">
       <div class="card-image">
         <div class="card-image-inner" style="--ratio: ${ratio};">${paintingImage(p)}</div>
       </div>
@@ -2712,7 +2760,7 @@ function openModal(id, opts) {
   if (p.certificate) extraRows.push(['Authenticity', p.certificate]);
 
   const rowsToHTML = (rows) => rows.map(([l, v]) =>
-    `<div class="row"><span class="label">${l}</span><span class="value">${v}</span></div>`
+    `<div class="row row-${l.toLowerCase()}"><span class="label">${l}</span><span class="value">${v}</span></div>`
   ).join('');
 
   const metaHTML = primaryRows.length
@@ -2761,7 +2809,7 @@ function openModal(id, opts) {
   // if CORS blocks (Google Drive sometimes does).
   document.getElementById('modalContent').innerHTML = `
     <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
-    <div class="modal-image" style="--ratio: ${modalRatio};">${paintingImage(p, { crossOrigin: true, isModal: true })}</div>
+    <div class="modal-image" data-medium="${mediumKind(p)}" style="--ratio: ${modalRatio};">${paintingImage(p, { crossOrigin: true, isModal: true })}</div>
     <div class="modal-details">
       <h2 id="modalTitle">${p.title}</h2>
       ${subMeta ? `<div class="modal-sub">${subMeta}</div>` : ''}
@@ -2953,9 +3001,10 @@ function applyAccentTint(p) {
       let r = 0, g = 0, b = 0, n = 0;
       for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; n++; }
       r = Math.round(r/n); g = Math.round(g/n); b = Math.round(b/n);
-      // Mix with bone (#EAE6DE → 234,230,222) at 55% to desaturate
+      // Mix with the page background (--bg) at 55% to desaturate
+      const [br, bg, bb] = getComputedStyle(document.body).backgroundColor.match(/\d+/g).map(Number);
       const mix = (a, b) => Math.round(a * 0.55 + b * 0.45);
-      const rm = mix(r, 234), gm = mix(g, 230), bm = mix(b, 222);
+      const rm = mix(r, br), gm = mix(g, bg), bm = mix(b, bb);
       document.documentElement.style.setProperty('--accent-tint', `rgb(${rm}, ${gm}, ${bm})`);
     } catch (e) {
       // CORS-tainted canvas — silently keep default accent
@@ -3235,10 +3284,10 @@ function renderHero() {
     : '<div class="hero-placeholder"></div>';
 
   const heroBox = heroPiece
-    ? `<button type="button" class="hero-image-wrap" style="--hero-ratio: ${heroRatio};"
+    ? `<button type="button" class="hero-image-wrap" data-medium="${mediumKind(heroPiece)}" style="--hero-ratio: ${heroRatio};"
          onclick="openModal(${heroPiece.id})"
          aria-label="Open details for ${heroPiece.title}">${heroImageHTML}</button>`
-    : `<div class="hero-image-wrap" style="--hero-ratio: ${heroRatio};">${heroImageHTML}</div>`;
+    : `<div class="hero-image-wrap" data-medium="${mediumKind(heroPiece)}" style="--hero-ratio: ${heroRatio};">${heroImageHTML}</div>`;
 
   return `
     <section class="hero" aria-label="Featured painting">
@@ -3431,11 +3480,11 @@ function renderContactSection() {
   return `
     <section class="contact" id="contact">
       <div class="contact-inner">
-        <h2><span class="italic">Inquiries</span><br>&amp; studio visits</h2>
+        <h2>${SITE.strings.contactHeading}</h2>
         <div class="contact-meta">
           ${FORM_ENDPOINT ? '<button type="button" class="contact-write" onclick="openContact(event)">Write to the studio &rarr;</button>' : ''}
           <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>
-          Studio visits by appointment.
+          ${SITE.strings.contactNote}
         </div>
       </div>
     </section>
@@ -3927,7 +3976,7 @@ function renderFooter() {
       </div>
       <div class="footer-bottom">
         <div>&copy; ${year} ${SITE.name}${studioLocation}</div>
-        <div>All works one-of-a-kind. Shipped worldwide.</div>
+        <div>${SITE.strings.footerBottom}</div>
       </div>
     </div>`;
 }

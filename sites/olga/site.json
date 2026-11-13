@@ -43,8 +43,12 @@
       "studioPhotoUrl": null
     },
     "testimonials": [],
-    "newsletter": { "serviceUrl": null },
-    "shipping": { "fromCountry": "Canada" },
+    "newsletter": {
+      "serviceUrl": null
+    },
+    "shipping": {
+      "fromCountry": "Canada"
+    },
     "contactEmail": "",
     "currency": "$",
     "currencyCode": "CAD",
@@ -67,8 +71,22 @@
       "chapterSmall": "Acrylics",
       "worksIntro": "Every painting one-of-a-kind, on paper or on canvas. Available works and pieces already in private collections.",
       "footerTagline": "Watercolors and acrylics &mdash;<br>original works on paper and canvas.",
-      "mailSubject": "Hello from olgazai.com"
+      "mailSubject": "Hello from olgazai.com",
+      "contactHeading": "Inquiries &amp; commissions",
+      "contactNote": "Paintings ship from Thornhill, Ontario.",
+      "footerBottom": "All works one-of-a-kind. Shipped worldwide."
     },
-    "fallbackPaintings": []
+    "fallbackPaintings": [],
+    "placeholderGradients": [
+      "linear-gradient(160deg, #e4e6e4, #cdd1cf)",
+      "linear-gradient(160deg, #dadedc, #c3c8c6)",
+      "linear-gradient(160deg, #e8eae8, #d3d7d5)",
+      "linear-gradient(160deg, #ced3d1, #b8bebc)",
+      "linear-gradient(160deg, #e0e3e1, #c9cecc)",
+      "linear-gradient(160deg, #e2e5e3, #ccd0ce)",
+      "linear-gradient(160deg, #c9cecc, #b1b7b5)",
+      "linear-gradient(160deg, #d6dad8, #bfc4c2)",
+      "linear-gradient(160deg, #e6e8e6, #d0d4d2)"
+    ]
   }
 }

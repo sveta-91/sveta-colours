@@ -19,6 +19,17 @@
   --accent-hover: #3F858A;
   --accent-tint: #2F6F73;
 
+  /* Surfaces built on the palette */
+  --nav-bg: rgba(248, 247, 244, 0.88);
+  --nav-menu-bg: rgba(248, 247, 244, 0.98);
+  --paper-veil: rgba(255, 255, 255, 0.92);
+  --paper-veil-strong: rgba(255, 255, 255, 0.94);
+  --overlay: rgba(31, 35, 38, 0.55);
+  --ink-bar: rgba(31, 35, 38, 0.96);
+  --placeholder: linear-gradient(160deg, #e4e6e4, #cdd1cf);
+  /* The white mat drawn around watercolors (site.css) */
+  --mat: #FFFFFF;
+
   /* Type */
   --font-display: var(--font-brand);
   --font-body: 'Work Sans', system-ui, -apple-system, sans-serif;

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Flag-driven Selenium verifier for sveta-colours.com.
+"""Flag-driven Selenium verifier for the gallery sites (--site sveta / olga).
 
 This is the *first* thing to reach for after a UI change to index.html.
 It covers the 80% case end to end:
@@ -15,7 +15,7 @@ scripts/templates/selenium_verify.py instead and hand-write it.
 
 Run it from the pipeline venv (Selenium 4 lives there):
 
-    tools/image_pipeline/.venv/bin/python scripts/verify_site.py \
+    tools/image_pipeline/.venv/bin/python scripts/verify_site.py --site sveta \
         --page paintings --dump-geometry \
         --computed-style flex-basis --computed-style=--ratio \
         --hover '.painting-card .card-image-inner' \
@@ -63,7 +63,20 @@ import urllib.request
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOCAL_INDEX = os.path.join(REPO_ROOT, "index.html")
 
-DEFAULT_URL = "https://www.sveta-colours.com/"
+SITES_DIR = os.path.join(REPO_ROOT, "sites")
+
+
+def site_url(name: str) -> str:
+    """The deployed URL of sites/<name> (head.url in its site.json)."""
+    with open(os.path.join(SITES_DIR, name, "site.json"), encoding="utf-8") as fh:
+        return json.load(fh)["head"]["url"]
+
+
+def site_local_index(name: str) -> str:
+    """What --wait-for-local compares against: the root index.html carries
+    sites/sveta; any other site is served from its build (dist/)."""
+    return LOCAL_INDEX if name == "sveta" else os.path.join(REPO_ROOT, "dist", "index.html")
+
 DEFAULT_SELECTOR = ".painting-card"
 DEFAULT_WINDOW = "1440x1800"
 SCREENSHOT_DIR = "/tmp/hover-test"
@@ -189,12 +202,12 @@ def wait_for_text(url: str, marker: str, timeout: float, out: Out) -> bool:
     return False
 
 
-def wait_for_local(url: str, timeout: float, out: Out) -> bool:
+def wait_for_local(url: str, timeout: float, out: Out, local_index: str = LOCAL_INDEX) -> bool:
     """Poll until the served page byte-matches the local index.html."""
-    if not os.path.exists(LOCAL_INDEX):
-        out.warn(f"No local index.html at {LOCAL_INDEX}")
+    if not os.path.exists(local_index):
+        out.warn(f"No local index.html at {local_index}")
         return False
-    with open(LOCAL_INDEX, "rb") as fh:
+    with open(local_index, "rb") as fh:
         want = hashlib.sha256(fh.read()).hexdigest()
     out.say(f"Polling {url} until it matches local index.html (sha256 {want[:12]}…)")
     deadline = time.time() + timeout
@@ -657,8 +670,13 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    p.add_argument("--url", default=DEFAULT_URL,
-                   help=f"site URL (default {DEFAULT_URL}); use "
+    p.add_argument("--site",
+                   choices=sorted(d for d in os.listdir(SITES_DIR)
+                                  if os.path.isfile(os.path.join(SITES_DIR, d, "site.json"))),
+                   help="which artist's site (sites/<name>); no default, so a check "
+                        "never runs against the wrong site")
+    p.add_argument("--url", default=None,
+                   help="override the site's URL from sites/<site>/site.json, e.g. "
                         "http://localhost:8000/ with scripts/dev.sh")
     p.add_argument("--page", default=None,
                    help="page to navigate to via showPage() — see list below")
@@ -734,6 +752,10 @@ def main(argv=None) -> int:
         out.say(f"aliases: {PAGE_ALIASES}")
         return 0
 
+    if not args.site:
+        build_parser().error("--site is required (sveta, olga, …); there is no default")
+    args.url = args.url or site_url(args.site)
+
     if args.wait_for_deploy:
         out.warn(
             "--wait-for-deploy SHA is not implementable: GitHub Pages serves no "
@@ -747,7 +769,7 @@ def main(argv=None) -> int:
     favicon_guard(args, out)
     page = resolve_page(args.page, out) if args.page else None
 
-    if args.wait_for_local and not wait_for_local(args.url, args.deploy_timeout, out):
+    if args.wait_for_local and not wait_for_local(args.url, args.deploy_timeout, out, site_local_index(args.site)):
         return 4
     if args.wait_for_text and not wait_for_text(
         args.url, args.wait_for_text, args.deploy_timeout, out

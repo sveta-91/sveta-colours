@@ -1,6 +1,6 @@
 # olgazai.com: second gallery site plan
 
-Status: **Phase 1 done and live; Phase 2 built and tested locally** (2026-11-12).
+Status: **Phases 1 and 3 done and live; Phase 2 built and tested locally** (2026-11-12).
 olgazai.com waits on Olga's Cloudflare invite and her links (see `sites/README.md`).
 Source: brainstorm panel of 2026-11-12 (log: `.claude/brainstorm-panel/log.md`),
 then a working prototype of both proposed looks, checked with Selenium at
@@ -122,7 +122,13 @@ prototype adds two steps, and nothing changes below 1800 px:
 ```
 
 Result at 2560 px: grid 1,960 px with 4 columns, home painting 1,024 px, modal
-picture 1,360 px, no horizontal scroll. This goes into the shared code, so
+picture 1,360 px, no horizontal scroll.
+
+As built (Phase 3), the painting window differs from the block above: the
+prototype only had landscape watercolors, and on Sveta's portrait canvases the
+wide image column left empty bands. The image column now takes its width from
+the painting (`min(1040px, 84vh × --ratio)`, 1360px from 2300px) and the window
+shrinks to fit. This goes into the shared code, so
 Sveta's site gets it too. Check the masonry and the "same canvas, same scale"
 rule (playbook) on Sveta's site before merging.
 
@@ -158,7 +164,7 @@ portrait URL, alt texts, `document.title` suffix):
 | 0 | Olga's checklist (below), in parallel | — |
 | 1 ✓ | Zero-visual-diff move of all artist values into the SITE block; Selenium + computed-CSS proof; commit + push | 5–7 h |
 | 2 (code ✓; Cloudflare waits for Olga) | `sites/{sveta,olga}/`, `build_site.py`, Cloudflare Pages project, olgazai.com DNS; per-site chapters (`chapterBy`) and an optional portrait came along; first version shows every painting Olga has entered in her sheet (test the setup on one 11×15 watercolor first) | 3–4 h |
-| 3 | Olga's theme, strings and mat variant; per-site chapters; big-screen rules; contrast-check script (AA 4.5 text, 3:1 focus ring); `verify_site.py --site`; white-image card-edge test at 360 px | 6–7 h |
+| 3 ✓ | Olga's theme, strings and mat variant; per-site chapters; big-screen rules; contrast-check script (AA 4.5 text, 3:1 focus ring); `verify_site.py --site`; white-image card-edge test at 360 px | 6–7 h |
 | 4 | `--site` in `push_painting.py`, audit and verify scripts, the publish skill; photo manager `?site=`; watermark "© olgazai"; neutral AI prompt | 3–4 h |
 | **v1** | | **17–22 h** |
 | 5 | After Olga has 5 paintings: `olga-writing` skill, og-image and JSON-LD polish, collection covers, `health_check.py` for both sites, Worker keyed by hostname, Olga publishing on her own | later |

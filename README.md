@@ -19,7 +19,7 @@ images/                          — local fallbacks for site photos served from
 sites/                           — one folder per artist; build_site.py renders index.html's SITE block from it
   README.md                      — fields, commands, Cloudflare Pages setup for olgazai.com
   sveta/                         — site.json (head + SITE object) and theme.css (tokens); root index.html carries it
-  olga/                          — olgazai.com: site.json, theme.css, texts/ (placeholders + drafted FAQ terms), images/
+  olga/                          — olgazai.com: site.json, theme.css, site.css (logo, watercolor mats), texts/ (placeholders + drafted FAQ terms), images/
 inquiry/
   Code.gs                        — Apps Script backend for the inquiry form (deployed under sveta.colours; URL in site.json formEndpoint)
   README.md                      — site ↔ script contract and the one-time deploy steps
@@ -35,7 +35,8 @@ docs/
 scripts/
   audit_gallery.py               — read-only pre-deploy audit of the gallery sheet data
   build_site.py                  — render a site's SITE block: `sveta --root` (root index.html), `olga` (→ dist/), `--check`
-  verify_site.py                 — parameterized Selenium UI verification
+  check_contrast.py              — WCAG check of a site's theme tokens (`--site`): text 4.5:1, focus ring 3:1
+  verify_site.py                 — parameterized Selenium UI verification (`--site` required)
   verify_collection_order.py     — Selenium check: collection order + button pictures vs the sheet rules
   dev.sh                         — start the local static server for the photo manager
   templates/                     — reusable Selenium verify templates

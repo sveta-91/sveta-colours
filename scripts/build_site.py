@@ -4,13 +4,16 @@
 index.html is shared code plus one block between <!-- SITE:BEGIN --> and
 <!-- SITE:END --> that holds everything belonging to one artist. The block is
 rendered from sites/<name>/site.json (head tags + the SITE object) and
-sites/<name>/theme.css (colour and font tokens).
+sites/<name>/theme.css (colour and font tokens). An optional
+sites/<name>/site.css goes into a second slot after the shared <style>
+(<!-- SITE:CSS:BEGIN --> … <!-- SITE:CSS:END -->) for rules that override it.
 
   build_site.py sveta --root      rewrite the block in the root index.html
                                   (GitHub Pages serves the root as is)
   build_site.py olga              write dist/ for Cloudflare Pages
   build_site.py olga --strict     the same, but fail while a required link
-                                  is still empty (the Cloudflare build uses this)
+                                  is still empty or the theme fails
+                                  scripts/check_contrast.py (Cloudflare uses this)
   build_site.py --check           fail if the root block is not what
                                   sites/sveta renders (run before committing)
 
@@ -25,6 +28,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 BEGIN, END = '<!-- SITE:BEGIN', '<!-- SITE:END -->'
+# Second slot, after the shared <style>: site.css rules that must win over it.
+CSS_BEGIN, CSS_END = '<!-- SITE:CSS:BEGIN', '<!-- SITE:CSS:END -->'
 ROOT_SITE = 'sveta'          # the site the root index.html carries
 # A real deploy needs these; an empty one means the artist hasn't sent it yet.
 REQUIRED = ['contactEmail', 'sheetCsvUrl', 'formEndpoint']
@@ -113,6 +118,19 @@ def swap_block(page, block):
     return page[:i] + block + page[j + len(END) + 1:]
 
 
+def swap_css(page, css):
+    i = page.index(CSS_BEGIN)
+    j = page.index(CSS_END) + len(CSS_END)
+    head = page[i:page.index('-->', i) + 3]          # keep the marker line as is
+    body = f'\n<style id="site-css">\n{css.rstrip()}\n</style>' if css.strip() else ''
+    return page[:i] + head + body + '\n' + CSS_END + page[j:]
+
+
+def render_page(shared, cfg, theme, css):
+    page = swap_css(swap_block(shared, render_block(cfg, theme)), css)
+    return fill_static(page, cfg['site'])
+
+
 def fill_static(page, site):
     """Put SITE values into the static HTML that carries data-site-* markers,
     so crawlers and no-JS readers see this artist's text too."""
@@ -130,7 +148,8 @@ def fill_static(page, site):
 def load(name):
     d = REPO / 'sites' / name
     cfg = json.loads((d / 'site.json').read_text())
-    return cfg, (d / 'theme.css').read_text(), d
+    css = (d / 'site.css').read_text() if (d / 'site.css').exists() else ''
+    return cfg, (d / 'theme.css').read_text(), css
 
 
 def missing(cfg):
@@ -151,8 +170,8 @@ def main():
     shared = (REPO / 'index.html').read_text()
 
     if args.check:
-        cfg, theme, _ = load(ROOT_SITE)
-        want = fill_static(swap_block(shared, render_block(cfg, theme)), cfg['site'])
+        cfg, theme, css = load(ROOT_SITE)
+        want = render_page(shared, cfg, theme, css)
         if want != shared:
             sys.exit(f'index.html block differs from sites/{ROOT_SITE}: run scripts/build_site.py {ROOT_SITE} --root')
         print(f'ok: index.html carries sites/{ROOT_SITE}')
@@ -162,18 +181,27 @@ def main():
         ap.error('name the site (sveta, olga, …); there is no default')
     if not (REPO / 'sites' / args.site / 'site.json').exists():
         ap.error(f'no sites/{args.site}/site.json')
-    cfg, theme, src = load(args.site)
+    cfg, theme, css = load(args.site)
 
     if args.root:
         if args.site != ROOT_SITE:
             ap.error(f'only sites/{ROOT_SITE} goes into the root index.html')
-        (REPO / 'index.html').write_text(fill_static(swap_block(shared, render_block(cfg, theme)), cfg['site']))
+        (REPO / 'index.html').write_text(render_page(shared, cfg, theme, css))
         print(f'index.html block rewritten from sites/{ROOT_SITE}')
         return
 
     out = Path(args.out)
+    if args.dev_csv and not Path(args.dev_csv).is_file():
+        ap.error(f'--dev-csv: no file {args.dev_csv}')
     if args.dev_csv:
         cfg['site']['sheetCsvUrl'] = 'data/paintings.csv'
+    if args.strict:
+        # The theme must pass the contrast check before it can deploy.
+        import subprocess
+        r = subprocess.run([sys.executable, str(REPO / 'scripts' / 'check_contrast.py'), '--site', args.site],
+                           capture_output=True, text=True)
+        if r.returncode:
+            sys.exit('refusing to build: contrast check failed\n' + r.stdout)
     gaps = missing(cfg)
     if gaps:
         msg = f'sites/{args.site}: still empty: {", ".join(gaps)}'
@@ -181,7 +209,7 @@ def main():
             sys.exit('refusing to build: ' + msg)
         print('warning: ' + msg)
 
-    page = fill_static(swap_block(shared, render_block(cfg, theme)), cfg['site'])
+    page = render_page(shared, cfg, theme, css)
     if args.site != ROOT_SITE:
         # Source notes in HTML comments are the root artist's working notes;
         # another artist's page source shouldn't carry them.

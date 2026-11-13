@@ -20,9 +20,18 @@ One folder per artist. `index.html` is shared code plus one generated block
     currency, `formEndpoint`, `sheetCsvUrl`, `textDocs` (published Google Docs),
     `heroPinTitle` / `featuredTitles` (safety nets when the sheet's `hero` / `recent`
     are empty), `chapterBy` (`size` or `medium` for the All paintings chapters),
-    `portrait` (null → none), `strings` (the artist's own short wording),
+    `portrait` (null → none), `placeholderGradients` (card backgrounds before an
+    image loads), `strings` (the artist's own short wording),
     `fallbackPaintings` (shown only when the sheet can't be read).
-- **`theme.css`**: the `:root` colour and font tokens.
+- **`theme.css`**: the `:root` colour and font tokens, including the surfaces
+  built on the palette (`--nav-bg`, `--nav-menu-bg`, `--paper-veil`,
+  `--paper-veil-strong`, `--overlay`, `--ink-bar`, `--placeholder`). Check with
+  `python3 scripts/check_contrast.py --site <name>` (AA 4.5 for text, 3:1 for the
+  focus ring); `--strict` builds run it too.
+- **`site.css`** (optional): rules that must override the shared styles, put
+  after them (`<!-- SITE:CSS:BEGIN -->`). Olga's logo and watercolor mats live
+  here, keyed by `data-medium="watercolor" | "other"` on cards, the home
+  painting and the painting window.
 - **`texts/`** (Olga): backup copies of the long texts, `[label]` format as in the root `texts/`.
 - **`images/`** (Olga): portrait fallback and og image, once she sends them.
 

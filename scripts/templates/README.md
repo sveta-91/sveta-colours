@@ -28,22 +28,22 @@ twice, that's a sign it should become a flag on `verify_site.py` instead.
 V=tools/image_pipeline/.venv/bin/python
 
 # what's on the /works page right now?
-$V scripts/verify_site.py --page paintings --dump-geometry
+$V scripts/verify_site.py --site sveta --page paintings --dump-geometry
 
 # wait out the GitHub Pages lag after a push, then measure
-$V scripts/verify_site.py --wait-for-local --page paintings --dump-geometry
+$V scripts/verify_site.py --site sveta --wait-for-local --page paintings --dump-geometry
 
 # prove a hover rule actually fired (before/after diff + two screenshots)
-$V scripts/verify_site.py --page paintings \
+$V scripts/verify_site.py --site sveta --page paintings \
     --selector '.painting-card' --computed-style transform \
     --hover '.painting-card .card-image-inner' --screenshot card-hover
 
 # read a custom property (note the `=`, or argparse eats the dashes)
-$V scripts/verify_site.py --page paintings \
+$V scripts/verify_site.py --site sveta --page paintings \
     --selector '.card-image-inner' --computed-style=--ratio
 
 # against the local server from scripts/dev.sh
-$V scripts/verify_site.py --url http://localhost:8000/ --page about \
+$V scripts/verify_site.py --site sveta --url http://localhost:8000/ --page about \
     --selector '.about-full p' --computed-style font-size --dump-geometry
 ```
 

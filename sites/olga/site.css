@@ -1,0 +1,33 @@
+/* Olga Zai, look A ("white paper"). Loaded after the shared styles. */
+
+/* Logo: lowercase, slightly open, with a small teal dot like a drop of paint */
+nav .logo { text-transform: lowercase; letter-spacing: 0.04em; font-size: 1.55rem; }
+nav .logo span::after {
+  content: ''; display: inline-block; width: 7px; height: 7px; margin-left: 0.18em;
+  border-radius: 55% 45% 50% 50%; background: var(--accent); vertical-align: 0.12em; opacity: 0.85;
+}
+
+/* Watercolors hang matted. The photo is cropped to the painted area; the
+   page draws the mat: white ground, 9% margin, hairline edge.
+   The edge is drawn INSIDE the card (::after): .card-image clips anything
+   outside, and without it a white painting on its white mat would melt
+   into the light page (tested at 360px with a pure white image). */
+.painting-card[data-medium="watercolor"] .card-image-inner { background: var(--mat); }
+.painting-card[data-medium="watercolor"] .card-image img { padding: 9%; background: var(--mat); }
+.painting-card .card-image-inner::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+/* Acrylics: a slightly stronger edge, no mat */
+.painting-card[data-medium="other"] .card-image-inner::after {
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+.painting-card .card-image { border-bottom: 0; }
+
+.hero-image-wrap[data-medium="watercolor"] {
+  background: var(--mat);
+  box-shadow: 0 0 0 1px var(--border), 0 14px 40px rgba(31, 35, 38, .09);
+}
+.hero-image-wrap[data-medium="watercolor"] img { padding: 7%; background: var(--mat); }
+.modal-image[data-medium="watercolor"] { background: var(--mat); }
+.modal-image[data-medium="watercolor"] img { padding: 5%; }
