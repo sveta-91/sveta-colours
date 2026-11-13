@@ -5,19 +5,23 @@ Personal art portfolio site + local image-processing tooling for Sveta.
 ## Layout
 
 ```
-index.html                       — main portfolio page (editorial gallery)
+index.html                       — main portfolio page (editorial gallery); shared code + Sveta's generated SITE block
 favicon.ico                      — root favicon (legacy auto-request)
 CNAME                            — custom domain for GitHub Pages
 icons/                           — favicon assets (SVG + multi-size PNG)
-texts/                           — backup copies of the long site texts ([label] blocks); the live source is 3 published Google Docs (TEXT_DOCS)
+texts/                           — backup copies of the long site texts ([label] blocks); the live source is 3 published Google Docs (SITE.textDocs)
   home.txt                       — [headline], [under headline], [from the studio], [on painting]
   about.txt                      — [about] paragraphs
   faq.txt                        — [question]/[answer] pairs, in page order
 images/                          — local fallbacks for site photos served from Drive
   sveta-portrait.jpg             — painter photo (home hero); live copy is Drive file 1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm
   og-image.jpg                   — 1200×630 link-preview picture (og:image / twitter:image): Held Summer, Where the Forest Breathes, Autumn Light on --bg
+sites/                           — one folder per artist; build_site.py renders index.html's SITE block from it
+  README.md                      — fields, commands, Cloudflare Pages setup for olgazai.com
+  sveta/                         — site.json (head + SITE object) and theme.css (tokens); root index.html carries it
+  olga/                          — olgazai.com: site.json, theme.css, texts/ (placeholders + drafted FAQ terms), images/
 inquiry/
-  Code.gs                        — Apps Script backend for the inquiry form (deployed under sveta.colours; URL in FORM_ENDPOINT)
+  Code.gs                        — Apps Script backend for the inquiry form (deployed under sveta.colours; URL in site.json formEndpoint)
   README.md                      — site ↔ script contract and the one-time deploy steps
 docs/
   roadmap.md                     — image pipeline implementation roadmap
@@ -30,6 +34,7 @@ docs/
   superpowers/                   — design/spec docs and rewrite plans
 scripts/
   audit_gallery.py               — read-only pre-deploy audit of the gallery sheet data
+  build_site.py                  — render a site's SITE block: `sveta --root` (root index.html), `olga` (→ dist/), `--check`
   verify_site.py                 — parameterized Selenium UI verification
   verify_collection_order.py     — Selenium check: collection order + button pictures vs the sheet rules
   dev.sh                         — start the local static server for the photo manager

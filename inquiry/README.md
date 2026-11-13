@@ -39,7 +39,8 @@ either way.
    - Execute as: **Me**
    - Who has access: **Anyone**
    **Deploy**, then copy the **Web app URL** (ends in `/exec`).
-6. Put that URL into `FORM_ENDPOINT` in `index.html`, commit, push.
+6. Put that URL into `formEndpoint` in `sites/<site>/site.json`; for Sveta run
+   `python3 scripts/build_site.py sveta --root`. Commit, push.
 
 Check: opening the `/exec` URL in a browser shows
 `{"ok":true,"service":"sveta-colours inquiry"}`.

@@ -6,9 +6,9 @@
 <!-- SITE:BEGIN ===========================================================
      Everything that belongs to one artist lives between these markers:
      identity meta, fonts, theme tokens and the SITE object. The rest of
-     the page is shared code. scripts/build_site.py <site> replaces this
-     block from sites/<site>/; this file keeps Sveta's values, so GitHub
-     Pages still serves it as is, with no build step.
+     the page is shared code. Do not edit this block by hand: it is
+     rendered from sites/<site>/ by scripts/build_site.py (the root
+     index.html carries sites/sveta, so GitHub Pages needs no build).
      ===================================================================== -->
 <title>Sveta Colours — Original Paintings</title>
 
@@ -23,8 +23,7 @@
 <meta property="og:url" content="https://www.sveta-colours.com/">
 <meta property="og:site_name" content="Sveta Colours">
 <link rel="canonical" href="https://www.sveta-colours.com/">
-<!-- Static on purpose: messenger and social crawlers don't run JS.
-     images/og-image.jpg is 1200×630, three paintings on the site's --bg. -->
+<!-- Static on purpose: messenger and social crawlers don't run JS. -->
 <meta property="og:image" content="https://www.sveta-colours.com/images/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -41,7 +40,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
 
-<!-- Fonts: Fraunces (variable, optical sizing) + Inter -->
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&display=swap">
@@ -98,113 +97,114 @@
 
 <script>
 const SITE = {
-  name: "Sveta Colours",                 // logo, footer, tab titles
-  domain: "sveta-colours.com",
-  artist: {
-    name: "Sveta",
-    location: "Thornhill, Ontario, Canada",        // e.g. "Toronto, Canada" — appears in Footer (home "From the studio" text is in texts/home.txt)
-    yearsPracticing: 8, // e.g. 8                  — not shown; the years are written in texts/home.txt
-    schooling: "self-taught",       // e.g. "self-taught"      — appears in About full
-    influences: null,      // e.g. "Lois Dodd, Vuillard, Peter Doig" — About full
-    exhibitions: [],       // [{year:2024, title:"Group show", venue:"Gallery X", city:"Berlin"}]
-    instagram: null,       // e.g. "https://instagram.com/sveta.colours"
-    studioPhotoUrl: "https://drive.google.com/file/d/1zgwCypofyOuySa-O4QKiIck-3AXysKw9/view?usp=drive_link"   // e.g. "/studio.jpg" — used by Process section
+  "name": "Sveta Colours",
+  "domain": "sveta-colours.com",
+  "artist": {
+    "name": "Sveta",
+    "location": "Thornhill, Ontario, Canada",
+    "yearsPracticing": 8,
+    "schooling": "self-taught",
+    "influences": null,
+    "exhibitions": [],
+    "instagram": null,
+    "studioPhotoUrl": "https://drive.google.com/file/d/1zgwCypofyOuySa-O4QKiIck-3AXysKw9/view?usp=drive_link"
   },
-  testimonials: [],        // [{quote, name, city, year}] — start EMPTY, no fake data.
-  newsletter: {
-    serviceUrl: null       // e.g. Buttondown / Mailchimp form action URL.
-                           // If null → form is hidden everywhere (no alert).
+  "testimonials": [],
+  "newsletter": {
+    "serviceUrl": null
   },
-  shipping: {
-    fromCountry: "Canada"      // e.g. "Canada" — not shown; the FAQ answer text is in texts/faq.txt
+  "shipping": {
+    "fromCountry": "Canada"
   },
-  contactEmail: "sveta.colours@gmail.com",
-  currency: "$",
-  // Prices in the sheet are Canadian dollars (playbook).
-  currencyCode: "CAD",
-  formEndpoint: "https://script.google.com/macros/s/AKfycbwR1BEbGz6-hrPNqPA58dHhwz9IYgVO7UyKwoqh7YE6r8hxZHpM4MM7jpEkgNxgMZr_/exec",
-  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv",
-  // The long texts: published Google Docs; texts/ is the backup.
-  textDocs: {
-    home:  'https://docs.google.com/document/d/e/2PACX-1vQJB9Itmyifx3EQ87SFrNYlPOEKNSEBd-gklsTlaA7zea5iF4iVa-3RFKEA2z7b_KW4e4KvSCdOxyjI/pub',
-    about: 'https://docs.google.com/document/d/e/2PACX-1vQCN_-haahrm03cy6o-F4WZdTSHQqwDYJsTq_pxMCu57mScljGm_ZaZ7L1kRU9pptMjdFebGhONF6TC/pub',
-    faq:   'https://docs.google.com/document/d/e/2PACX-1vR8NnB4A1Qf5DPfNK7i0D4Rr_OtxZ7PpHX0MVeAt17kbO7dHxKNqwuTSaJtWTAbfQvEJxG8zXUs8Uq3/pub',
+  "contactEmail": "sveta.colours@gmail.com",
+  "currency": "$",
+  "currencyCode": "CAD",
+  "formEndpoint": "https://script.google.com/macros/s/AKfycbwR1BEbGz6-hrPNqPA58dHhwz9IYgVO7UyKwoqh7YE6r8hxZHpM4MM7jpEkgNxgMZr_/exec",
+  "sheetCsvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv",
+  "textDocs": {
+    "home": "https://docs.google.com/document/d/e/2PACX-1vQJB9Itmyifx3EQ87SFrNYlPOEKNSEBd-gklsTlaA7zea5iF4iVa-3RFKEA2z7b_KW4e4KvSCdOxyjI/pub",
+    "about": "https://docs.google.com/document/d/e/2PACX-1vQCN_-haahrm03cy6o-F4WZdTSHQqwDYJsTq_pxMCu57mScljGm_ZaZ7L1kRU9pptMjdFebGhONF6TC/pub",
+    "faq": "https://docs.google.com/document/d/e/2PACX-1vR8NnB4A1Qf5DPfNK7i0D4Rr_OtxZ7PpHX0MVeAt17kbO7dHxKNqwuTSaJtWTAbfQvEJxG8zXUs8Uq3/pub"
   },
-  // Safety nets when the sheet's `hero` / `recent` columns are empty.
-  heroPinTitle: "Held Summer",
-  featuredTitles: [
-    'Where the Forest Breathes',
-    'Autumn Light',
-    'Morning Coffee',
-    'Walking Home',
-    'Frost and Sun',
+  "heroPinTitle": "Held Summer",
+  "featuredTitles": [
+    "Where the Forest Breathes",
+    "Autumn Light",
+    "Morning Coffee",
+    "Walking Home",
+    "Frost and Sun"
   ],
-  portrait: {
-    src: "https://lh3.googleusercontent.com/d/1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm=w600",
-    fallback: "images/sveta-portrait.jpg",
-    alt: "Sveta, the painter",
-    width: 604, height: 572
+  "chapterBy": "size",
+  "portrait": {
+    "src": "https://lh3.googleusercontent.com/d/1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm=w600",
+    "fallback": "images/sveta-portrait.jpg",
+    "alt": "Sveta, the painter",
+    "width": 604,
+    "height": 572
   },
-  // Short copy that is this artist's own wording.
-  strings: {
-    logoLabel: "Sveta Colours — home",
-    navNote: "Original paintings<br>Thornhill, Ontario",
-    shippingNote: "Shipping quoted to your address. Insured, from Canada.",
-    replyNote: "Replies within a day or two.",
-    replyWhen: "within a day or two",
-    contactLede: "A question, a commission, a studio visit. I usually answer within a day or two.",
-    studioAlt: "Inside Sveta's studio",
-    chapterLarge: "Large works &mdash; 16 &times; 20 in",
-    chapterSmall: "Small works &mdash; 11 &times; 14 in",
-    worksIntro: "Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.",
-    footerTagline: "Original paintings &mdash;<br>made slowly, one at a time.",
-    mailSubject: "Hello from sveta-colours.com"
+  "strings": {
+    "logoLabel": "Sveta Colours — home",
+    "navNote": "Original paintings<br>Thornhill, Ontario",
+    "shippingNote": "Shipping quoted to your address. Insured, from Canada.",
+    "replyNote": "Replies within a day or two.",
+    "replyWhen": "within a day or two",
+    "contactLede": "A question, a commission, a studio visit. I usually answer within a day or two.",
+    "studioAlt": "Inside Sveta's studio",
+    "chapterLarge": "Large works &mdash; 16 &times; 20 in",
+    "chapterSmall": "Small works &mdash; 11 &times; 14 in",
+    "worksIntro": "Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.",
+    "footerTagline": "Original paintings &mdash;<br>made slowly, one at a time.",
+    "mailSubject": "Hello from sveta-colours.com"
   },
-  // Shown only when the sheet can't be read.
-  fallbackPaintings: [
+  "fallbackPaintings": [
     {
-      id: 1,
-      title: "Holding On in Winter",
-      medium: "acrylic",
-      price: 500,
-      sold: false,
-      size: "16 x 20 in",
-      image: "",
-      description: "A family stands as a point of warmth and color against towering high-rises and the cold air.",
-      collections: ["Seasons", "City"],
-      available: true,
-      featured: true,
-      year: "",
-      surface: "",
-      signed: "",
-      framed: "",
-      shippingFrom: "",
-      certificate: "",
-      widthIn: null,
-      heightIn: null,
-      dominantColor: ""
+      "id": 1,
+      "title": "Holding On in Winter",
+      "medium": "acrylic",
+      "price": 500,
+      "sold": false,
+      "size": "16 x 20 in",
+      "image": "",
+      "description": "A family stands as a point of warmth and color against towering high-rises and the cold air.",
+      "collections": [
+        "Seasons",
+        "City"
+      ],
+      "available": true,
+      "featured": true,
+      "year": "",
+      "surface": "",
+      "signed": "",
+      "framed": "",
+      "shippingFrom": "",
+      "certificate": "",
+      "widthIn": null,
+      "heightIn": null,
+      "dominantColor": ""
     },
     {
-      id: 2,
-      title: "Small Rain",
-      medium: "watercolor",
-      price: 120,
-      sold: false,
-      size: "5 x 7 in",
-      image: "",
-      description: "A small watercolor — drizzle on a windowpane, late afternoon light.",
-      collections: ["Postcards"],
-      available: true,
-      featured: false,
-      year: "",
-      surface: "paper",
-      signed: "",
-      framed: "",
-      shippingFrom: "",
-      certificate: "",
-      widthIn: null,
-      heightIn: null,
-      dominantColor: ""
+      "id": 2,
+      "title": "Small Rain",
+      "medium": "watercolor",
+      "price": 120,
+      "sold": false,
+      "size": "5 x 7 in",
+      "image": "",
+      "description": "A small watercolor — drizzle on a windowpane, late afternoon light.",
+      "collections": [
+        "Postcards"
+      ],
+      "available": true,
+      "featured": false,
+      "year": "",
+      "surface": "paper",
+      "signed": "",
+      "framed": "",
+      "shippingFrom": "",
+      "certificate": "",
+      "widthIn": null,
+      "heightIn": null,
+      "dominantColor": ""
     }
   ]
 };
@@ -3243,7 +3243,7 @@ function renderHero() {
   return `
     <section class="hero" aria-label="Featured painting">
       <div class="hero-text">
-        <img class="hero-portrait" src="${SITE.portrait.src}" onerror="this.onerror=null; this.src='${SITE.portrait.fallback}'" alt="${SITE.portrait.alt}" width="${SITE.portrait.width}" height="${SITE.portrait.height}" fetchpriority="high">
+        ${SITE.portrait ? `<img class="hero-portrait" src="${SITE.portrait.src}" onerror="this.onerror=null; this.src='${SITE.portrait.fallback}'" alt="${SITE.portrait.alt}" width="${SITE.portrait.width}" height="${SITE.portrait.height}" fetchpriority="high">` : ''}
         ${textBlock('home', 'headline') ? `<h1 class="hero-title">${textLines(textBlock('home', 'headline'))}</h1>` : ''}
         ${textBlock('home', 'under headline') ? `<p class="hero-lede">${textBlock('home', 'under headline').split('\n').map(l => l.trim()).filter(Boolean).map(l => `<span>${escText(l)}</span>`).join(' ')}</p>` : ''}
         ${creditStat ? `<p class="hero-stat">${creditStat}</p>` : ''}
@@ -3448,7 +3448,11 @@ function renderContactSection() {
 // `area` is in square inches; anything ≥ 300 sq in is treated as "large"
 // (16×20 = 320; 11×14 = 154). Falls back to a single chapter when paintings
 // don't carry dimensions yet.
+// All paintings chapters: by canvas size (SITE.chapterBy "size": Sveta's
+// 16×20 / 11×14) or by medium ("medium": watercolors first, then the rest).
+// The chapter titles are SITE.strings.chapterLarge / chapterSmall.
 function sizeChapterFor(p) {
+  if (SITE.chapterBy === 'medium') return /water/i.test(p.medium || '') ? 'large' : 'small';
   if (!p.widthIn || !p.heightIn) return 'unknown';
   return (p.widthIn * p.heightIn) >= 300 ? 'large' : 'small';
 }

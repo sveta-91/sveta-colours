@@ -1,6 +1,7 @@
 # olgazai.com: second gallery site plan
 
-Status: **planned, not started** (written 2026-11-12). Nothing here is live.
+Status: **Phase 1 done and live; Phase 2 built and tested locally** (2026-11-12).
+olgazai.com waits on Olga's Cloudflare invite and her links (see `sites/README.md`).
 Source: brainstorm panel of 2026-11-12 (log: `.claude/brainstorm-panel/log.md`),
 then a working prototype of both proposed looks, checked with Selenium at
 390 / 1440 / 1920 / 2560 px.
@@ -155,8 +156,8 @@ portrait URL, alt texts, `document.title` suffix):
 | Phase | Work | Estimate |
 |---|---|---|
 | 0 | Olga's checklist (below), in parallel | — |
-| 1 | Zero-visual-diff move of all artist values into the SITE block; Selenium + computed-CSS proof; commit + push | 5–7 h |
-| 2 | `sites/{sveta,olga}/`, `build_site.py`, Cloudflare Pages project, olgazai.com DNS; first version shows every painting Olga has entered in her sheet (test the setup on one 11×15 watercolor first) | 3–4 h |
+| 1 ✓ | Zero-visual-diff move of all artist values into the SITE block; Selenium + computed-CSS proof; commit + push | 5–7 h |
+| 2 (code ✓; Cloudflare waits for Olga) | `sites/{sveta,olga}/`, `build_site.py`, Cloudflare Pages project, olgazai.com DNS; per-site chapters (`chapterBy`) and an optional portrait came along; first version shows every painting Olga has entered in her sheet (test the setup on one 11×15 watercolor first) | 3–4 h |
 | 3 | Olga's theme, strings and mat variant; per-site chapters; big-screen rules; contrast-check script (AA 4.5 text, 3:1 focus ring); `verify_site.py --site`; white-image card-edge test at 360 px | 6–7 h |
 | 4 | `--site` in `push_painting.py`, audit and verify scripts, the publish skill; photo manager `?site=`; watermark "© olgazai"; neutral AI prompt | 3–4 h |
 | **v1** | | **17–22 h** |

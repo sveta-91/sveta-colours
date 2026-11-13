@@ -1,0 +1,26 @@
+:root {
+  /* Look A, "white paper" (prototype; Olga hasn't chosen yet).
+     Contrast on --bg: --text-muted 5.28, --accent 5.38 (WCAG AA ≥ 4.5). */
+  --bg: #F8F7F4;
+  --surface: #FFFFFF;
+  --surface-alt: #EFEEEA;
+  --paper: #FFFFFF;
+  --border: #E2E0DA;
+  --border-strong: #C9C6BD;
+  --hairline: rgba(31, 35, 38, 0.12);
+
+  --text: #1F2326;
+  --text-secondary: #444A4E;
+  --text-muted: #61686D;
+  --text-faint: #61686D;
+
+  /* Single accent: sea-teal */
+  --accent: #2F6F73;
+  --accent-hover: #3F858A;
+  --accent-tint: #2F6F73;
+
+  /* Type */
+  --font-display: var(--font-brand);
+  --font-body: 'Work Sans', system-ui, -apple-system, sans-serif;
+  --font-brand: 'Gilda Display', Georgia, 'Times New Roman', serif;
+}

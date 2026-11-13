@@ -1,0 +1,144 @@
+{
+  "head": {
+    "title": "Sveta Colours — Original Paintings",
+    "description": "Original acrylic paintings by Sveta — landscapes, light, quiet places. One-of-a-kind works on canvas, shipped worldwide.",
+    "author": "Sveta",
+    "ogTitle": "Sveta Colours — Original Paintings",
+    "ogDescription": "Original acrylic paintings — landscapes, light, quiet places. One-of-a-kind works on canvas, shipped worldwide.",
+    "url": "https://www.sveta-colours.com/",
+    "siteName": "Sveta Colours",
+    "ogImage": "https://www.sveta-colours.com/images/og-image.jpg",
+    "ogImageWidth": 1200,
+    "ogImageHeight": 630,
+    "ogImageAlt": "Three original acrylic paintings by Sveta",
+    "twitterTitle": "Sveta Colours — Original Paintings",
+    "twitterDescription": "Original acrylic paintings — landscapes, light, quiet places.",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&display=swap",
+    "jsonLd": {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Sveta",
+      "jobTitle": "Painter",
+      "url": "https://www.sveta-colours.com",
+      "sameAs": []
+    }
+  },
+  "files": {
+    "texts": "texts",
+    "images": "images",
+    "icons": "icons",
+    "favicon": "favicon.ico"
+  },
+  "site": {
+    "name": "Sveta Colours",
+    "domain": "sveta-colours.com",
+    "artist": {
+      "name": "Sveta",
+      "location": "Thornhill, Ontario, Canada",
+      "yearsPracticing": 8,
+      "schooling": "self-taught",
+      "influences": null,
+      "exhibitions": [],
+      "instagram": null,
+      "studioPhotoUrl": "https://drive.google.com/file/d/1zgwCypofyOuySa-O4QKiIck-3AXysKw9/view?usp=drive_link"
+    },
+    "testimonials": [],
+    "newsletter": {
+      "serviceUrl": null
+    },
+    "shipping": {
+      "fromCountry": "Canada"
+    },
+    "contactEmail": "sveta.colours@gmail.com",
+    "currency": "$",
+    "currencyCode": "CAD",
+    "formEndpoint": "https://script.google.com/macros/s/AKfycbwR1BEbGz6-hrPNqPA58dHhwz9IYgVO7UyKwoqh7YE6r8hxZHpM4MM7jpEkgNxgMZr_/exec",
+    "sheetCsvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv",
+    "textDocs": {
+      "home": "https://docs.google.com/document/d/e/2PACX-1vQJB9Itmyifx3EQ87SFrNYlPOEKNSEBd-gklsTlaA7zea5iF4iVa-3RFKEA2z7b_KW4e4KvSCdOxyjI/pub",
+      "about": "https://docs.google.com/document/d/e/2PACX-1vQCN_-haahrm03cy6o-F4WZdTSHQqwDYJsTq_pxMCu57mScljGm_ZaZ7L1kRU9pptMjdFebGhONF6TC/pub",
+      "faq": "https://docs.google.com/document/d/e/2PACX-1vR8NnB4A1Qf5DPfNK7i0D4Rr_OtxZ7PpHX0MVeAt17kbO7dHxKNqwuTSaJtWTAbfQvEJxG8zXUs8Uq3/pub"
+    },
+    "heroPinTitle": "Held Summer",
+    "featuredTitles": [
+      "Where the Forest Breathes",
+      "Autumn Light",
+      "Morning Coffee",
+      "Walking Home",
+      "Frost and Sun"
+    ],
+    "chapterBy": "size",
+    "portrait": {
+      "src": "https://lh3.googleusercontent.com/d/1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm=w600",
+      "fallback": "images/sveta-portrait.jpg",
+      "alt": "Sveta, the painter",
+      "width": 604,
+      "height": 572
+    },
+    "strings": {
+      "logoLabel": "Sveta Colours — home",
+      "navNote": "Original paintings<br>Thornhill, Ontario",
+      "shippingNote": "Shipping quoted to your address. Insured, from Canada.",
+      "replyNote": "Replies within a day or two.",
+      "replyWhen": "within a day or two",
+      "contactLede": "A question, a commission, a studio visit. I usually answer within a day or two.",
+      "studioAlt": "Inside Sveta's studio",
+      "chapterLarge": "Large works &mdash; 16 &times; 20 in",
+      "chapterSmall": "Small works &mdash; 11 &times; 14 in",
+      "worksIntro": "Every painting one-of-a-kind. Available works and pieces already in private collections &mdash; commission requests welcome.",
+      "footerTagline": "Original paintings &mdash;<br>made slowly, one at a time.",
+      "mailSubject": "Hello from sveta-colours.com"
+    },
+    "fallbackPaintings": [
+      {
+        "id": 1,
+        "title": "Holding On in Winter",
+        "medium": "acrylic",
+        "price": 500,
+        "sold": false,
+        "size": "16 x 20 in",
+        "image": "",
+        "description": "A family stands as a point of warmth and color against towering high-rises and the cold air.",
+        "collections": [
+          "Seasons",
+          "City"
+        ],
+        "available": true,
+        "featured": true,
+        "year": "",
+        "surface": "",
+        "signed": "",
+        "framed": "",
+        "shippingFrom": "",
+        "certificate": "",
+        "widthIn": null,
+        "heightIn": null,
+        "dominantColor": ""
+      },
+      {
+        "id": 2,
+        "title": "Small Rain",
+        "medium": "watercolor",
+        "price": 120,
+        "sold": false,
+        "size": "5 x 7 in",
+        "image": "",
+        "description": "A small watercolor — drizzle on a windowpane, late afternoon light.",
+        "collections": [
+          "Postcards"
+        ],
+        "available": true,
+        "featured": false,
+        "year": "",
+        "surface": "paper",
+        "signed": "",
+        "framed": "",
+        "shippingFrom": "",
+        "certificate": "",
+        "widthIn": null,
+        "heightIn": null,
+        "dominantColor": ""
+      }
+    ]
+  }
+}

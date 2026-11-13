@@ -53,6 +53,15 @@ client-side with a case-insensitive `get('column')` helper, and renders. Every f
 degrades gracefully; JS constants are the safety net (`HERO_PIN_TITLE`,
 `FEATURED_TITLES`) so an emptied column never blanks the home page.
 
+**Per-artist values live in `sites/<name>/`, not in `index.html`.** The block between
+`<!-- SITE:BEGIN -->` and `<!-- SITE:END -->` (head meta, fonts, theme tokens, the
+`SITE` object: sheet URL, text Docs, form endpoint, contact email, hero/recent safety
+nets, the artist's short wording) is generated. Change Sveta's values in
+`sites/sveta/site.json` or `theme.css`, then `python3 scripts/build_site.py sveta --root`;
+`python3 scripts/build_site.py --check` must pass before committing. The rest of
+`index.html` is shared by every site (olgazai.com: `docs/olgazai-plan.md`,
+`sites/README.md`).
+
 **Sheet schema — 11 columns, in order** (plus `slug` in column L, and optional `cover`, `order`; `push_painting.py` preserves extra columns):
 `title, medium, price, sold, size, image, description, collection, orientation, hero, recent`
 
@@ -70,7 +79,7 @@ degrades gracefully; JS constants are the safety net (`HERO_PIN_TITLE`,
 
 **Long site texts** (home headline and paragraphs, About, FAQ) are read at load from three
 **published Google Docs** in the sveta.mordkovich Drive (`home`, `about`, `faq`; links in
-`TEXT_DOCS`). The plain-text copies in `texts/*.txt` are the backup if a Doc can't be read.
+`SITE.textDocs`, from `sites/sveta/site.json`). The plain-text copies in `texts/*.txt` are the backup if a Doc can't be read.
 A `[label]` line opens each block; a blank line starts a paragraph. Change copy by editing
 the Doc, then mirror it into `texts/` — never in `index.html`. Short copy (titles,
 subtitles, headings, contact, footer, buttons) stays in code. Format rules, why not

@@ -1,0 +1,13 @@
+[headline]
+Watercolors and acrylics
+by Olga Zai.
+
+[under headline]
+Placeholder: Olga's own two lines go here.
+Every painting on this page is a stand-in picture.
+
+[from the studio]
+Placeholder for Olga's "from the studio" text, in her own words.
+
+[on painting]
+Placeholder for how Olga works: paper, pigments, how a painting begins.

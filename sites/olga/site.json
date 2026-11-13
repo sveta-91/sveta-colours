@@ -1,0 +1,74 @@
+{
+  "head": {
+    "title": "Olga Zai — Original Paintings",
+    "description": "Original watercolors and acrylics by Olga Zai. One-of-a-kind works on paper and canvas, shipped from Thornhill, Ontario.",
+    "author": "Olga Zai",
+    "ogTitle": "Olga Zai — Original Paintings",
+    "ogDescription": "Original watercolors and acrylics. One-of-a-kind works on paper and canvas.",
+    "url": "https://olgazai.com/",
+    "siteName": "Olga Zai",
+    "ogImage": "",
+    "ogImageWidth": 1200,
+    "ogImageHeight": 630,
+    "ogImageAlt": "",
+    "twitterTitle": "Olga Zai — Original Paintings",
+    "twitterDescription": "Original watercolors and acrylics.",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Gilda+Display&family=Work+Sans:wght@400;500&display=swap",
+    "jsonLd": {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Olga Zai",
+      "jobTitle": "Painter",
+      "url": "https://olgazai.com",
+      "sameAs": []
+    }
+  },
+  "files": {
+    "texts": "sites/olga/texts",
+    "images": "sites/olga/images",
+    "icons": "icons",
+    "favicon": "favicon.ico"
+  },
+  "site": {
+    "name": "Olga Zai",
+    "domain": "olgazai.com",
+    "artist": {
+      "name": "Olga Zai",
+      "location": "Thornhill, Ontario, Canada",
+      "yearsPracticing": null,
+      "schooling": null,
+      "influences": null,
+      "exhibitions": [],
+      "instagram": null,
+      "studioPhotoUrl": null
+    },
+    "testimonials": [],
+    "newsletter": { "serviceUrl": null },
+    "shipping": { "fromCountry": "Canada" },
+    "contactEmail": "",
+    "currency": "$",
+    "currencyCode": "CAD",
+    "formEndpoint": "",
+    "sheetCsvUrl": "",
+    "textDocs": {},
+    "heroPinTitle": "",
+    "featuredTitles": [],
+    "chapterBy": "medium",
+    "portrait": null,
+    "strings": {
+      "logoLabel": "Olga Zai — home",
+      "navNote": "Watercolors &amp; acrylics<br>Thornhill, Ontario",
+      "shippingNote": "Shipping quoted to your address. Insured, from Canada.",
+      "replyNote": "I reply to every message by email.",
+      "replyWhen": "soon",
+      "contactLede": "A question about a painting, or a commission.",
+      "studioAlt": "Inside Olga's studio",
+      "chapterLarge": "Watercolors",
+      "chapterSmall": "Acrylics",
+      "worksIntro": "Every painting one-of-a-kind, on paper or on canvas. Available works and pieces already in private collections.",
+      "footerTagline": "Watercolors and acrylics &mdash;<br>original works on paper and canvas.",
+      "mailSubject": "Hello from olgazai.com"
+    },
+    "fallbackPaintings": []
+  }
+}

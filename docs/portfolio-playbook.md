@@ -87,7 +87,7 @@ texts live in plain text files she can read and edit as text.
 
 - Three Google Docs in the sveta.mordkovich Drive (the .txt originals are in sveta.colours) — `home`, `about`, `faq` — made
   with "Open with Google Docs" from the .txt files, then File → Share → Publish
-  to web. `TEXT_DOCS` in `index.html` holds the three `…/d/e/2PACX-…/pub` links.
+  to web. `textDocs` in `sites/sveta/site.json` (rendered into `index.html`'s SITE block) holds the three `…/d/e/2PACX-…/pub` links.
   Same `[label]` format; each Doc paragraph = one line, empty paragraph = blank line
   (`docPageToText()` reads `#contents` p/li/h*).
 - Per file: Doc first (2.5s timeout) → `texts/<name>.txt` → nothing.

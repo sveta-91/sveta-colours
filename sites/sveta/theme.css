@@ -1,0 +1,34 @@
+:root {
+  /* Editorial bone/oat palette */
+  --bg: #EAE6DE;
+  --surface: #F2EFE8;
+  --surface-alt: #E0DBD1;
+  --paper: #F7F5EF;
+  --border: #D6CFC1;
+  --border-strong: #BFB6A4;
+  --hairline: rgba(20, 19, 15, 0.12);
+
+  --text: #14130F;
+  --text-secondary: #3B362D;
+  --text-muted: #6B6357;
+  /* Darkened from #8C8478 to pass WCAG AA on bone (#EAE6DE) — 4.6:1 contrast */
+  --text-faint: #6B6258;
+
+  /* Single accent: deep ink-blue */
+  --accent: #1A2640;
+  --accent-hover: #2A3A5C;
+
+  /* Dynamic accent tint applied by JS from dominant painting color.
+     Falls back to accent. */
+  --accent-tint: #1A2640;
+
+  /* Type */
+  --font-display: var(--font-brand); /* was Fraunces; kept as an alias */
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  /* The site name and the home hero words (Sveta chose Marcellus, 2026-11-09).
+     One weight only — never set it bold or italic. */
+  --font-brand: 'Marcellus', Georgia, 'Times New Roman', serif;
+  /* Font rules (Sveta, 2026-11-09): two fonts per page. Names and headings
+     → --font-brand, upright. Everything else (body, notes, counts, menu,
+     prices) → --font-body. No italic anywhere. Fraunces is no longer loaded. */
+}
