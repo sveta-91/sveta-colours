@@ -27,6 +27,8 @@ Raw photo → **Grok web UI** (perspective correct + crop) → `trim_borders.py`
 - Runbook prose + file inventory: `tools/image_pipeline/README.md`.
 - Grok is web-UI only (paid account, **no xAI API key**). Never propose `geometry.py`
   for this path, and never propose a Grok/xAI API integration — both are settled.
+- Two sites use this workflow: `--site sveta` (default target while Olga's sheet
+  isn't set up) and `--site olga`; the skill says when to ask "Sveta or Olga?".
 - Trigger phrase: **"publish this"** (also "publish", "new painting, go",
   "update <title>", or a bare painting photo) means run the whole workflow. Start;
   don't re-explain it back.
@@ -108,11 +110,11 @@ trap, masonry timing, cursor scoping, and the CSV cache lag: all in the playbook
 | Path | Purpose |
 | --- | --- |
 | `tools/image_pipeline/` | All Python tooling. Venv at `.venv/`; run commands from this dir |
-| `tools/photo_manager.html` | One-page publishing for a prepared image: watermark, AI title/description dialog (OpenAI, voice rules read live from `sveta-writing`), Save to Drive + sheet, live check. Serve via `scripts/dev.sh` |
-| `scripts/audit_gallery.py` | Read-only pre-deploy data audit of the gallery. CSV-only by default; `--check-drive` opts into Drive checks |
+| `tools/photo_manager.html` | One-page publishing for a prepared image: watermark, AI title/description dialog (OpenAI, voice rules read live from `sveta-writing`), Save to Drive + sheet, live check. Serve via `scripts/dev.sh`. Open with `?site=sveta` or `?site=olga` (no default) |
+| `scripts/audit_gallery.py` | Read-only pre-deploy data audit of the gallery (`--site` required). CSV-only by default; `--check-drive` opts into Drive checks; the voice checks run only for a site whose `tools.voiceSkill` is `sveta-writing` |
 | `scripts/verify_site.py` | Parameterized Selenium UI verification against the deployed site. `--site sveta` (or `olga`) is required |
 | `scripts/check_contrast.py` | WCAG contrast of a site's theme tokens (`--site`); run after any theme change |
-| `scripts/verify_collection_order.py` | Checks each collection's painting order and button picture against the `collection`/`order`/`cover` rules, on real sheet data plus synthetic cases. Run after touching ordering code |
+| `scripts/verify_collection_order.py` | Checks each collection's painting order and button picture against the `collection`/`order`/`cover` rules, on real sheet data plus synthetic cases. Run after touching ordering code. `--site` required |
 | `scripts/templates/selenium_verify.py` | Generic verify scaffold — copy to `/tmp/<intent>_verify.py` and edit the assertions |
 
 ---

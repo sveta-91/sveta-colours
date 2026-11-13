@@ -55,3 +55,13 @@ the same URL. "New deployment" would create a new URL and break the site.
 
 The sheet's last column, `status`, is empty on arrival: yours to fill
 (`replied`, `sold`, …).
+
+## Another artist's site (olgazai.com)
+
+The artist deploys her own copy under her own Google account, so inquiries
+reach her directly. Before step 1, change the four values at the top of
+`Code.gs`: `STUDIO_EMAIL` (her inquiry address), `SITE_DOMAIN`
+(`olgazai.com`), `SERVICE` (`olgazai inquiry`) and `INBOX_TITLE`
+(`Olga Zai — Inquiries`). Then follow the same steps; the Web app URL goes into
+`formEndpoint` in `sites/olga/site.json`, her address into `contactEmail`.
+

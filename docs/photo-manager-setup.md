@@ -34,7 +34,7 @@ in the same place (default `gpt-5.4-mini`).
 ./scripts/dev.sh
 ```
 
-Open http://localhost:8000/tools/photo_manager.html (not `file://`: the page
+Open http://localhost:8000/tools/photo_manager.html?site=sveta (or `?site=olga`; without it the page asks) (not `file://`: the page
 reads the voice rules from `.claude/skills/sveta-writing/` through the server).
 
 ## Acceptance checklist

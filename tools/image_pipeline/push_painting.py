@@ -2,7 +2,7 @@
 """Push a processed painting to Drive + upsert its row in the Paintings sheet.
 
 Usage:
-  push_painting.py <image> --title "..." [--description "..."] [--medium "..."]
+  push_painting.py --site sveta|olga <image> --title "..." [--description "..."] [--medium "..."]
                           [--size "..."] [--price "..."] [--collection "..."]
                           [--orientation portrait|landscape]
                           [--hero] [--sold] [--recent N] [--slug ...]
@@ -27,6 +27,11 @@ from the sheet — so manual edits to hero/recent/orientation survive a re-push.
 For a new row, orientation auto-detects from the image; everything else
 defaults to empty (except sold='no').
 
+--site is required (no default): the target sheet, tab and Drive folder come
+from sites/<site>/site.json ("tools"), and the script prints them before it
+reads or writes anything. Olga's sheet and folder are shared with Sveta's
+account as Editor, so one OAuth token serves both sites.
+
 Auth: OAuth as the human user. First run opens a browser; refresh token cached
 at push-painting-token.json.
 """
@@ -48,12 +53,15 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR.parent.parent / "scripts"))
+import site_config  # noqa: E402  (scripts/site_config.py)
 OAUTH_CLIENT_PATH = SCRIPT_DIR / "oauth-client.json"
 TOKEN_PATH = SCRIPT_DIR / "push-painting-token.json"
 
-DRIVE_FOLDER = "1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX"
-SHEET_ID = "170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI"
-SHEET_TAB = "Paintings"
+# Set from sites/<site>/site.json in main() — no site is the default.
+DRIVE_FOLDER = ""
+SHEET_ID = ""
+SHEET_TAB = ""
 COLS = [
     "title", "medium", "price", "sold", "size", "image",
     "description", "collection", "orientation", "hero", "recent",
@@ -458,6 +466,7 @@ def trash_drive_file(drive, file_id: str) -> bool:
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Push painting to Drive + Paintings sheet.")
+    site_config.add_site_arg(p)
     p.add_argument("image", type=Path)
     p.add_argument("--title", required=True)
     p.add_argument("--description", default=None,
@@ -487,6 +496,11 @@ def main() -> int:
                         "Width trims are symmetric unless left/right given.")
     p.add_argument("--dry-run", action="store_true")
     args = p.parse_args()
+
+    global DRIVE_FOLDER, SHEET_ID, SHEET_TAB
+    t = site_config.require(args.site, "sheetId", "sheetTab", "driveFolder")
+    DRIVE_FOLDER, SHEET_ID, SHEET_TAB = t["driveFolder"], t["sheetId"], t["sheetTab"]
+    print(site_config.describe(args.site))
 
     if not args.image.exists():
         sys.exit(f"Image not found: {args.image}")

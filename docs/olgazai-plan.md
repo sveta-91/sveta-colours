@@ -1,6 +1,6 @@
 # olgazai.com: second gallery site plan
 
-Status: **Phases 1 and 3 done and live; Phase 2 built and tested locally** (2026-11-12).
+Status: **Phases 1, 3 and 4 done; Phase 2 built and tested locally** (2026-11-12).
 olgazai.com waits on Olga's Cloudflare invite and her links (see `sites/README.md`).
 Source: brainstorm panel of 2026-11-12 (log: `.claude/brainstorm-panel/log.md`),
 then a working prototype of both proposed looks, checked with Selenium at
@@ -165,7 +165,7 @@ portrait URL, alt texts, `document.title` suffix):
 | 1 ✓ | Zero-visual-diff move of all artist values into the SITE block; Selenium + computed-CSS proof; commit + push | 5–7 h |
 | 2 (code ✓; Cloudflare waits for Olga) | `sites/{sveta,olga}/`, `build_site.py`, Cloudflare Pages project, olgazai.com DNS; per-site chapters (`chapterBy`) and an optional portrait came along; first version shows every painting Olga has entered in her sheet (test the setup on one 11×15 watercolor first) | 3–4 h |
 | 3 ✓ | Olga's theme, strings and mat variant; per-site chapters; big-screen rules; contrast-check script (AA 4.5 text, 3:1 focus ring); `verify_site.py --site`; white-image card-edge test at 360 px | 6–7 h |
-| 4 | `--site` in `push_painting.py`, audit and verify scripts, the publish skill; photo manager `?site=`; watermark "© olgazai"; neutral AI prompt | 3–4 h |
+| 4 ✓ | `--site` in `push_painting.py`, audit and verify scripts, the publish skill; photo manager `?site=`; watermark "© olgazai"; neutral AI prompt | 3–4 h |
 | **v1** | | **17–22 h** |
 | 5 | After Olga has 5 paintings: `olga-writing` skill, og-image and JSON-LD polish, collection covers, `health_check.py` for both sites, Worker keyed by hostname, Olga publishing on her own | later |
 
@@ -201,6 +201,8 @@ portrait URL, alt texts, `document.title` suffix):
   cheap later.
 - **Moving Sveta to Cloudflare Pages.** It goes with the Worker decision.
 - **When Olga publishes on her own.** It depends on an OAuth test with her account.
+- **"Sveta or Olga?" in the publish skill** is asked only once `tools.sheetId`
+  is filled in for Olga; until then sveta is the only possible target.
 - **A separate sheet-size column.** It's folded into `framing` for now; it becomes
   a column only if buyers actually need to filter on it.
 

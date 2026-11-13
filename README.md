@@ -33,11 +33,12 @@ docs/
   watermark-removal-playbook.md  — techniques for clearing watermarks off artwork photos
   superpowers/                   — design/spec docs and rewrite plans
 scripts/
-  audit_gallery.py               — read-only pre-deploy audit of the gallery sheet data
+  audit_gallery.py               — read-only pre-deploy audit of the gallery sheet data (`--site` required)
   build_site.py                  — render a site's SITE block: `sveta --root` (root index.html), `olga` (→ dist/), `--check`
   check_contrast.py              — WCAG check of a site's theme tokens (`--site`): text 4.5:1, focus ring 3:1
   verify_site.py                 — parameterized Selenium UI verification (`--site` required)
-  verify_collection_order.py     — Selenium check: collection order + button pictures vs the sheet rules
+  verify_collection_order.py     — Selenium check: collection order + button pictures vs the sheet rules (`--site` required)
+  site_config.py                 — per-site settings for the Python tools (`--site`, from sites/<name>/site.json)
   dev.sh                         — start the local static server for the photo manager
   templates/                     — reusable Selenium verify templates
 tools/
@@ -71,7 +72,9 @@ the page never edits it except for an optional watermark.
    exists), moves `hero` if ticked, warns on a duplicate `recent` position, then
    watches the published CSV until the site shows the painting and links to it.
 
-Run `scripts/dev.sh` and open http://localhost:8000/tools/photo_manager.html.
+Run `scripts/dev.sh` and open http://localhost:8000/tools/photo_manager.html?site=sveta
+(or `?site=olga`). Sheet, folder, watermark and writing voice come from
+`sites/<site>/site.json`; a site without a voice skill gets a neutral prompt.
 OAuth as Sveta.
 
 See `docs/photo-manager-setup.md` for one-time Google setup and the acceptance checklist.

@@ -2,8 +2,9 @@
 """Collection order + cover test.
 
 Usage (from the repo root):
-    tools/image_pipeline/.venv/bin/python scripts/verify_collection_order.py            # live site
-    tools/image_pipeline/.venv/bin/python scripts/verify_collection_order.py http://localhost:8765/
+    tools/image_pipeline/.venv/bin/python scripts/verify_collection_order.py --site sveta          # live site
+    tools/image_pipeline/.venv/bin/python scripts/verify_collection_order.py --site sveta --url http://localhost:8765/
+--site is required (no default); the URL comes from sites/<site>/site.json.
 Run it live: the image CDN refuses localhost, but order checks work either way.
 Exit code 0 = all pass, 1 = any failure.
 
@@ -13,14 +14,22 @@ button picture on its own (from the raw collection / order / cover fields)
 and compares with what the page shows. Nothing assumes a collection is
 un-numbered, so reordering in the sheet doesn't break it.
 
-Part 2 wipes the Forest ordering in memory (never in the sheet) and drives
-the rules with synthetic values: blank → sheet order, 1..n reverses, cover
-picks the picture, "Forest:1,Seasons:99" moves one painting in both.
+Part 2 wipes one collection's ordering in memory (never in the sheet) and
+drives the rules with synthetic values: blank → sheet order, 1..n reverses,
+cover picks the picture, "A:1,B:99" moves one painting in both. A and B are
+tools.orderTestCollections in site.json (Sveta: Forest, Seasons); when that is
+empty the test takes the largest collection and one that shares a painting.
 """
-import sys, time, json
+import argparse, sys, time, json
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-BASE = sys.argv[1] if len(sys.argv) > 1 else "https://www.sveta-colours.com/"
+import site_config  # scripts/site_config.py
+ap = argparse.ArgumentParser(description="Collection order + cover test.")
+site_config.add_site_arg(ap)
+ap.add_argument("--url", help="override the site URL from site.json")
+args = ap.parse_args()
+BASE = args.url or site_config.load(args.site)["head"]["url"]
+PAIR = site_config.tools(args.site).get("orderTestCollections") or []
 fails = []
 def check(n, c, x=""):
     print(("PASS " if c else "FAIL ") + n + ("" if c else " :: " + json.dumps(x))); c or fails.append(n)
@@ -67,30 +76,39 @@ for c in real:
     check(f"sheet data: {c['name']} button picture", c["cover"].startswith(c["expectCover"]), [c["cover"], c["expectCover"]])
     print(f"   {c['name']}: numbered {c['numbered'] or 'none'}")
 
-# ---- Part 2: synthetic rules on Forest (in memory only)
+# ---- Part 2: synthetic rules on collection A (in memory only)
 r = d.execute_script(EXPECT_JS + """
   const out = {};
-  const forest = PAINTINGS.filter(p => p.collections.includes('Forest'));
+  let [A, B] = arguments[0];
+  if (!A) {   // no pair configured: largest collection + one sharing a painting with it
+    const count = {}; PAINTINGS.forEach(p => p.collections.forEach(c => count[c] = (count[c] || 0) + 1));
+    A = Object.keys(count).sort((x, y) => count[y] - count[x])[0];
+    const shared = PAINTINGS.find(p => p.collections.includes(A) && p.collections.length > 1);
+    B = shared ? shared.collections.find(c => c !== A) : null;
+  }
+  out.A = A; out.B = B;
+  const forest = PAINTINGS.filter(p => p.collections.includes(A));
   const wipe = () => forest.forEach(p => { p.order = ''; p.cover = []; p.collOrder = {}; });
   const go = n => { showPage('collection:' + n); return titles(); };
   out.sheetOrder = forest.map(p => p.title);
-  wipe(); render(); out.blank = go('Forest');
-  out.blankCover = thumbSrc('Forest'); out.blankExpect = (forest.find(p => p.image && !p.sold) || forest[0]).image;
+  wipe(); render(); out.blank = go(A);
+  out.blankCover = thumbSrc(A); out.blankExpect = (forest.find(p => p.image && !p.sold) || forest[0]).image;
   forest.forEach((p, i) => { p.order = String(forest.length - i); });
-  const pick = forest[forest.length - 1]; pick.cover = ['forest'];
-  render(); out.reversed = go('Forest'); out.coverSrc = thumbSrc('Forest'); out.pickImg = pick.image;
+  const pick = forest[forest.length - 1]; pick.cover = [A.toLowerCase()];
+  render(); out.reversed = go(A); out.coverSrc = thumbSrc(A); out.pickImg = pick.image;
   wipe();
-  const both = PAINTINGS.find(p => p.collections.includes('Forest') && p.collections.includes('Seasons'));
-  if (both) { both.collOrder = {}; both.order = 'Forest:1,Seasons:99'; }
-  PAINTINGS.filter(p => p.collections.includes('Seasons') && p !== both).forEach(p => { p.order = ''; p.collOrder = {}; });
+  const both = B && PAINTINGS.find(p => p.collections.includes(A) && p.collections.includes(B));
+  if (both) { both.collOrder = {}; both.order = A + ':1,' + B + ':99'; }
+  if (B) PAINTINGS.filter(p => p.collections.includes(B) && p !== both).forEach(p => { p.order = ''; p.collOrder = {}; });
   render();
-  out.both = both ? both.title : null; out.firstForest = go('Forest')[0]; out.firstSeasons = go('Seasons')[0];
-  return out;""")
+  out.both = both ? both.title : null; out.firstForest = go(A)[0]; out.firstSeasons = B ? go(B)[0] : null;
+  return out;""", PAIR)
+print(f"   synthetic part on {r['A']}" + (f" + {r['B']}" if r['B'] else ""))
 check("blank: page keeps sheet order", r["blank"] == r["sheetOrder"], r)
 check("blank: picture = first available painting", r["blankCover"].startswith(r["blankExpect"]), r)
 check("order 1..n reverses the collection", r["reversed"] == list(reversed(r["sheetOrder"])), r["reversed"])
 check("cover column picks the button picture", r["coverSrc"].startswith(r["pickImg"]), [r["coverSrc"], r["pickImg"]])
 if r["both"]:
-    check("'Forest:1' puts it first in Forest", r["firstForest"] == r["both"], r)
-    check("'Seasons:99' still before unnumbered Seasons paintings", r["firstSeasons"] == r["both"], r)
+    check(f"'{r['A']}:1' puts it first in {r['A']}", r["firstForest"] == r["both"], r)
+    check(f"'{r['B']}:99' still before unnumbered {r['B']} paintings", r["firstSeasons"] == r["both"], r)
 d.quit(); print("\n%d failure(s)" % len(fails)); sys.exit(1 if fails else 0)

@@ -88,5 +88,14 @@
       "linear-gradient(160deg, #d6dad8, #bfc4c2)",
       "linear-gradient(160deg, #e6e8e6, #d0d4d2)"
     ]
+  },
+  "tools": {
+    "sheetId": "",
+    "sheetTab": "Paintings",
+    "driveFolder": "",
+    "watermark": "© olgazai",
+    "voiceSkill": null,
+    "collections": [],
+    "orderTestCollections": []
   }
 }

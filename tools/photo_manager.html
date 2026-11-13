@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sveta Colours — Publish a Painting</title>
+<title>Publish a Painting</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root {
@@ -146,7 +146,7 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
           </div>
           <div class="field-row">
             <label for="wmText">Text</label>
-            <input type="text" id="wmText" value="© sveta-colours" placeholder="Watermark text">
+            <input type="text" id="wmText" value="" placeholder="Watermark text">
           </div>
           <div class="status" id="wmInfo">Off: the original file is uploaded untouched.</div>
         </div>
@@ -224,15 +224,21 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
 // Save (Drive upload + sheet row) → wait until the published CSV shows it.
 // Columns are read from the sheet's own header row, so extra columns (cover,
 // order, slug) are preserved, and a `slug` column is written once it exists.
-const DRIVE_FOLDER='1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX';
-const SHEET_ID='170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI';
+//
+// Which site: ?site=sveta or ?site=olga — required, no default, so a painting
+// can't land in the wrong sheet. The sheet, tab, Drive folder, site URL,
+// watermark and writing voice come from /sites/<site>/site.json (served by
+// scripts/dev.sh from the repo root). Olga's sheet and folder are shared with
+// Sveta's Google account, so the same sign-in serves both.
+const SITE_NAME = new URLSearchParams(location.search).get('site') || '';
+let SITE_CFG = null;
+let DRIVE_FOLDER = '', SHEET_ID = '', SHEET_TAB = '', SITE_URL = '', PUBLISHED_CSV = '';
 const CLIENT_ID='754552250731-hdl67ujna2lk1lataah35mnl69emi8qt.apps.googleusercontent.com';
-const SHEET_TAB='Paintings';
-const SITE_URL='https://www.sveta-colours.com/';
-const PUBLISHED_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv';
 // Only used to initialize a completely empty sheet (see CLAUDE.md for the schema).
 const DEFAULT_COLS=['title','medium','price','sold','size','image','description','collection','orientation','hero','recent'];
-const WM_TEXT_STORE='pm-wm-text', WM_OPACITY_STORE='pm-wm-opacity';
+// Sveta keeps her old keys; other sites get their own, so watermarks never mix.
+const WM_TEXT_STORE = SITE_NAME === 'sveta' ? 'pm-wm-text' : `pm-wm-text-${SITE_NAME}`;
+const WM_OPACITY_STORE = SITE_NAME === 'sveta' ? 'pm-wm-opacity' : `pm-wm-opacity-${SITE_NAME}`;
 const LIVE_POLL_MS=20000, LIVE_POLL_MAX_MS=10*60*1000;
 
 const state = {
@@ -778,9 +784,10 @@ function watchLive(title, fileId){
 const AI_KEY_STORE = 'pm-openai-key';
 const AI_MODEL_STORE = 'pm-openai-model';
 const AI_DEFAULT_MODEL = 'gpt-5.4-mini';
-const AI_VOICE_FILES = ['/.claude/skills/sveta-writing/SKILL.md', '/.claude/skills/sveta-writing/corrections.md'];
-const AI_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHiEnby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv';
-const AI_RULES = `You help the painter Sveta finalize the TITLE and DESCRIPTION of one new painting for her portfolio site, sveta-colours.com. This is a conversation, not a one-shot answer: discuss, ask her a question when it would really help, offer alternatives when she hesitates, and refine until she is happy.
+// Set by loadSite(): the voice skill's files (none for a site without one).
+let AI_VOICE_FILES = [];
+// Sveta's own voice: the rules below + her sveta-writing skill files.
+const AI_RULES_SVETA = `You help the painter Sveta finalize the TITLE and DESCRIPTION of one new painting for her portfolio site, sveta-colours.com. This is a conversation, not a one-shot answer: discuss, ask her a question when it would really help, offer alternatives when she hesitates, and refine until she is happy.
 
 The site copy is in English. Sveta may write to you in Russian or English; answer in the language of her last message, but the title and description themselves are always English.
 
@@ -790,6 +797,26 @@ Whenever you propose a candidate (a first draft or a revision), end your message
 TITLE: <title>
 DESCRIPTION: <description on one line>
 If a message is only a question or a comment, leave those lines out.`;
+
+// Any other artist: a neutral prompt, so Sveta's voice never leaks into their
+// descriptions. Replaced by the artist's own skill once one exists (tools.voiceSkill).
+function aiRulesNeutral(artist, domain){
+  return `You help prepare the TITLE and DESCRIPTION of one painting by ${artist} for the portfolio site ${domain}. The person writing to you is Sveta, who runs the site for ${artist}; she may write in Russian or English. Answer in the language of her last message; the title and description themselves are always English.
+
+This is a conversation: ask a question when you need a fact (what the place is, when it was painted, what ${artist} said about it), offer alternatives, refine until she is happy.
+
+Write plainly and concretely. Say what is in the painting and one specific thing that makes it this painting. 30 to 55 words, two or three sentences, first person as ${artist} only if Sveta gives you ${artist}'s own words. Never invent facts, places or feelings. No art-statement vocabulary (explores, captures, evokes, journey, essence, interplay), no mood labels (serene, vibrant, luminous), no addressing the buyer, no "this piece" or "the artist". Keep it consistent with, but not repetitive of, the existing paintings listed at the end.
+
+Whenever you propose a candidate (a first draft or a revision), end your message with exactly these two lines and nothing after them:
+TITLE: <title>
+DESCRIPTION: <description on one line>
+If a message is only a question or a comment, leave those lines out.`;
+}
+function aiRules(){
+  const t = SITE_CFG.tools || {};
+  return t.voiceSkill === 'sveta-writing' ? AI_RULES_SVETA
+    : aiRulesNeutral(SITE_CFG.site.artist.name, SITE_CFG.site.domain);
+}
 
 const ai = { messages: [], context: null, firstDraft: null, accepted: null };
 
@@ -819,13 +846,13 @@ async function aiLoadContext(){
   }
   let catalogue = '(could not load the existing paintings)';
   try {
-    const r = await fetch(AI_CSV_URL);
+    const r = await fetch(PUBLISHED_CSV);
     const rows = parseCsvSimple(await r.text());
     const h = rows[0].map(x => x.toLowerCase().trim());
     const ti = h.indexOf('title'), di = h.indexOf('description');
     catalogue = rows.slice(1).filter(r => r[ti]).map(r => `- ${r[ti]}: ${r[di] || ''}`).join('\n');
   } catch(e){ /* the dialog still works without it */ }
-  ai.context = `${AI_RULES}\n\n${parts.join('\n\n')}\n\n=== Existing paintings (title: description) ===\n${catalogue}`;
+  ai.context = `${aiRules()}\n\n${parts.join('\n\n')}\n\n=== Existing paintings (title: description) ===\n${catalogue}`;
   return ai.context;
 }
 
@@ -897,7 +924,8 @@ function aiUse(p){
   document.getElementById('fDesc').value = p.description;
   syncSlugFromTitle();
   ai.accepted = p;
-  document.getElementById('aiCopyLog').hidden = !ai.firstDraft;
+  // Only a site with a voice skill has a corrections log to feed.
+  document.getElementById('aiCopyLog').hidden = !ai.firstDraft || !(SITE_CFG && SITE_CFG.tools && SITE_CFG.tools.voiceSkill);
   setStatus('aiStatus', 'Title and description filled in. Review the form, then Save.', 'ok');
 }
 
@@ -973,6 +1001,44 @@ function aiCopyCorrection(){
 }
 
 document.getElementById('aiModel').value = aiGetModel();
+
+// ── SITE ──────────────────────────────────────────────────────────────────
+function siteBlock(html){
+  const d = document.createElement('div');
+  d.id = 'siteBlock';
+  d.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(20,19,15,.55);font:16px/1.5 system-ui,sans-serif';
+  d.innerHTML = `<div style="background:#fff;color:#14130F;padding:28px 32px;max-width:520px;border-radius:6px">${html}</div>`;
+  document.body.appendChild(d);
+}
+async function loadSite(){
+  const pick = '<p><a href="?site=sveta">Sveta Colours</a> · <a href="?site=olga">Olga Zai</a></p>';
+  if (!/^[a-z0-9-]+$/.test(SITE_NAME)) {
+    siteBlock('<h2 style="margin:0 0 8px">Which site?</h2><p>Open this page with <code>?site=sveta</code> or <code>?site=olga</code>. There is no default, so a painting can\'t go to the wrong sheet.</p>' + pick);
+    return;
+  }
+  try {
+    const r = await fetch(`/sites/${SITE_NAME}/site.json`, { cache: 'no-cache' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    SITE_CFG = await r.json();
+  } catch (e) {
+    siteBlock(`<h2 style="margin:0 0 8px">No site "${SITE_NAME}"</h2><p>Could not read /sites/${SITE_NAME}/site.json (${e.message}). Start the page with scripts/dev.sh.</p>` + pick);
+    return;
+  }
+  const t = SITE_CFG.tools || {};
+  DRIVE_FOLDER = t.driveFolder || ''; SHEET_ID = t.sheetId || ''; SHEET_TAB = t.sheetTab || 'Paintings';
+  SITE_URL = SITE_CFG.head.url; PUBLISHED_CSV = SITE_CFG.site.sheetCsvUrl || '';
+  AI_VOICE_FILES = t.voiceSkill ? [`/.claude/skills/${t.voiceSkill}/SKILL.md`, `/.claude/skills/${t.voiceSkill}/corrections.md`] : [];
+  document.title = `${SITE_CFG.site.name} — Publish a Painting`;
+  if (!$('wmText').value.trim() && t.watermark) { $('wmText').value = t.watermark; onWatermarkChange(); }
+  const bar = document.createElement('div');
+  bar.id = 'siteBar';
+  bar.style.cssText = 'padding:6px 16px;font:13px/1.4 system-ui,sans-serif;background:#14130F;color:#F7F5EF';
+  bar.innerHTML = `Publishing to <b>${SITE_CFG.site.name}</b> · ${SITE_URL} · sheet ${SHEET_ID || '—'} · <a style="color:inherit" href="?site=${SITE_NAME === 'sveta' ? 'olga' : 'sveta'}">switch site</a>`;
+  document.body.prepend(bar);
+  const gaps = ['sheetId', 'driveFolder'].filter(k => !t[k]).concat(PUBLISHED_CSV ? [] : ['site.sheetCsvUrl']);
+  if (gaps.length) siteBlock(`<h2 style="margin:0 0 8px">${SITE_CFG.site.name}: not set up yet</h2><p>sites/${SITE_NAME}/site.json still has empty: ${gaps.join(', ')}. Fill them in when the artist sends the links.</p>` + pick);
+}
+loadSite();
 if (aiGetKey()) document.getElementById('aiKey').placeholder = 'key saved — paste a new one to replace';
 document.getElementById('aiInput').addEventListener('keydown', e => {
   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); aiSend(); }

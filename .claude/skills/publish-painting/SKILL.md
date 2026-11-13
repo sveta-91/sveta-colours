@@ -1,6 +1,6 @@
 ---
 name: publish-painting
-description: Use when publishing or updating one painting on sveta-colours.com — triggered by "publish this", "publish", "publish to portfolio", "new painting, go", "update <painting title>", a re-push of an existing painting, or a raw painting photo dropped in with few or no words. Runs the Grok crop → trim → title/description → push_painting.py → verify workflow end to end.
+description: Use when publishing or updating one painting on sveta-colours.com (or Olga Zai's olgazai.com) — triggered by "publish this", "publish", "publish to portfolio", "new painting, go", "update <painting title>", a re-push of an existing painting, or a raw painting photo dropped in with few or no words. Runs the Grok crop → trim → title/description → push_painting.py → verify workflow end to end.
 ---
 
 # Publish Painting
@@ -33,6 +33,20 @@ Sveta agreed to this trigger on 2026-06-08 after running it end to end on
   failure, or the pre-real-run confirmation in step 4.
 
 **Do:** acknowledge the image, hand her the Grok prompt, and go.
+
+### Which site — `--site` on every command
+
+Two sites share these tools: `sveta` (sveta-colours.com) and `olga`
+(olgazai.com, Olga Zai's watercolors and acrylics). Every command takes
+`--site`; there is no default.
+
+- While `tools.sheetId` in `sites/olga/site.json` is empty, Olga's site can't
+  take paintings, so the target is `sveta` — no question.
+- Once it is filled in, a message that doesn't say whose painting it is gets
+  one short question before step 4: **"Sveta or Olga?"** ("my painting",
+  "моя" → sveta; "Olga's", "Олина" → olga). Never guess from the image.
+- The first line of every push prints the target (site, URL, sheet, Drive
+  folder). Show it to her with the dry-run output, before the real run.
 
 Read every prompt she sends in both English and Russian — see the
 [`sveta-writing`](../sveta-writing/SKILL.md) skill, section 1. Russian
@@ -90,8 +104,13 @@ If borders survive (off-white, light grey), retune:
 
 ## 3. Title + description
 
-**Voice is not specified here.** Every word of user-facing copy is governed by
-the [`sveta-writing`](../sveta-writing/SKILL.md) skill — read it and follow it.
+**Voice is not specified here.** For Sveta's paintings every word of user-facing
+copy is governed by the [`sveta-writing`](../sveta-writing/SKILL.md) skill —
+read it and follow it. **For Olga's paintings sveta-writing does not apply**
+(`tools.voiceSkill` is null): use Olga's own words when Sveta has them; otherwise
+write plainly — what is in the painting and one specific thing, 30–55 words,
+no invented facts, no art-statement or mood vocabulary — the same neutral rules
+the photo manager uses (`aiRulesNeutral()` in `tools/photo_manager.html`).
 Do not restate, summarize, or "simplify" its rules; it owns length, sentence
 shapes, forbidden moves, and the three pre-publish tests.
 
@@ -118,7 +137,7 @@ step 4.
 
 ```bash
 /Users/sveta/IdeaProjects/sveta-colours/tools/image_pipeline/.venv/bin/python \
-  push_painting.py \
+  push_painting.py --site sveta \
   ~/Downloads/<title>.jpeg \
   --title "..." \
   --description "..." \
@@ -138,13 +157,14 @@ others):
 
 | flag | notes |
 | --- | --- |
+| `--site sveta\|olga` | **required**, no default. Sheet, tab and Drive folder come from `sites/<site>/site.json` → `tools`; exits if they are empty |
 | `<image>` | positional, required, must exist |
 | `--title "..."` | **required** |
 | `--description "..."` | omitted on an existing row → preserved |
 | `--medium "..."` | |
 | `--size "..."` | e.g. `16x20 in`; feeds the canvas-aspect gate below |
 | `--price "..."` | |
-| `--collection "A,B"` | comma-separated, no spaces. Existing values: `Big City`, `Flowers`, `Forest`, `Seasons` |
+| `--collection "A,B"` | comma-separated, no spaces. Known names per site: `tools.collections` in `sites/<site>/site.json` (Sveta: `Big City`, `Flowers`, `Forest`, `Seasons`) |
 | `--orientation portrait\|landscape` | choices enforced; omit → preserved (existing) or auto-detected (new) |
 | `--sold` | store_true → `sold=yes`. No flag: `no` for new, preserved for existing. Reverting to `no` is a manual sheet edit |
 | `--hero` | store_true → `hero=TRUE`. No flag: `''` for new, preserved for existing |
@@ -232,6 +252,9 @@ Each of these has cost real time.
 ---
 
 ## Constants
+
+Sveta's values below; every site's own are in `sites/<site>/site.json`
+(`tools.*`, `site.sheetCsvUrl`), which the scripts read.
 
 | | Value |
 | --- | --- |

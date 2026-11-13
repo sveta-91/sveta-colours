@@ -10,9 +10,14 @@
  *      is one click on Reply.
  *
  * Deploy as the studio Google account: see inquiry/README.md.
+ * Another artist's site (olgazai.com) deploys its own copy under its own
+ * account: change only the four values below.
  */
 
-const STUDIO_EMAIL = 'sveta.colours@gmail.com';
+const STUDIO_EMAIL = 'sveta.colours@gmail.com';   // where inquiries arrive
+const SITE_DOMAIN = 'sveta-colours.com';           // shown in the email
+const SERVICE = 'sveta-colours inquiry';           // what the /exec URL answers
+const INBOX_TITLE = 'Sveta Colours — Inquiries';   // the private spreadsheet it creates
 const SHEET_NAME = 'Inquiries';
 const MAX_PER_HOUR = 30;       // all visitors together; MailApp's own cap is 100/day
 const MAX_FIELD = 4000;
@@ -57,9 +62,9 @@ function doPost(e) {
       row.message,
       '',
       '—',
-      `Sent from ${row.page || 'sveta-colours.com'}. Reply to this email to answer ${row.name} directly.`,
+      `Sent from ${row.page || SITE_DOMAIN}. Reply to this email to answer ${row.name} directly.`,
     ].filter((l, i, a) => l !== '' || a[i - 1] !== '').join('\n');
-    MailApp.sendEmail({ to: STUDIO_EMAIL, replyTo: row.email, name: 'sveta-colours.com', subject: subject, body: body });
+    MailApp.sendEmail({ to: STUDIO_EMAIL, replyTo: row.email, name: SITE_DOMAIN, subject: subject, body: body });
 
     return json_({ ok: true });
   } catch (err) {
@@ -70,7 +75,7 @@ function doPost(e) {
 
 // GET: a health check you can open in the browser after deploying.
 function doGet() {
-  return json_({ ok: true, service: 'sveta-colours inquiry' });
+  return json_({ ok: true, service: SERVICE });
 }
 
 function sheet_() {
@@ -81,7 +86,7 @@ function sheet_() {
     try { ss = SpreadsheetApp.openById(id); } catch (e) { ss = null; }
   }
   if (!ss) {
-    ss = SpreadsheetApp.create('Sveta Colours — Inquiries');
+    ss = SpreadsheetApp.create(INBOX_TITLE);
     props.setProperty('SHEET_ID', ss.getId());
   }
   let sh = ss.getSheetByName(SHEET_NAME);

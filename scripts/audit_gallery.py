@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only pre-deploy audit of the Paintings sheet behind sveta-colours.com.
+"""Read-only pre-deploy audit of a gallery site's Paintings sheet (--site sveta|olga).
 
 The site (index.html) is a single-page app that fetches the published Google
 Sheet as CSV and renders straight from it. There is no build step and no
@@ -38,6 +38,8 @@ import sys
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, asdict
+
+import site_config  # scripts/site_config.py (same folder)
 from pathlib import Path
 from typing import Any, Iterable, NoReturn, Sequence
 
@@ -45,11 +47,9 @@ from typing import Any, Iterable, NoReturn, Sequence
 # Constants — mirrored from the live site and the pipeline CLI.
 # --------------------------------------------------------------------------
 
-# index.html: const SHEET_CSV_URL = ...
-CSV_URL = (
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQrJdmLlZeUwFysVsa6rmHi"
-    "Enby2moRMSYcBEixMNb3AoLxdpnvrSaWlxC23TF68VMTV3UDuQbuWOXV/pub?output=csv"
-)
+# Per site (--site, required): set in main() from sites/<site>/site.json.
+# site.sheetCsvUrl — the published CSV the site itself reads.
+CSV_URL = ""
 
 # tools/image_pipeline/push_painting.py: COLS (11 columns, as of 2026-06-09)
 EXPECTED_HEADER: tuple[str, ...] = (
@@ -57,8 +57,8 @@ EXPECTED_HEADER: tuple[str, ...] = (
     "description", "collection", "orientation", "hero", "recent",
 )
 
-# tools/image_pipeline/push_painting.py: DRIVE_FOLDER
-DRIVE_FOLDER = "1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX"
+# tools.driveFolder — where push_painting.py uploads.
+DRIVE_FOLDER = ""
 
 # README "Constants" table + index.html sheetRowToPainting().
 VALID_ORIENTATIONS = frozenset({"portrait", "landscape"})
@@ -69,7 +69,11 @@ VALID_SOLD = frozenset({"", "yes", "no", "true", "false", "y", "n", "1", "0"})
 
 # README flags reference: existing collection values. Novel values are
 # reported as INFO, not an error — she may legitimately add a collection.
-KNOWN_COLLECTIONS = frozenset({"Big City", "Flowers", "Forest", "Seasons"})
+# tools.collections (empty → collection names aren't checked).
+KNOWN_COLLECTIONS: frozenset[str] = frozenset()
+# tools.voiceSkill: the description checks below encode sveta-writing; a site
+# without that voice (Olga) skips them.
+VOICE_CHECKS = False
 
 # index.html selectFeatured(paintings, 6, ...) — the home strip holds 6.
 RECENT_MIN, RECENT_MAX = 1, 6
@@ -168,7 +172,8 @@ def die(message: str) -> NoReturn:
     raise SystemExit(EXIT_LOAD_FAILURE)
 
 
-def fetch_csv(url: str = CSV_URL, timeout: int = 30) -> str:
+def fetch_csv(url: str = "", timeout: int = 30) -> str:
+    url = url or CSV_URL
     """Fetch the published CSV with stdlib urllib. Exits on any failure."""
     try:
         req = urllib.request.Request(
@@ -478,7 +483,7 @@ def check_rows(header: Sequence[str], rows: Sequence[Sequence[str]]) -> list[Fin
                 ))
             # "Big City:1" = collection + position on its page (index.html orderIn)
             for name in [re.sub(r"\s*:\s*\d+(\.\d+)?$", "", c.strip()) for c in collection_raw.split(",") if c.strip()]:
-                if name not in KNOWN_COLLECTIONS:
+                if KNOWN_COLLECTIONS and name not in KNOWN_COLLECTIONS:
                     findings.append(Finding(
                         "INFO", "unknown-collection", label, "collection",
                         f"collection {name!r} is not one of "
@@ -502,8 +507,8 @@ def check_description(label: str, desc: str, sheet_row: int) -> list[Finding]:
 
     No attempt is made to judge voice — see the BANNED_PHRASES comment.
     """
-    if not desc.strip():
-        return []  # already reported as a WARN
+    if not desc.strip() or not VOICE_CHECKS:
+        return []  # empty: already reported as a WARN; no voice: not checked
     out: list[Finding] = []
 
     wc = word_count(desc)
@@ -863,6 +868,7 @@ def build_parser() -> argparse.ArgumentParser:
             "1 = findings at or above it, 2 = could not load the data."
         ),
     )
+    site_config.add_site_arg(p)
     p.add_argument(
         "--check-drive", action="store_true",
         help="also cross-check Drive (dead image pointers + orphan files). "
@@ -887,6 +893,20 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    global CSV_URL, DRIVE_FOLDER, KNOWN_COLLECTIONS, VOICE_CHECKS
+    cfg = site_config.load(args.site)
+    t = cfg.get("tools", {})
+    CSV_URL = cfg["site"].get("sheetCsvUrl", "")
+    DRIVE_FOLDER = t.get("driveFolder", "")
+    KNOWN_COLLECTIONS = frozenset(t.get("collections") or [])
+    VOICE_CHECKS = t.get("voiceSkill") == "sveta-writing"
+    if not args.csv and not CSV_URL:
+        sys.exit(f"sites/{args.site}: site.sheetCsvUrl is empty — pass --csv FILE or fill it in")
+    if args.check_drive and not DRIVE_FOLDER:
+        sys.exit(f"sites/{args.site}: tools.driveFolder is empty — --check-drive needs it")
+    if not args.quiet and not args.json:
+        print(site_config.describe(args.site))
 
     if args.csv:
         source = str(args.csv)

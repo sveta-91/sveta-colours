@@ -103,7 +103,7 @@ only about empty fields.
 ### 4. Push to Drive + Sheet
 
 ```bash
-python push_painting.py \
+python push_painting.py --site sveta \
   ~/Downloads/<title>.jpeg \
   --title "..." \
   --description "..." \

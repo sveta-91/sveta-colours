@@ -154,5 +154,22 @@
       "linear-gradient(160deg, #c4bcab, #a89f8c)",
       "linear-gradient(160deg, #d8d1c2, #c0b9a6)"
     ]
+  },
+  "tools": {
+    "sheetId": "170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI",
+    "sheetTab": "Paintings",
+    "driveFolder": "1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX",
+    "watermark": "© sveta-colours",
+    "voiceSkill": "sveta-writing",
+    "collections": [
+      "Big City",
+      "Flowers",
+      "Forest",
+      "Seasons"
+    ],
+    "orderTestCollections": [
+      "Forest",
+      "Seasons"
+    ]
   }
 }
