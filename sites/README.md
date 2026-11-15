@@ -23,6 +23,15 @@ One folder per artist. `index.html` is shared code plus one generated block
     `portrait` (null → none), `placeholderGradients` (card backgrounds before an
     image loads), `strings` (the artist's own short wording),
     `fallbackPaintings` (shown only when the sheet can't be read).
+  - Languages: `languages` (`["en", "ru"]` shows the EN·RU switch; English is the
+    default), `stringsRu` (Russian for each `strings` key), `collectionsRu`
+    (collection name → Russian label; the English name stays the key and the URL),
+    `textDocsRu` (published Russian Docs, optional), `artist.locationRu`. Paintings
+    take Russian from the sheet's optional `title_ru`, `description_ru`, `medium_ru`
+    columns; empty means English (`ru_source` and the fill rules: `tools/image_pipeline/fill_ru.py`).
+    Russian long texts: `textDocsRu` first, then `texts/ru/*.txt`. Sveta's three Russian Docs
+    are owned by the sveta.colours account ("sveta-colours site text: home (RU)" etc.),
+    published to the web; edit them there and mirror into `texts/ru/`.
 - **`theme.css`**: the `:root` colour and font tokens, including the surfaces
   built on the palette (`--nav-bg`, `--nav-menu-bg`, `--paper-veil`,
   `--paper-veil-strong`, `--overlay`, `--ink-bar`, `--placeholder`). Check with
@@ -32,7 +41,7 @@ One folder per artist. `index.html` is shared code plus one generated block
   after them (`<!-- SITE:CSS:BEGIN -->`). Olga's logo and watercolor mats live
   here, keyed by `data-medium="watercolor" | "other"` on cards, the home
   painting and the painting window.
-- **`texts/`** (Olga): backup copies of the long texts, `[label]` format as in the root `texts/`.
+- **`texts/`** (Olga): backup copies of the long texts, `[label]` format as in the root `texts/`; `texts/ru/` in Russian.
 - **`images/`** (Olga): portrait fallback and og image, once she sends them.
 
 ## Commands

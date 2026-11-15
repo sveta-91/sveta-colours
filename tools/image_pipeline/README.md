@@ -8,6 +8,7 @@ watermark removal, and publishing to the portfolio (Drive + Paintings sheet).
 | File | Purpose |
 |---|---|
 | `push_painting.py` | One-shot CLI: upload one processed image to Drive + upsert its row in the Paintings sheet. OAuth as the user. The publishing step of the per-painting workflow below. |
+| `fill_ru.py` | Fill the sheet's Russian columns (`title_ru`, `description_ru`, `ru_source`) from a slug-keyed JSON of translations. Dry run unless `--write`; fills only empty cells, never overwrites Russian already there. Same OAuth token as `push_painting.py`. |
 | `trim_borders.py` | Strip uniform light/white borders from an image. Built for Grok's 1024×1024 white padding but generic. |
 | `run_pipeline.py` | Batch pipeline: scan Drive inbox → straighten/crop/normalize → save to local `output/`. Service account auth. |
 | `geometry.py` | Library: perspective correction (Hough line intersection), post-warp crop, content-orientation detection. Used by `run_pipeline.py` and `server.py`. |
@@ -144,6 +145,7 @@ Use `--dry-run` to print what would happen without mutating Drive or sheet.
 | `--hero` | Set `hero=TRUE`. To unset (e.g. when promoting a different painting), edit the sheet manually. |
 | `--recent N` | Set `recent='N'` (positions 1–6 represent the order in the home-page recent carousel). Pass `--recent ''` to clear. |
 | `--collection "A,B"` | Multi-value as comma-separated string. Existing values: `Big City`, `Flowers`, `Forest`, `Seasons`. |
+| `--title-ru "..."` / `--description-ru "..."` | Plain Russian translation for the RU version. Written only into an empty `title_ru` / `description_ru` cell (Russian in the sheet is never overwritten); adds the columns if missing and sets `ru_source`. |
 
 ## Batch pipeline (older, separate workflow)
 

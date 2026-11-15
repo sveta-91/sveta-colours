@@ -43,8 +43,8 @@
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&display=swap">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&family=Forum&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&family=Forum&display=swap" rel="stylesheet">
 
 <!-- JSON-LD: injected per painting by JS; this is a fallback for the site itself -->
 <script type="application/ld+json">
@@ -97,7 +97,7 @@
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   /* The site name and the home hero words (Sveta chose Marcellus, 2026-11-09).
      One weight only — never set it bold or italic. */
-  --font-brand: 'Marcellus', Georgia, 'Times New Roman', serif;
+  --font-brand: 'Marcellus', 'Forum', Georgia, 'Times New Roman', serif;
   /* Font rules (Sveta, 2026-11-09): two fonts per page. Names and headings
      → --font-brand, upright. Everything else (body, notes, counts, menu,
      prices) → --font-body. No italic anywhere. Fraunces is no longer loaded. */
@@ -111,6 +111,7 @@ const SITE = {
   "artist": {
     "name": "Sveta",
     "location": "Thornhill, Ontario, Canada",
+    "locationRu": "Торнхилл, Онтарио, Канада",
     "yearsPracticing": 8,
     "schooling": "self-taught",
     "influences": null,
@@ -167,6 +168,38 @@ const SITE = {
     "contactHeading": "<span class=\"italic\">Inquiries<\/span><br>&amp; studio visits",
     "contactNote": "Studio visits by appointment.",
     "footerBottom": "All works one-of-a-kind. Shipped worldwide."
+  },
+  "languages": [
+    "en",
+    "ru"
+  ],
+  "stringsRu": {
+    "logoLabel": "Sveta Colours — на главную",
+    "navNote": "Оригинальные картины<br>Торнхилл, Онтарио",
+    "shippingNote": "Доставку считаем по вашему адресу. Со страховкой, из Канады.",
+    "replyNote": "Отвечаю в течение дня-двух.",
+    "replyWhen": "в течение дня-двух",
+    "contactLede": "Вопрос, заказ, визит в мастерскую. Обычно отвечаю в течение дня-двух.",
+    "studioAlt": "В мастерской у Светы",
+    "chapterLarge": "Большие работы &mdash; 40 &times; 50 см",
+    "chapterSmall": "Небольшие работы &mdash; 28 &times; 36 см",
+    "worksIntro": "Каждая картина существует в одном экземпляре. Здесь и доступные работы, и те, что уже в частных коллекциях &mdash; беру заказы.",
+    "footerTagline": "Оригинальные картины &mdash;<br>неспешно, по одной.",
+    "mailSubject": "Письмо с sveta-colours.com",
+    "contactHeading": "<span class=\"italic\">Заказы<\/span><br>и визиты в мастерскую",
+    "contactNote": "Визит в мастерскую по договорённости.",
+    "footerBottom": "Каждая работа в одном экземпляре. Доставка по всему миру."
+  },
+  "collectionsRu": {
+    "Big City": "Большой город",
+    "Flowers": "Цветы",
+    "Forest": "Лес",
+    "Seasons": "Времена года"
+  },
+  "textDocsRu": {
+    "home": "https://docs.google.com/document/d/e/2PACX-1vTf5f_r8q7Tv6tOju6yNQtrv82XU6gByWNk_KZNxvuQh8EJOl1lRecOif0wvB05HFVjOSfrkNpKQPrV/pub",
+    "about": "https://docs.google.com/document/d/e/2PACX-1vTQkMVeb2qry9ahn7tGnDrSns-YHcqN_0kUQQCM4lsWEv53eg5L3egefu_I7WdfUye-yXrX0lkugfx_/pub",
+    "faq": "https://docs.google.com/document/d/e/2PACX-1vSAts3R7AY-7TP-Al_mGl5AVvGPhkIi1bvM0KXHzOJgxXQkVwZ4806DgAFaxhOIn2uAQFApGgpK_EyG/pub"
   },
   "fallbackPaintings": [
     {
@@ -2020,6 +2053,21 @@ body.cursor-hide * { cursor: none !important; }
   .modal-image { width: min(1360px, calc(84vh * var(--ratio, 4/5))); }
 }
 
+/* Language switch (EN · RU): in the rail on desktop, in the top bar below */
+.lang-switch { display: flex; align-items: center; gap: 0.15rem; font-family: var(--font-body);
+  font-size: 0.75rem; letter-spacing: 0.08em; color: var(--text-muted); }
+.lang-switch[hidden] { display: none; }
+.lang-switch button { background: none; border: 0; padding: 0.35rem 0.3rem; min-width: 32px; min-height: 32px;
+  font: inherit; letter-spacing: inherit; color: var(--text-muted); cursor: pointer; }
+.lang-switch button:hover { color: var(--text); }
+.lang-switch button[aria-current] { color: var(--text); text-decoration: underline; text-underline-offset: 4px; }
+@media (min-width: 1025px) { .lang-switch { margin: -0.9rem 0 0 -0.3rem; } }
+@media (min-width: 769px) and (max-width: 1024px) { .lang-switch { margin-left: 1.25rem; } }
+@media (max-width: 768px) {
+  .lang-switch { order: 2; margin-left: auto; margin-right: 0.9rem; }
+  .hamburger { order: 3; }
+}
+
 /* Skip link */
 .skip-link {
   position: absolute;
@@ -2038,26 +2086,27 @@ body.cursor-hide * { cursor: none !important; }
 </head>
 <body>
 
-<a href="#main" class="skip-link">Skip to content</a>
+<a href="#main" class="skip-link" data-i18n>Skip to content</a>
 
 <!-- Navigation -->
-<nav aria-label="Primary">
+<nav aria-label="Primary" data-i18n-aria>
   <div class="nav-inner">
     <a href="#home" class="logo" onclick="event.preventDefault(); showPage('home');" aria-label="Sveta Colours — home" data-site-aria="logoLabel">
       <span data-site-text="name">Sveta Colours</span>
     </a>
-    <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle menu" data-i18n-aria aria-expanded="false" aria-controls="navLinks">
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="navLinks">
-      <li><a href="#home" data-page="home" onclick="event.preventDefault(); showPage('home'); closeMenu();">Home</a></li>
-      <li><a href="#recent" data-page="recent" onclick="event.preventDefault(); showPage('recent'); closeMenu();">Recent</a></li>
-      <li><a href="#collections" data-page="collections" onclick="event.preventDefault(); showPage('collections'); closeMenu();">Collections</a></li>
-      <li class="nav-coll-li"><ul class="nav-colls" id="navCollections" aria-label="Collections"></ul></li>
-      <li><a href="#paintings" data-page="paintings" onclick="event.preventDefault(); showPage('paintings'); closeMenu();">All Paintings</a></li>
-      <li><a href="#about" data-page="about" onclick="event.preventDefault(); showPage('about'); closeMenu();">About</a></li>
-      <li><a href="#faq" data-page="faq" onclick="event.preventDefault(); showPage('faq'); closeMenu();">FAQ</a></li>
+      <li><a href="#home" data-page="home" onclick="event.preventDefault(); showPage('home'); closeMenu();" data-i18n>Home</a></li>
+      <li><a href="#recent" data-page="recent" onclick="event.preventDefault(); showPage('recent'); closeMenu();" data-i18n>Recent</a></li>
+      <li><a href="#collections" data-page="collections" onclick="event.preventDefault(); showPage('collections'); closeMenu();" data-i18n>Collections</a></li>
+      <li class="nav-coll-li"><ul class="nav-colls" id="navCollections" aria-label="Collections" data-i18n-aria></ul></li>
+      <li><a href="#paintings" data-page="paintings" onclick="event.preventDefault(); showPage('paintings'); closeMenu();" data-i18n>All Paintings</a></li>
+      <li><a href="#about" data-page="about" onclick="event.preventDefault(); showPage('about'); closeMenu();" data-i18n>About</a></li>
+      <li><a href="#faq" data-page="faq" onclick="event.preventDefault(); showPage('faq'); closeMenu();" data-i18n>FAQ</a></li>
     </ul>
+    <div class="lang-switch" id="langSwitch" role="group" aria-label="Language" data-i18n-aria hidden></div>
     <p class="nav-note" data-site-html="navNote">Original paintings<br>Thornhill, Ontario</p>
   </div>
 </nav>
@@ -2073,20 +2122,136 @@ body.cursor-hide * { cursor: none !important; }
 
 <div class="modal-overlay" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
   <div class="modal contact-modal">
-    <button type="button" class="modal-close" onclick="closeContact()" aria-label="Close">&times;</button>
+    <button type="button" class="modal-close" onclick="closeContact()" aria-label="Close" data-i18n-aria>&times;</button>
     <div id="contactBody"></div>
   </div>
 </div>
 
 <!-- Editorial footer (content injected by JS so it can react to SITE_DATA) -->
-<footer id="footer" aria-label="Site footer"></footer>
+<footer id="footer" aria-label="Site footer" data-i18n-aria></footer>
 
 <!-- Sticky mobile CTA: visible only ≤768px once scrolled past the hero.
      Opens the "Write to studio" form (mailto when no FORM_ENDPOINT). -->
-<a id="mobileCTA" class="mobile-cta" aria-label="Write to studio">Write to studio</a>
+<a id="mobileCTA" class="mobile-cta" aria-label="Write to studio" data-i18n-aria data-i18n>Write to studio</a>
 
 <!-- Painting JSON-LD slot (filled by JS) -->
 <script type="application/ld+json" id="paintings-ld">{}</script>
+
+<script>
+/* ========================================================
+   LANGUAGE: English by default; a switch appears when SITE.languages
+   lists more than one ("en", "ru"). Choice order: ?lang= in the URL,
+   then the visitor's last choice (localStorage), then English.
+   - t('English text') → the Russian from I18N_RU, or the English as is.
+   - Per-site short wording: SITE.stringsRu over SITE.strings.
+   - Paintings: sheet columns title_ru, description_ru, medium_ru
+     (empty → English); collection names: SITE.collectionsRu.
+   - Long texts: SITE.textDocsRu, then texts/ru/*.txt, then English.
+   Slugs, collection keys, the sheet and the inquiry email stay English.
+   ======================================================== */
+const LANGS = (SITE.languages && SITE.languages.length) ? SITE.languages : ['en'];
+const LANG = (() => {
+  let l = null;
+  try { l = new URLSearchParams(location.search).get('lang'); } catch (e) { /* ignore */ }
+  if (!l) { try { l = localStorage.getItem('lang'); } catch (e) { /* private mode */ } }
+  return LANGS.includes(l) ? l : 'en';
+})();
+const RU = LANG === 'ru';
+if (RU) {
+  document.documentElement.lang = 'ru';
+  Object.assign(SITE.strings, SITE.stringsRu || {});
+}
+const I18N_RU = {
+  // navigation and page furniture
+  'Skip to content': 'Перейти к содержанию', 'Primary': 'Основное меню', 'Toggle menu': 'Меню',
+  'Language': 'Язык', 'Home': 'Главная', 'Recent': 'Новые', 'Collections': 'Коллекции',
+  'All Paintings': 'Все картины', 'All paintings': 'Все картины', 'About': 'Об авторе', 'FAQ': 'Вопросы',
+  '&larr; Back': '&larr; Назад', 'Close': 'Закрыть', 'View →': 'Смотреть →',
+  // cards and the painting window
+  'Sold': 'Продана', 'Sold.': 'Продана.', 'Commission similar &rarr;': 'Заказать похожую &rarr;',
+  "Write if you'd like a similar commission.": 'Напишите, если хотите заказать похожую.',
+  'Open details for {0}': 'Открыть «{0}»', 'Open details for {0}, sold': 'Открыть «{0}», продана',
+  'Size': 'Размер', 'Medium': 'Техника', 'Year': 'Год', 'Signed': 'Подпись', 'Details': 'Подробнее',
+  'Framing': 'Оформление', 'Ships from': 'Отправка из', 'Authenticity': 'Подлинность',
+  // writing to the studio
+  'Write to studio': 'Написать в студию', 'Write to studio &rarr;': 'Написать в студию &rarr;',
+  'Write to the studio': 'Написать в студию', 'Write to the studio &rarr;': 'Написать в студию &rarr;',
+  'Copy': 'Скопировать', 'Copied': 'Скопировано', 'Leave empty': 'Оставьте пустым',
+  'Your name': 'Ваше имя', 'Email': 'Эл. почта', 'Message': 'Сообщение', 'Send': 'Отправить',
+  'or write directly:': 'или напишите напрямую:', 'Sending…': 'Отправляем…',
+  // home
+  'Featured painting': 'Главная картина', 'Selected works': 'Избранное',
+  'Recent paintings': 'Новые работы', 'See all paintings': 'Все картины',
+  'See all paintings &rarr;': 'Все картины &rarr;', 'By theme': 'По темам', 'VIEW &rarr;': 'СМОТРЕТЬ &rarr;',
+  'From the studio': 'Из мастерской', 'Read more': 'Читать дальше', 'Notes': 'Отзывы',
+  'From collectors': 'Отзывы коллекционеров', 'Process': 'Процесс', 'On painting': 'О живописи',
+  'Selected exhibitions': 'Выставки', 'Press &amp; shows': 'Пресса и выставки',
+  'Email address': 'Адрес эл. почты', 'Subscribe': 'Подписаться',
+  // list pages
+  'No paintings yet.': 'Картин пока нет.', 'Other works': 'Другие работы',
+  'The latest from the studio.': 'Последние работы из мастерской.', 'Postcards': 'Открытки',
+  'Small watercolor works &mdash; light, atmospheric, made by hand.': 'Небольшие акварели &mdash; лёгкие, воздушные, сделанные вручную.',
+  'Watercolor postcards drop seasonally. New batch this spring.': 'Акварельные открытки выходят раз в сезон. Новые будут весной.',
+  'Paintings grouped by mood, light, and atmosphere.': 'Картины, собранные по настроению, свету и атмосфере.',
+  'All collections': 'Все коллекции', 'No collections defined yet.': 'Коллекций пока нет.',
+  'No paintings in this collection yet.': 'В этой коллекции пока нет картин.',
+  'FAQ &amp; shipping': 'Вопросы и доставка',
+  'Everything about ordering, shipping, returns, and care.': 'Всё о заказе, доставке, возврате и уходе за картиной.',
+  'Past work': 'Проданные работы', 'Past Work': 'Проданные работы', 'Nothing sold yet.': 'Пока ничего не продано.',
+  'Paintings that have found homes. Browse for atmosphere &mdash; or write to commission something in a similar mood.':
+    'Картины, которые уже нашли свой дом. Смотрите ради настроения или напишите, чтобы заказать что-то похожее.',
+  // footer
+  'Newsletter': 'Рассылка', 'New work, seasonally. No spam.': 'Новые работы раз в сезон. Без спама.',
+  'Browse': 'Разделы', 'Studio': 'Мастерская', 'FAQ &amp; Shipping': 'Вопросы и доставка', 'Contact': 'Написать',
+  'Original Paintings': 'оригинальные картины', 'Site footer': 'Подвал сайта',
+};
+function t(s, ...args) {
+  let out = (RU && I18N_RU[s]) || s;
+  args.forEach((a, i) => { out = out.split('{' + i + '}').join(a); });
+  return out;
+}
+function ruPlural(n, one, few, many) {
+  const a = Math.abs(n) % 100, b = a % 10;
+  if (a > 10 && a < 20) return many;
+  if (b === 1) return one;
+  return (b >= 2 && b <= 4) ? few : many;
+}
+function nPaintings(n) {
+  return RU ? `${n} ${ruPlural(n, 'картина', 'картины', 'картин')}` : `${n} painting${n !== 1 ? 's' : ''}`;
+}
+function collLabel(name) { return (RU && SITE.collectionsRu && SITE.collectionsRu[name]) || name; }
+// Free-text medium → Russian when the sheet has no medium_ru. Order matters.
+const RU_MEDIUM = [
+  [/ on cold-press paper/g, ', бумага'], [/ on canvas board/g, ', холст на картоне'], [/ on canvas/g, ', холст'],
+  [/ on paper/g, ', бумага'], [/ on board/g, ', картон'], [/ on panel/g, ', доска'],
+  [/watercolou?rs?/g, 'акварель'], [/acrylics?/g, 'акрил'], [/oil/g, 'масло'], [/gouache/g, 'гуашь'],
+  [/mixed media/g, 'смешанная техника'], [/pastel/g, 'пастель'], [/ink/g, 'тушь'],
+];
+function mediumLabel(p) {
+  if (!p || !p.medium) return '';
+  if (!RU) return capitalize(p.medium);
+  if (p.mediumRu) return capitalize(p.mediumRu);
+  let m = p.medium;
+  RU_MEDIUM.forEach(([re, r]) => { m = m.replace(re, r); });
+  return capitalize(m);
+}
+function setLang(l) {
+  try { localStorage.setItem('lang', l); } catch (e) { /* private mode */ }
+  const u = new URL(location.href);
+  if (l === 'en') u.searchParams.delete('lang'); else u.searchParams.set('lang', l);
+  location.replace(u.toString());
+}
+document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.textContent.trim()); });
+document.querySelectorAll('[data-i18n-aria]').forEach(e => { e.setAttribute('aria-label', t(e.getAttribute('aria-label'))); });
+(function () {
+  const el = document.getElementById('langSwitch');
+  if (!el || LANGS.length < 2) return;
+  el.innerHTML = LANGS.map(l =>
+    `<button type="button" lang="${l}"${l === LANG ? ' aria-current="true"' : ''} onclick="setLang('${l}')">${l.toUpperCase()}</button>`
+  ).join('<span aria-hidden="true">·</span>');
+  el.hidden = false;
+})();
+</script>
 
 <script>
 /* Static nav text comes from SITE too, so a site built from another block
@@ -2177,6 +2342,19 @@ async function fetchText(url, ms) {
 const TEXTS_SOURCE = {};   // file → 'doc' | 'backup' | 'none' (for checks)
 async function loadTexts() {
   await Promise.all(Object.keys(TEXTS).map(async name => {
+    if (RU) {
+      const docRu = (SITE.textDocsRu || {})[name];
+      if (docRu) {
+        try {
+          const blocks = parseTextFile(name, docPageToText(await fetchText(docRu, 2500)));
+          if (blocks.length) { TEXTS[name] = blocks; TEXTS_SOURCE[name] = 'doc-ru'; return; }
+        } catch (err) { console.warn(`Russian Google Doc "${name}" could not be read (${err.message})`); }
+      }
+      try {
+        const blocks = parseTextFile(name, await fetchText(TEXTS_BASE + 'ru/' + name + '.txt', 2500));
+        if (blocks.length) { TEXTS[name] = blocks; TEXTS_SOURCE[name] = 'backup-ru'; return; }
+      } catch (err) { console.warn(`texts/ru/${name}.txt could not be loaded (${err.message}) — English shown`); }
+    }
     if (TEXT_DOCS[name]) {
       try {
         const blocks = parseTextFile(name, docPageToText(await fetchText(TEXT_DOCS[name], 2500)));
@@ -2322,14 +2500,16 @@ function sheetRowToPainting(row, headers, index) {
 
   return {
     id: index + 1,
-    title: get('title'),
+    title: (RU && get('titleru')) || get('title'),
+    titleEn: get('title'),            // key for slugs, hero/featured names, the inquiry email
     slug: get('slug'),
     medium: get('medium').toLowerCase(),
+    mediumRu: get('mediumru'),
     price: priceStr ? parseFloat(priceStr.replace(/[^0-9.]/g, '')) : null,
     sold: sold,
     size: get('size'),
     image: driveImageURL(get('image')),
-    description: get('description'),
+    description: (RU && get('descriptionru')) || get('description'),
     collections: collections,
     collOrder: collOrder,
     available: !sold,
@@ -2416,7 +2596,7 @@ const SIMPLE_ROUTES = ['recent', 'paintings', 'collections', 'postcards', 'about
    not the row number: row numbers shift when rows are inserted or reordered,
    which silently retargeted every shared link. A missing slug falls back to
    slugify(title), the same rule the sheet's slugs were made with. */
-function paintingSlug(p) { return (p && (p.slug || slugify(p.title))) || ''; }
+function paintingSlug(p) { return (p && (p.slug || slugify(p.titleEn || p.title))) || ''; }
 function paintingHash(p) { return '#painting/' + paintingSlug(p); }
 
 // The painting a #painting/<slug> hash points at, or null. Old numeric links
@@ -2495,15 +2675,22 @@ function closeMenu() {
 }
 
 function formatPriceText(p) {
-  if (p.sold) return 'Sold';
+  if (p.sold) return t('Sold');
   if (p.price == null || isNaN(p.price)) return '';
   return `${CURRENCY}${p.price.toLocaleString()} ${CURRENCY_CODE}`;
 }
 
 function formatPrice(p) {
-  if (p.sold) return `<span class="card-price sold">Sold</span>`;
+  if (p.sold) return `<span class="card-price sold">${t('Sold')}</span>`;
   if (p.price == null || isNaN(p.price)) return '';
   return `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}<span class="price-code">${CURRENCY_CODE}</span></span>`;
+}
+
+// Russian puts centimetres first, with decimal commas.
+function dimsText(wIn, hIn, wCm, hCm) {
+  if (!RU) return `${wIn} × ${hIn} in / ${wCm} × ${hCm} cm`;
+  const c = x => String(x).replace('.', ',');
+  return `${c(wCm)} × ${c(hCm)} см / ${c(wIn)} × ${c(hIn)} дюйм.`;
 }
 
 // Convert "16 x 20 in" or numeric inches to "16 × 20 in / 40.6 × 50.8 cm"
@@ -2512,7 +2699,7 @@ function formatDimensions(p) {
     const wIn = p.widthIn, hIn = p.heightIn;
     const wCm = (wIn * 2.54).toFixed(1).replace(/\.0$/, '');
     const hCm = (hIn * 2.54).toFixed(1).replace(/\.0$/, '');
-    return `${wIn} × ${hIn} in / ${wCm} × ${hCm} cm`;
+    return dimsText(wIn, hIn, wCm, hCm);
   }
   if (p.size) {
     // Try to parse "16 x 20 in" or "16x20"
@@ -2521,7 +2708,7 @@ function formatDimensions(p) {
       const wIn = parseFloat(m[1]), hIn = parseFloat(m[2]);
       const wCm = (wIn * 2.54).toFixed(1).replace(/\.0$/, '');
       const hCm = (hIn * 2.54).toFixed(1).replace(/\.0$/, '');
-      return `${wIn} × ${hIn} in / ${wCm} × ${hCm} cm`;
+      return dimsText(wIn, hIn, wCm, hCm);
     }
     return p.size;
   }
@@ -2555,9 +2742,9 @@ function paintingMeta(p) {
   // meta strings (some with year, most without) read messier than the omission.
   // Year still surfaces in the modal's primary-rows table.
   const parts = [];
-  const medium = p.medium ? capitalize(p.medium) : '';
+  const medium = mediumLabel(p);
   const surface = p.surface ? p.surface.toLowerCase() : '';
-  if (medium && surface) parts.push(`${medium} on ${surface}`);
+  if (medium && surface) parts.push(RU ? `${medium}, ${surface}` : `${medium} on ${surface}`);
   else if (medium) parts.push(medium);
   const dims = formatDimensions(p);
   if (dims) parts.push(dims);
@@ -2592,7 +2779,9 @@ function mediumKind(p) { return /water/i.test((p && p.medium) || '') ? 'watercol
 
 function paintingImage(p, opts) {
   opts = opts || {};
-  const alt = `${p.title} — original ${p.medium || 'painting'} painting by ${SITE.artist.name}`;
+  const alt = RU
+    ? `«${p.title}», ${(mediumLabel(p) || 'картина').toLowerCase()}. Автор: ${SITE.artist.name}`
+    : `${p.title} — original ${p.medium || 'painting'} painting by ${SITE.artist.name}`;
   if (p.image) {
     const loadAttr = (opts.isHero || opts.isModal) ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"';
     const crossOrigin = opts.crossOrigin ? 'crossorigin="anonymous"' : '';
@@ -2638,7 +2827,7 @@ function cardHTML(p) {
   // is identical across states — the slot is always there, never blank.
   // (Modal still uses the struck-through price treatment where it informs.)
   const priceHTML = p.sold
-    ? `<span class="card-price card-price--sold">Sold</span>`
+    ? `<span class="card-price card-price--sold">${t('Sold')}</span>`
     : (p.price ? `<span class="card-price">${CURRENCY}${p.price.toLocaleString()}<span class="price-code">${CURRENCY_CODE}</span></span>` : '');
   // Sold-card recovery: a buyer falling for a sold piece gets an in-card
   // path to inquire about a commission instead of a dead end. The button
@@ -2649,7 +2838,7 @@ function cardHTML(p) {
     ? encodeURIComponent(`Commission similar to "${p.title}"`)
     : '';
   const commissionHTML = p.sold
-    ? `<button type="button" class="card-commission" onclick="event.stopPropagation(); event.preventDefault(); openModal(${p.id}, { pushHistory: true, focusInquiry: true });">Commission similar &rarr;</button>`
+    ? `<button type="button" class="card-commission" onclick="event.stopPropagation(); event.preventDefault(); openModal(${p.id}, { pushHistory: true, focusInquiry: true });">${t('Commission similar &rarr;')}</button>`
     : '';
   const meta = paintingMeta(p);
   // Mark cards by physical size so the 11×14 inset rule can shrink the
@@ -2667,8 +2856,8 @@ function cardHTML(p) {
   // computeMasonry() refines this after images load.
   const span = estimateGridRowSpan(ratio);
   const aria = p.sold
-    ? `Open details for ${p.title}, sold`
-    : `Open details for ${p.title}${p.price ? ', ' + CURRENCY + p.price + ' ' + CURRENCY_CODE : ''}`;
+    ? t('Open details for {0}, sold', p.title)
+    : t('Open details for {0}', p.title) + (p.price ? ', ' + CURRENCY + p.price + ' ' + CURRENCY_CODE : '');
   return `
     <a data-medium="${mediumKind(p)}" class="painting-card reveal${p.sold ? ' is-sold' : ''}" href="${paintingHash(p)}" data-card-id="${p.id}"${dataSize}${dataOrient} style="grid-row: span ${span};" onclick="return cardClick(event, ${p.id});" aria-label="${aria}">
       <div class="card-image">
@@ -2748,7 +2937,7 @@ function openModal(id, opts) {
   const primaryRows = [];
   const dims = formatDimensions(p);
   if (dims) primaryRows.push(['Size', dims]);
-  if (p.medium) primaryRows.push(['Medium', capitalize(p.medium) + (p.surface ? ` on ${p.surface.toLowerCase()}` : '')]);
+  if (p.medium) primaryRows.push(['Medium', mediumLabel(p) + (p.surface ? (RU ? ', ' : ' on ') + p.surface.toLowerCase() : '')]);
   if (p.year) primaryRows.push(['Year', p.year]);
   if (p.signed) primaryRows.push(['Signed', p.signed]);
 
@@ -2760,7 +2949,7 @@ function openModal(id, opts) {
   if (p.certificate) extraRows.push(['Authenticity', p.certificate]);
 
   const rowsToHTML = (rows) => rows.map(([l, v]) =>
-    `<div class="row row-${l.toLowerCase()}"><span class="label">${l}</span><span class="value">${v}</span></div>`
+    `<div class="row row-${l.toLowerCase()}"><span class="label">${t(l)}</span><span class="value">${v}</span></div>`
   ).join('');
 
   const metaHTML = primaryRows.length
@@ -2768,7 +2957,7 @@ function openModal(id, opts) {
     : '';
 
   const extraHTML = extraRows.length
-    ? `<details class="modal-extra"><summary>Details</summary><div class="modal-meta">${rowsToHTML(extraRows)}</div></details>`
+    ? `<details class="modal-extra"><summary>${t('Details')}</summary><div class="modal-meta">${rowsToHTML(extraRows)}</div></details>`
     : '';
 
   // Sold pieces show the word "Sold" in the price slot — never the
@@ -2778,7 +2967,7 @@ function openModal(id, opts) {
   // The label stands alone; the modal CTA section restates "Sold."
   // alongside the commission offer.
   const priceHTML = p.sold
-    ? `<div class="modal-price sold">Sold</div>`
+    ? `<div class="modal-price sold">${t('Sold')}</div>`
     : (p.price ? `<div class="modal-price">${CURRENCY}${p.price.toLocaleString()}<span class="price-code">${CURRENCY_CODE}</span></div>
                   <div class="modal-shipping">${SHIPPING_NOTE}</div>` : '');
 
@@ -2788,17 +2977,17 @@ function openModal(id, opts) {
 
   const ctaHTML = p.sold
     ? `<div class="modal-cta">
-         <div class="cta-note"><span class="italic">Sold.</span> Write if you'd like a similar commission.</div>
-         ${inquiryHTML(p, `Commission like "${p.title}"`)}
+         <div class="cta-note"><span class="italic">${t('Sold.')}</span> ${t("Write if you'd like a similar commission.")}</div>
+         ${inquiryHTML(p, `Commission like "${p.titleEn || p.title}"`)}
        </div>`
     : `<div class="modal-cta">
-         ${inquiryHTML(p, `Inquiry about "${p.title}"`)}
+         ${inquiryHTML(p, `Inquiry about "${p.titleEn || p.title}"`)}
          <div class="cta-note">${SITE.strings.replyNote}</div>
        </div>`;
 
   const collectionsHTML = (p.collections || []).length
     ? `<div class="modal-collections">${(p.collections || []).map(c =>
-        `<button class="chip" type="button" onclick="closeModal(true);showPage('collection:${encodeURIComponent(c)}', { replace: true })">${c}</button>`
+        `<button class="chip" type="button" onclick="closeModal(true);showPage('collection:${encodeURIComponent(c)}', { replace: true })">${collLabel(c)}</button>`
       ).join('')}</div>`
     : '';
 
@@ -2808,7 +2997,7 @@ function openModal(id, opts) {
   // Modal image needs crossorigin for canvas sampling. Will silently fall back
   // if CORS blocks (Google Drive sometimes does).
   document.getElementById('modalContent').innerHTML = `
-    <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+    <button class="modal-close" onclick="closeModal()" aria-label="${t('Close')}">&times;</button>
     <div class="modal-image" data-medium="${mediumKind(p)}" style="--ratio: ${modalRatio};">${paintingImage(p, { crossOrigin: true, isModal: true })}</div>
     <div class="modal-details">
       <h2 id="modalTitle">${p.title}</h2>
@@ -2852,26 +3041,26 @@ function inquiryHTML(p, subjectText) {
   const subject = encodeURIComponent(subjectText);
   const copyRow = `<div class="inquiry-email">
       <a href="mailto:${CONTACT_EMAIL}?subject=${subject}">${CONTACT_EMAIL}</a>
-      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">Copy</button>
+      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">${t('Copy')}</button>
     </div>`;
   if (!FORM_ENDPOINT) {
-    return `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">Write to studio &rarr;</a>${copyRow}`;
+    return `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">${t('Write to studio &rarr;')}</a>${copyRow}`;
   }
   const safeSubject = subjectText.replace(/"/g, '&quot;');
   const intent = /^Commission/.test(subjectText) ? 'commission' : 'question';
-  return `<button type="button" class="cta-link inquiry-toggle" aria-expanded="false" aria-controls="inquiryForm" onclick="openInquiry()">Write to studio &rarr;</button>
+  return `<button type="button" class="cta-link inquiry-toggle" aria-expanded="false" aria-controls="inquiryForm" onclick="openInquiry()">${t('Write to studio &rarr;')}</button>
     <form id="inquiryForm" class="inquiry-form" hidden onsubmit="return sendInquiry(event)">
       <input type="hidden" name="_subject" value="${safeSubject}">
-      <input type="hidden" name="painting" value="${p.title.replace(/"/g, '&quot;')}">
+      <input type="hidden" name="painting" value="${(p.titleEn || p.title).replace(/"/g, '&quot;')}">
       <input type="hidden" name="intent" value="${intent}">
-      <label class="inquiry-hp" aria-hidden="true">Leave empty<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
-      <label>Your name<input type="text" name="name" required autocomplete="name"></label>
-      <label>Email<input type="email" name="email" required autocomplete="email"></label>
-      <label>Message<textarea name="message" rows="4" required>Hello, I'm interested in "${p.title.replace(/</g, '&lt;')}".</textarea></label>
-      <button type="submit" class="inquiry-send">Send</button>
+      <label class="inquiry-hp" aria-hidden="true">${t('Leave empty')}<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+      <label>${t('Your name')}<input type="text" name="name" required autocomplete="name"></label>
+      <label>${t('Email')}<input type="email" name="email" required autocomplete="email"></label>
+      <label>${t('Message')}<textarea name="message" rows="4" required>${RU ? `Здравствуйте! Меня интересует картина «${p.title.replace(/</g, '&lt;')}».` : `Hello, I'm interested in "${p.title.replace(/</g, '&lt;')}".`}</textarea></label>
+      <button type="submit" class="inquiry-send">${t('Send')}</button>
       <div class="inquiry-status" role="status" aria-live="polite"></div>
     </form>
-    <div class="inquiry-alt">or write directly:</div>${copyRow}`;
+    <div class="inquiry-alt">${t('or write directly:')}</div>${copyRow}`;
 }
 
 function openInquiry() {
@@ -2895,7 +3084,7 @@ async function sendInquiry(e) {
   data.elapsedMs = form.dataset.openedAt ? Date.now() - Number(form.dataset.openedAt) : 0;
   data.page = window.location.href;
   btn.disabled = true;
-  status.textContent = 'Sending…';
+  status.textContent = t('Sending…');
   try {
     // text/plain keeps this a "simple" request: no CORS preflight, which the
     // Apps Script web app (inquiry/Code.gs) can't answer. The body is still JSON.
@@ -2908,10 +3097,15 @@ async function sendInquiry(e) {
     // Apps Script answers 200 even on failure; the verdict is in the body.
     const reply = await res.json().catch(() => ({}));
     if (!reply.ok) throw new Error(reply.error || 'no confirmation');
-    form.innerHTML = `<div class="inquiry-done">Thank you. Your message is with the studio; I'll reply to ${data.email.replace(/</g, '&lt;')} ${SITE.strings.replyWhen}.</div>`;
+    const to = data.email.replace(/</g, '&lt;');
+    form.innerHTML = RU
+      ? `<div class="inquiry-done">Спасибо! Сообщение получено, я отвечу на ${to} ${SITE.strings.replyWhen}.</div>`
+      : `<div class="inquiry-done">Thank you. Your message is with the studio; I'll reply to ${to} ${SITE.strings.replyWhen}.</div>`;
   } catch (err) {
     btn.disabled = false;
-    status.textContent = `Couldn't send just now. Please write to ${CONTACT_EMAIL} directly.`;
+    status.textContent = RU
+      ? `Сейчас не получилось отправить. Напишите, пожалуйста, напрямую: ${CONTACT_EMAIL}.`
+      : `Couldn't send just now. Please write to ${CONTACT_EMAIL} directly.`;
   }
   return false;
 }
@@ -2925,22 +3119,22 @@ function openContact(e) {
   if (e) e.preventDefault();
   contactReturnFocus = document.activeElement;
   document.getElementById('contactBody').innerHTML = `
-    <h2 id="contactTitle">Write to the studio</h2>
+    <h2 id="contactTitle">${t('Write to the studio')}</h2>
     <p class="contact-lede">${SITE.strings.contactLede}</p>
     <form class="inquiry-form" onsubmit="return sendInquiry(event)">
       <input type="hidden" name="intent" value="contact">
       <input type="hidden" name="painting" value="">
-      <label class="inquiry-hp" aria-hidden="true">Leave empty<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
-      <label>Your name<input type="text" name="name" required autocomplete="name"></label>
-      <label>Email<input type="email" name="email" required autocomplete="email"></label>
-      <label>Message<textarea name="message" rows="5" required></textarea></label>
-      <button type="submit" class="inquiry-send">Send</button>
+      <label class="inquiry-hp" aria-hidden="true">${t('Leave empty')}<input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+      <label>${t('Your name')}<input type="text" name="name" required autocomplete="name"></label>
+      <label>${t('Email')}<input type="email" name="email" required autocomplete="email"></label>
+      <label>${t('Message')}<textarea name="message" rows="5" required></textarea></label>
+      <button type="submit" class="inquiry-send">${t('Send')}</button>
       <div class="inquiry-status" role="status" aria-live="polite"></div>
     </form>
-    <div class="inquiry-alt">or write directly:</div>
+    <div class="inquiry-alt">${t('or write directly:')}</div>
     <div class="inquiry-email">
       <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
-      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">Copy</button>
+      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">${t('Copy')}</button>
     </div>`;
   const form = document.querySelector('#contactBody form');
   form.dataset.openedAt = String(Date.now());
@@ -2963,7 +3157,7 @@ function closeContact() {
 document.getElementById('contactModal').addEventListener('click', function(e) { if (e.target === this) closeContact(); });
 
 function copyStudioEmail(btn) {
-  const done = () => { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = 'Copy'; }, 1800); };
+  const done = () => { btn.textContent = t('Copied'); setTimeout(() => { btn.textContent = t('Copy'); }, 1800); };
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(CONTACT_EMAIL).then(done, () => {});
@@ -3157,7 +3351,7 @@ function selectFeatured(paintings, count, excludeHeroId) {
   if (FEATURED_TITLES && FEATURED_TITLES.length) {
     const byTitle = new Map();
     pool.forEach(p => {
-      if (p.title && p.image) byTitle.set(p.title.toLowerCase().trim(), p);
+      if (p.title && p.image) byTitle.set((p.titleEn || p.title).toLowerCase().trim(), p);
     });
     const chosen = FEATURED_TITLES
       .map(t => byTitle.get(t.toLowerCase().trim()))
@@ -3227,7 +3421,7 @@ function getHeroPiece() {
   // Constant fallback.
   if (HERO_PIN_TITLE) {
     const pinned = PAINTINGS.find(p =>
-      p.title && p.title.toLowerCase() === HERO_PIN_TITLE.toLowerCase() && isShowable(p)
+      p.title && (p.titleEn || p.title).toLowerCase() === HERO_PIN_TITLE.toLowerCase() && isShowable(p)
     );
     if (pinned) return pinned;
   }
@@ -3264,12 +3458,12 @@ function renderHero() {
   const creditWork = heroPiece
     ? [
         heroPiece.title,
-        heroPiece.medium ? capitalize(heroPiece.medium) : '',
+        mediumLabel(heroPiece),
         heroSize
       ].filter(Boolean).join(' <span class="sep">&middot;</span> ')
     : '';
   const creditStat = soldCount >= 3
-    ? `${soldCount} paintings in private collections`
+    ? (RU ? `${nPaintings(soldCount)} в частных коллекциях` : `${soldCount} paintings in private collections`)
     : '';
 
   // Pre-paint hero aspect ratio: prefer Sheet dims so the box is the right
@@ -3286,11 +3480,11 @@ function renderHero() {
   const heroBox = heroPiece
     ? `<button type="button" class="hero-image-wrap" data-medium="${mediumKind(heroPiece)}" style="--hero-ratio: ${heroRatio};"
          onclick="openModal(${heroPiece.id})"
-         aria-label="Open details for ${heroPiece.title}">${heroImageHTML}</button>`
+         aria-label="${t('Open details for {0}', heroPiece.title)}">${heroImageHTML}</button>`
     : `<div class="hero-image-wrap" data-medium="${mediumKind(heroPiece)}" style="--hero-ratio: ${heroRatio};">${heroImageHTML}</div>`;
 
   return `
-    <section class="hero" aria-label="Featured painting">
+    <section class="hero" aria-label="${t('Featured painting')}">
       <div class="hero-text">
         ${SITE.portrait ? `<img class="hero-portrait" src="${SITE.portrait.src}" onerror="this.onerror=null; this.src='${SITE.portrait.fallback}'" alt="${SITE.portrait.alt}" width="${SITE.portrait.width}" height="${SITE.portrait.height}" fetchpriority="high">` : ''}
         ${textBlock('home', 'headline') ? `<h1 class="hero-title">${textLines(textBlock('home', 'headline'))}</h1>` : ''}
@@ -3318,14 +3512,14 @@ function renderHome() {
     <section style="background: var(--bg);">
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">Selected works</span>
-          <h2>Recent paintings</h2>
+          <span class="eyebrow">${t('Selected works')}</span>
+          <h2>${t('Recent paintings')}</h2>
         </div>
         <div class="home-recent">
           ${featured.map(cardHTML).join('')}
         </div>
         <div style="margin-top: 2rem; text-align: center;">
-          <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all paintings</a>
+          <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">${t('See all paintings')}</a>
         </div>
       </div>
     </section>
@@ -3334,8 +3528,8 @@ function renderHome() {
     <section class="categories">
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">By theme</span>
-          <h2>Collections</h2>
+          <span class="eyebrow">${t('By theme')}</span>
+          <h2>${t('Collections')}</h2>
         </div>
         <div class="category-grid">
           ${collections.map(name => {
@@ -3346,10 +3540,10 @@ function renderHome() {
                 ${collectionThumb(name, 480, 'cat-thumb')}
                 <div class="cat-text">
                   <div>
-                    <h3>${name}</h3>
-                    <div class="cat-count">${count} painting${count !== 1 ? 's' : ''}</div>
+                    <h3>${collLabel(name)}</h3>
+                    <div class="cat-count">${nPaintings(count)}</div>
                   </div>
-                  <div class="cat-arrow">VIEW &rarr;</div>
+                  <div class="cat-arrow">${t('VIEW &rarr;')}</div>
                 </div>
               </div>`;
           }).join('')}
@@ -3360,15 +3554,15 @@ function renderHome() {
     <section>
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">About</span>
-          <h2>From the studio</h2>
+          <span class="eyebrow">${t('About')}</span>
+          <h2>${t('From the studio')}</h2>
           <!-- Section titles dedup: kept this as "From the studio" (single
                "studio" mention on the home page). Process section retitled
                to "On painting"; Testimonials is "From collectors". -->
         </div>
         <div class="about-preview reveal">
           ${renderAboutPreview()}
-          <a href="#about" class="link link-arrow" onclick="event.preventDefault(); showPage('about');" style="margin-top: 0.5rem; display: inline-block;">Read more</a>
+          <a href="#about" class="link link-arrow" onclick="event.preventDefault(); showPage('about');" style="margin-top: 0.5rem; display: inline-block;">${t('Read more')}</a>
         </div>
       </div>
     </section>
@@ -3397,8 +3591,8 @@ function renderTestimonialsSection() {
     <section class="testimonials">
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">Notes</span>
-          <h2>From collectors</h2>
+          <span class="eyebrow">${t('Notes')}</span>
+          <h2>${t('From collectors')}</h2>
         </div>
         <div class="testimonials-grid">
           ${items.map(t => `
@@ -3414,7 +3608,9 @@ function renderTestimonialsSection() {
 function renderProcessSection() {
   // <!-- NOTE FOR SVETA (HTML comment, never visible): the process copy below
   //      is a draft. Edit in source if it doesn't sound like you. -->
-  const photo = driveImageURL(SITE_DATA.artist.studioPhotoUrl);
+  // A Drive link or a full URL, or a path next to index.html (images/…).
+  const raw = SITE_DATA.artist.studioPhotoUrl || '';
+  const photo = driveImageURL(raw) || (/^[\w./-]+\.(jpe?g|png|webp)$/i.test(raw) ? raw : '');
   const imageHTML = photo
     ? `<div class="process-image" style="padding:0; background:var(--surface-alt);"><img src="${photo}" alt="${SITE.strings.studioAlt}" loading="lazy" style="width:100%; height:100%; object-fit:cover;"></div>`
     : '';
@@ -3422,8 +3618,8 @@ function renderProcessSection() {
     <section>
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">Process</span>
-          <h2>On painting</h2>
+          <span class="eyebrow">${t('Process')}</span>
+          <h2>${t('On painting')}</h2>
         </div>
         <!-- TODO (source-only): add real studio photo via SITE_DATA.artist.studioPhotoUrl -->
         <div class="process-grid" style="${photo ? '' : 'grid-template-columns: 1fr;'}">
@@ -3445,8 +3641,8 @@ function renderExhibitionsSection() {
     <section style="background: var(--surface);">
       <div class="section-inner">
         <div class="section-title">
-          <span class="eyebrow">Selected exhibitions</span>
-          <h2>Press &amp; shows</h2>
+          <span class="eyebrow">${t('Selected exhibitions')}</span>
+          <h2>${t('Press &amp; shows')}</h2>
         </div>
         <div class="exhibitions-list">
           ${list.map(e => `
@@ -3468,11 +3664,11 @@ function renderNewsletterFormHTML() {
   if (!url) return '';
   return `
     <form action="${url}" method="post" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:0.6rem;">
-      <label for="newsletter-email-footer" class="visually-hidden">Email address</label>
+      <label for="newsletter-email-footer" class="visually-hidden">${t('Email address')}</label>
       <input type="email" id="newsletter-email-footer" name="email" placeholder="your@email.com" required
-             aria-label="Email address"
+             aria-label="${t('Email address')}"
              style="background:transparent;border:none;border-bottom:1px solid var(--border-strong);padding:0.4rem 0;font-family:var(--font-body);font-size:0.92rem;color:var(--text);">
-      <button type="submit" style="align-self:flex-start;background:none;border:none;border-bottom:1px solid var(--text);padding:0.3rem 0;font-family:var(--font-body);font-size:0.82rem;letter-spacing:0.04em;color:var(--text);cursor:pointer;">Subscribe</button>
+      <button type="submit" style="align-self:flex-start;background:none;border:none;border-bottom:1px solid var(--text);padding:0.3rem 0;font-family:var(--font-body);font-size:0.82rem;letter-spacing:0.04em;color:var(--text);cursor:pointer;">${t('Subscribe')}</button>
     </form>`;
 }
 
@@ -3482,7 +3678,7 @@ function renderContactSection() {
       <div class="contact-inner">
         <h2>${SITE.strings.contactHeading}</h2>
         <div class="contact-meta">
-          ${FORM_ENDPOINT ? '<button type="button" class="contact-write" onclick="openContact(event)">Write to the studio &rarr;</button>' : ''}
+          ${FORM_ENDPOINT ? '<button type="button" class="contact-write" onclick="openContact(event)">' + t('Write to the studio &rarr;') + '</button>' : ''}
           <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>
           ${SITE.strings.contactNote}
         </div>
@@ -3531,7 +3727,7 @@ function renderPaintings() {
        </section>`
     : '';
 
-  const emptyMsg = `<section><div class="section-inner"><p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);">No paintings yet.</p></div></section>`;
+  const emptyMsg = `<section><div class="section-inner"><p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);">${t('No paintings yet.')}</p></div></section>`;
 
   // When every painting carries dimensions: render two real chapters.
   // When some are missing dims: render an extra "Other works" chapter so
@@ -3545,13 +3741,13 @@ function renderPaintings() {
   } else {
     body = chapter(SITE.strings.chapterLarge, large, 'works-large')
          + chapter(SITE.strings.chapterSmall, small, 'works-small')
-         + chapter('Other works', interleaveByOrientation(unknown), 'works-other');
+         + chapter(t('Other works'), interleaveByOrientation(unknown), 'works-other');
   }
 
   return `
     <div class="collection-header">
-      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>All paintings</h1>
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">${t('&larr; Back')}</a>
+      <h1>${t('All paintings')}</h1>
       <p>${SITE.strings.worksIntro}</p>
     </div>
     ${body}
@@ -3566,14 +3762,14 @@ function renderRecent() {
   const items = selectFeatured(PAINTINGS, 6, null);
   return `
     <div class="collection-header">
-      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>Recent</h1>
-      <p>The latest from the studio.</p>
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">${t('&larr; Back')}</a>
+      <h1>${t('Recent')}</h1>
+      <p>${t('The latest from the studio.')}</p>
     </div>
     <section><div class="section-inner">
       <div class="gallery-grid" data-masonry>${items.map(cardHTML).join('')}</div>
       <div style="margin-top: 2.5rem; text-align: center;">
-        <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">All paintings</a>
+        <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">${t('All paintings')}</a>
       </div>
     </div></section>
     ${renderContactSection()}
@@ -3587,12 +3783,12 @@ function renderPostcards() {
     p.medium === 'watercolour' ||
     (p.collections || []).map(c => c.toLowerCase()).includes('postcards')
   );
-  const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);font-size:1.05rem;padding:2rem;">Watercolor postcards drop seasonally. New batch this spring.</p>`;
+  const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);font-size:1.05rem;padding:2rem;">${t('Watercolor postcards drop seasonally. New batch this spring.')}</p>`;
   return `
     <div class="collection-header">
-      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>Postcards</h1>
-      <p>Small watercolor works &mdash; light, atmospheric, made by hand.</p>
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">${t('&larr; Back')}</a>
+      <h1>${t('Postcards')}</h1>
+      <p>${t('Small watercolor works &mdash; light, atmospheric, made by hand.')}</p>
     </div>
     <section style="padding-top: 1rem;">
       <div class="section-inner">
@@ -3656,7 +3852,7 @@ function collectionTabHTML(name, activeName) {
   const active = name === activeName;
   return `<li><a class="coll-tab${active ? ' active' : ''}" href="${hashForPage(page)}"${active ? ' aria-current="page"' : ''} onclick="event.preventDefault(); showPage('${page}'); closeMenu();">
     ${collectionThumb(name) || '<span class="thumb" aria-hidden="true"></span>'}
-    <span class="label"><span class="name">${name}</span><span class="n">${count} painting${count !== 1 ? 's' : ''}</span></span>
+    <span class="label"><span class="name">${collLabel(name)}</span><span class="n">${nPaintings(count)}</span></span>
   </a></li>`;
 }
 
@@ -3675,8 +3871,8 @@ function renderCollectionRail(activeName) {
   if (!names.length) return '';
   const tab = name => collectionTabHTML(name, activeName);
   return `
-    <div class="coll-rail" role="navigation" aria-label="Collections">
-      <a class="coll-all${activeName ? '' : ' active'}" href="${hashForPage('collections')}"${activeName ? '' : ' aria-current="page"'} onclick="event.preventDefault(); showPage('collections');">All collections</a>
+    <div class="coll-rail" role="navigation" aria-label="${t('Collections')}">
+      <a class="coll-all${activeName ? '' : ' active'}" href="${hashForPage('collections')}"${activeName ? '' : ' aria-current="page"'} onclick="event.preventDefault(); showPage('collections');">${t('All collections')}</a>
       <ul class="coll-tabs">${names.map(tab).join('')}</ul>
     </div>`;
 }
@@ -3685,14 +3881,14 @@ function renderCollections() {
   const names = getAllCollections();
   return `
     <div class="collection-header">
-      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>Collections</h1>
-      <p>Paintings grouped by mood, light, and atmosphere.</p>
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">${t('&larr; Back')}</a>
+      <h1>${t('Collections')}</h1>
+      <p>${t('Paintings grouped by mood, light, and atmosphere.')}</p>
     </div>
     <div class="coll-layout">
       ${renderCollectionRail(null)}
       <div class="coll-main">
-        <h2 class="visually-hidden">All collections</h2>
+        <h2 class="visually-hidden">${t('All collections')}</h2>
         <div class="category-grid">
           ${names.length ? names.map(name => {
             const count = PAINTINGS.filter(p => (p.collections || []).includes(name)).length;
@@ -3702,13 +3898,13 @@ function renderCollections() {
                 ${collectionThumb(name, 480, 'cat-thumb')}
                 <div class="cat-text">
                   <div>
-                    <h2 style="font-family:var(--font-brand);font-size:1.6rem;font-weight:400;letter-spacing:0;line-height:1.1;">${name}</h2>
-                    <div class="cat-count">${count} painting${count !== 1 ? 's' : ''}</div>
+                    <h2 style="font-family:var(--font-brand);font-size:1.6rem;font-weight:400;letter-spacing:0;line-height:1.1;">${collLabel(name)}</h2>
+                    <div class="cat-count">${nPaintings(count)}</div>
                   </div>
-                  <div class="cat-arrow">VIEW &rarr;</div>
+                  <div class="cat-arrow">${t('VIEW &rarr;')}</div>
                 </div>
               </div>`;
-          }).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);padding:2rem;">No collections defined yet.</p>'}
+          }).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);padding:2rem;">' + t('No collections defined yet.') + '</p>'}
         </div>
       </div>
     </div>
@@ -3720,8 +3916,8 @@ function renderCollectionDetail(name) {
   const items = collectionItems(name);
   return `
     <div class="collection-header">
-      <h1>${name}</h1>
-      <p>${items.length} painting${items.length !== 1 ? 's' : ''} in this collection.</p>
+      <h1>${collLabel(name)}</h1>
+      <p>${RU ? `В коллекции ${nPaintings(items.length)}.` : `${nPaintings(items.length)} in this collection.`}</p>
     </div>
     <div class="coll-layout">
       ${renderCollectionRail(name)}
@@ -3729,8 +3925,8 @@ function renderCollectionDetail(name) {
         <div class="gallery-grid" data-masonry>
           ${items.length ? items.map(cardHTML).join('') : `
             <div style="text-align:center;padding:2.5rem 1rem;grid-column:1/-1;">
-              <p style="color:var(--text-muted);font-family:var(--font-body);margin-bottom:1rem;">No paintings in this collection yet.</p>
-              <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">See all paintings &rarr;</a>
+              <p style="color:var(--text-muted);font-family:var(--font-body);margin-bottom:1rem;">${t('No paintings in this collection yet.')}</p>
+              <a href="#paintings" class="link link-arrow" onclick="event.preventDefault(); showPage('paintings');">${t('See all paintings &rarr;')}</a>
             </div>`}
         </div>
       </div>
@@ -3745,8 +3941,8 @@ function renderAbout() {
 
   return `
     <div class="collection-header">
-      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>About</h1>
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">${t('&larr; Back')}</a>
+      <h1>${t('About')}</h1>
     </div>
     <section style="padding-top: 0;">
       <div class="section-inner about-full reveal">
@@ -3763,9 +3959,9 @@ function renderFAQ() {
   // Questions and answers: texts/faq.txt
   return `
     <div class="collection-header">
-      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>FAQ &amp; shipping</h1>
-      <p>Everything about ordering, shipping, returns, and care.</p>
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">${t('&larr; Back')}</a>
+      <h1>${t('FAQ &amp; shipping')}</h1>
+      <p>${t('Everything about ordering, shipping, returns, and care.')}</p>
     </div>
     <section style="padding-top: 1rem;">
       <div class="section-inner">
@@ -3796,14 +3992,14 @@ function renderPastWork() {
   });
   return `
     <div class="collection-header">
-      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">&larr; Back</a>
-      <h1>Past work</h1>
-      <p>Paintings that have found homes. Browse for atmosphere &mdash; or write to commission something in a similar mood.</p>
+      <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">${t('&larr; Back')}</a>
+      <h1>${t('Past work')}</h1>
+      <p>${t('Paintings that have found homes. Browse for atmosphere &mdash; or write to commission something in a similar mood.')}</p>
     </div>
     <section style="padding-top: 1rem;">
       <div class="section-inner">
         <div class="gallery-grid gallery-grid--all-sold" data-masonry>
-          ${sold.length ? sold.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);">Nothing sold yet.</p>'}
+          ${sold.length ? sold.map(cardHTML).join('') : '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);">' + t('Nothing sold yet.') + '</p>'}
         </div>
       </div>
     </section>
@@ -3813,18 +4009,18 @@ function renderPastWork() {
 
 function pageTitleFor(page) {
   const SUFFIX = SITE.name;
-  if (page === 'home')        return `${SUFFIX} — Original Paintings`;
-  if (page === 'recent')      return `Recent · ${SUFFIX}`;
-  if (page === 'paintings')   return `All Paintings · ${SUFFIX}`;
-  if (page === 'postcards')   return `Postcards · ${SUFFIX}`;
-  if (page === 'collections') return `Collections · ${SUFFIX}`;
-  if (page === 'about')       return `About · ${SUFFIX}`;
-  if (page === 'faq')         return `FAQ · ${SUFFIX}`;
-  if (page === 'past')        return `Past Work · ${SUFFIX}`;
+  if (page === 'home')        return `${SUFFIX} — ${t('Original Paintings')}`;
+  if (page === 'recent')      return `${t('Recent')} · ${SUFFIX}`;
+  if (page === 'paintings')   return `${t('All Paintings')} · ${SUFFIX}`;
+  if (page === 'postcards')   return `${t('Postcards')} · ${SUFFIX}`;
+  if (page === 'collections') return `${t('Collections')} · ${SUFFIX}`;
+  if (page === 'about')       return `${t('About')} · ${SUFFIX}`;
+  if (page === 'faq')         return `${t('FAQ')} · ${SUFFIX}`;
+  if (page === 'past')        return `${t('Past Work')} · ${SUFFIX}`;
   if (page.startsWith('collection:')) {
     let name = page.split(':').slice(1).join(':');
     try { name = decodeURIComponent(name); } catch (e) { /* ignore */ }
-    return `${name} · ${SUFFIX}`;
+    return `${collLabel(name)} · ${SUFFIX}`;
   }
   return SUFFIX;
 }
@@ -3933,16 +4129,17 @@ function renderFooter() {
   const newsletterHTML = renderNewsletterFormHTML();
   const newsletterCol = newsletterHTML
     ? `<div class="footer-col">
-         <h4>Newsletter</h4>
-         <p style="font-family:var(--font-body);color:var(--text-muted);font-size:0.92rem;margin-bottom:0.8rem;line-height:1.5;">New work, seasonally. No spam.</p>
+         <h4>${t('Newsletter')}</h4>
+         <p style="font-family:var(--font-body);color:var(--text-muted);font-size:0.92rem;margin-bottom:0.8rem;line-height:1.5;">${t('New work, seasonally. No spam.')}</p>
          ${newsletterHTML}
        </div>`
     : '';
   const instagramLink = SITE_DATA.artist.instagram
     ? `<li><a href="${SITE_DATA.artist.instagram}" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a></li>`
     : '';
-  const studioLocation = SITE_DATA.artist.location
-    ? ` &middot; <span>${SITE_DATA.artist.location}</span>`
+  const location = (RU && SITE_DATA.artist.locationRu) || SITE_DATA.artist.location;
+  const studioLocation = location
+    ? ` &middot; <span>${location}</span>`
     : '';
   const year = new Date().getFullYear();
 
@@ -3954,21 +4151,21 @@ function renderFooter() {
           <div class="footer-tagline">${SITE.strings.footerTagline}</div>
         </div>
         <div class="footer-col">
-          <h4>Browse</h4>
+          <h4>${t('Browse')}</h4>
           <ul>
-            <li><a href="#recent" onclick="event.preventDefault(); showPage('recent');">Recent</a></li>
-            <li><a href="#collections" onclick="event.preventDefault(); showPage('collections');">Collections</a></li>
-            <li><a href="#paintings" onclick="event.preventDefault(); showPage('paintings');">All paintings</a></li>
-            <li><a href="#postcards" onclick="event.preventDefault(); showPage('postcards');">Postcards</a></li>
-            <li><a href="#past" onclick="event.preventDefault(); showPage('past');">Past Work</a></li>
+            <li><a href="#recent" onclick="event.preventDefault(); showPage('recent');">${t('Recent')}</a></li>
+            <li><a href="#collections" onclick="event.preventDefault(); showPage('collections');">${t('Collections')}</a></li>
+            <li><a href="#paintings" onclick="event.preventDefault(); showPage('paintings');">${t('All paintings')}</a></li>
+            <li><a href="#postcards" onclick="event.preventDefault(); showPage('postcards');">${t('Postcards')}</a></li>
+            <li><a href="#past" onclick="event.preventDefault(); showPage('past');">${t('Past Work')}</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>Studio</h4>
+          <h4>${t('Studio')}</h4>
           <ul>
-            <li><a href="#about" onclick="event.preventDefault(); showPage('about');">About</a></li>
-            <li><a href="#faq" onclick="event.preventDefault(); showPage('faq');">FAQ &amp; Shipping</a></li>
-            <li><a href="mailto:${CONTACT_EMAIL}" onclick="return openContact(event)">Contact</a></li>
+            <li><a href="#about" onclick="event.preventDefault(); showPage('about');">${t('About')}</a></li>
+            <li><a href="#faq" onclick="event.preventDefault(); showPage('faq');">${t('FAQ &amp; Shipping')}</a></li>
+            <li><a href="mailto:${CONTACT_EMAIL}" onclick="return openContact(event)">${t('Contact')}</a></li>
             ${instagramLink}
           </ul>
         </div>
@@ -4038,7 +4235,7 @@ function wireCustomCursor() {
     if (t._cursorWired) return;
     t._cursorWired = true;
     t.addEventListener('mouseenter', () => {
-      let label = 'View →';
+      let label = t('View →');
       const card = t.closest('.painting-card');
       if (card) {
         const id = parseInt(card.getAttribute('data-card-id'), 10);
@@ -4057,7 +4254,7 @@ function wireCustomCursor() {
     if (t._cursorWired) return;
     t._cursorWired = true;
     t.addEventListener('mouseenter', () => {
-      let label = 'View →';
+      let label = t('View →');
       const title = resolveTitle(getHeroPiece());
       if (title) label = `${title} →`;
       cursorEl.textContent = label;

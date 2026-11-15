@@ -116,6 +116,14 @@ shapes, forbidden moves, and the three pre-publish tests.
 
 Propose a title + description, discuss, and only proceed once she confirms.
 
+**Then the Russian (EN·RU switch).** Once the English is confirmed, add a
+*plain, straightforward* Russian translation of the title and the description:
+same meaning, same sentence order, no rewriting and no voice polishing. The
+sveta-writing voice rules govern the English only. Show both languages in one
+block; she may edit the Russian. Pass them as `--title-ru` / `--description-ru`.
+If the sheet row already has Russian (`title_ru` / `description_ru` not empty),
+don't translate: the script keeps the sheet's Russian and says so.
+
 **Existing-painting case (a re-push / "update <title>"):** pull the current row
 *before* asking anything.
 
@@ -141,6 +149,8 @@ step 4.
   ~/Downloads/<title>.jpeg \
   --title "..." \
   --description "..." \
+  --title-ru "..." \
+  --description-ru "..." \
   --medium "acrylic" \
   --size "16x20 in" \
   --price "400" \
@@ -161,6 +171,7 @@ others):
 | `<image>` | positional, required, must exist |
 | `--title "..."` | **required** |
 | `--description "..."` | omitted on an existing row → preserved |
+| `--title-ru "..."` / `--description-ru "..."` | plain Russian translation (step 3). Written **only into an empty cell**: Russian already in the sheet is never overwritten (her edits). Adds the `title_ru`, `description_ru`, `ru_source` columns if missing and sets `ru_source` (which English the Russian was made from; the audit warns when the English changes later) |
 | `--medium "..."` | |
 | `--size "..."` | e.g. `16x20 in`; feeds the canvas-aspect gate below |
 | `--price "..."` | |

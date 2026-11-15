@@ -6,6 +6,7 @@ Usage:
                           [--size "..."] [--price "..."] [--collection "..."]
                           [--orientation portrait|landscape]
                           [--hero] [--sold] [--recent N] [--slug ...]
+                          [--title-ru "..."] [--description-ru "..."]
                           [--crop-from top|center|bottom|left|right]
                           [--dry-run]
 
@@ -32,6 +33,12 @@ from sites/<site>/site.json ("tools"), and the script prints them before it
 reads or writes anything. Olga's sheet and folder are shared with Sveta's
 account as Editor, so one OAuth token serves both sites.
 
+Russian (EN·RU switch): --title-ru / --description-ru fill the title_ru /
+description_ru columns (added to the header if missing) ONLY when the cell is
+empty. A Russian cell with text is never overwritten, so Sveta's edits survive
+every re-push; empty the cell to replace it. Filling sets ru_source (see
+fill_ru.py), which audit_gallery.py uses to spot Russian older than its English.
+
 Auth: OAuth as the human user. First run opens a browser; refresh token cached
 at push-painting-token.json.
 """
@@ -55,6 +62,7 @@ from googleapiclient.http import MediaFileUpload
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR.parent.parent / "scripts"))
 import site_config  # noqa: E402  (scripts/site_config.py)
+from fill_ru import RU_COLS, ru_source  # noqa: E402  (same folder)
 OAUTH_CLIENT_PATH = SCRIPT_DIR / "oauth-client.json"
 TOKEN_PATH = SCRIPT_DIR / "push-painting-token.json"
 
@@ -404,6 +412,17 @@ def build_row(args, header: list, file_id: str, existing: dict,
     out["recent"] = merge(args.recent, "recent")
     if slug:
         out["slug"] = slug
+    # Russian: keep what the sheet has; fill only empty cells (see module doc).
+    ru_filled = False
+    for col, val in (("title_ru", args.title_ru), ("description_ru", args.description_ru)):
+        have = existing.get(col, "").strip() if has_existing else ""
+        if have:
+            out[col] = have
+        elif val:
+            out[col] = val
+            ru_filled = True
+    if ru_filled:
+        out["ru_source"] = ru_source(out["title"], out["description"])
 
     # Align to the actual sheet header (in case columns are reordered or extra
     # columns exist beyond COLS — those get preserved-or-empty per merge rule).
@@ -487,6 +506,10 @@ def main() -> int:
     p.add_argument("--slug", default=None,
                    help="Link key for a NEW painting (default: from the title). "
                         "Ignored when the row already has a slug: slugs never change.")
+    p.add_argument("--title-ru", default=None,
+                   help="Russian title. Written only if the sheet's title_ru cell is empty.")
+    p.add_argument("--description-ru", default=None,
+                   help="Russian description. Written only if description_ru is empty.")
     p.add_argument("--crop-from",
                    choices=["top", "center", "bottom", "left", "right"],
                    default="top",
@@ -532,6 +555,19 @@ def main() -> int:
         header, rows = read_sheet(sheets)
         header = ensure_header(sheets, header, args.dry_run)
         found_idx, existing = find_match(rows, args.title)
+        if (args.title_ru or args.description_ru):
+            missing = [c for c in RU_COLS if c not in header]
+            if missing:
+                header = header + missing
+                if not args.dry_run:
+                    sheets.spreadsheets().values().update(
+                        spreadsheetId=SHEET_ID, range=f"{SHEET_TAB}!A1",
+                        valueInputOption="RAW", body={"values": [header]},
+                    ).execute()
+                print(f"columns added:  {', '.join(missing)}")
+            for col in ("title_ru", "description_ru"):
+                if existing.get(col, "").strip():
+                    print(f"{col}:{' ' * (14 - len(col))}kept (the sheet already has it)")
         old_image_id = existing.get("image", "").strip()
         slug = resolve_slug(args, header, rows, found_idx, existing)
         if slug:

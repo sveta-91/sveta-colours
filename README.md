@@ -13,13 +13,14 @@ texts/                           — backup copies of the long site texts ([labe
   home.txt                       — [headline], [under headline], [from the studio], [on painting]
   about.txt                      — [about] paragraphs
   faq.txt                        — [question]/[answer] pairs, in page order
+  ru/                            — Russian versions of the same three files (EN·RU switch; English shows where one is missing)
 images/                          — local fallbacks for site photos served from Drive
   sveta-portrait.jpg             — painter photo (home hero); live copy is Drive file 1b-kjtmZ97SymW3DDZ7VI7XlgRNajyztm
   og-image.jpg                   — 1200×630 link-preview picture (og:image / twitter:image): Held Summer, Where the Forest Breathes, Autumn Light on --bg
 sites/                           — one folder per artist; build_site.py renders index.html's SITE block from it
   README.md                      — fields, commands, Cloudflare Pages setup for olgazai.com
   sveta/                         — site.json (head + SITE object) and theme.css (tokens); root index.html carries it
-  olga/                          — olgazai.com: site.json, theme.css, site.css (logo, watercolor mats), texts/ (placeholders + drafted FAQ terms), images/
+  olga/                          — olgazai.com: site.json, theme.css, site.css (logo, watercolor mats), texts/ (placeholders + drafted FAQ terms; ru/ in Russian), images/ (portrait, studio photo)
 inquiry/
   Code.gs                        — Apps Script backend for the inquiry form (deployed under sveta.colours; URL in site.json formEndpoint)
   README.md                      — site ↔ script contract and the one-time deploy steps

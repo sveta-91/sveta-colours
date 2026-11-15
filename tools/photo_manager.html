@@ -159,6 +159,9 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
           <div class="field-row"><label for="fTitle">Title *</label><input id="fTitle" type="text" required></div>
           <div class="field-row" id="slugRow" hidden><label for="fSlug">Slug</label><input id="fSlug" type="text" spellcheck="false" placeholder="noise-and-silence"></div>
           <div class="field-row"><label for="fDesc">Description</label><textarea id="fDesc" rows="4"></textarea></div>
+          <div class="field-row"><label for="fTitleRu">Title (RU)</label><input id="fTitleRu" type="text" lang="ru"></div>
+          <div class="field-row"><label for="fDescRu">Description (RU)</label><textarea id="fDescRu" rows="4" lang="ru"></textarea></div>
+          <div class="status" id="ruInfo">Russian: a plain translation for the site's RU version. Saved only into empty cells; edit existing Russian in the sheet.</div>
           <div class="field-row"><label for="fMedium">Medium</label><input id="fMedium" type="text" placeholder="acrylic"></div>
           <div class="field-row"><label for="fSize">Size</label><input id="fSize" type="text" placeholder="16x20 in"></div>
           <div class="field-row"><label for="fOrientation">Orientation</label>
@@ -486,9 +489,10 @@ $('fOrientation').addEventListener('change', updateAspectInfo);
 
 // ── Form ──
 function resetForm(){
-  for (const id of ['fTitle','fSlug','fDesc','fMedium','fSize','fCollection','fPrice']) $(id).value='';
+  for (const id of ['fTitle','fSlug','fDesc','fTitleRu','fDescRu','fMedium','fSize','fCollection','fPrice']) $(id).value='';
   $('fRecent').value=''; $('fSold').checked=false; $('fHero').checked=false;
   state.slugLocked=false; $('fSlug').readOnly=false; state.filledFor=null;
+  for (const id of ['fTitleRu', 'fDescRu']){ $(id).readOnly = false; $(id).title = ''; }
 }
 
 // Same rule as index.html's slugify(), so the site and the sheet agree.
@@ -541,7 +545,8 @@ function applyDefaultsFromRows(rows){
   if (i > 0) fillFromRow(rows[i]); else fillFromMostCommon(rows.slice(1));
 }
 
-const COL_TO_FIELD = { description:'fDesc', medium:'fMedium', price:'fPrice', size:'fSize', collection:'fCollection' };
+const COL_TO_FIELD = { description:'fDesc', medium:'fMedium', price:'fPrice', size:'fSize', collection:'fCollection',
+                       title_ru:'fTitleRu', description_ru:'fDescRu' };
 
 function fillFromRow(row){
   const cell = name => { const i = colIdx(name); return i >= 0 ? String(row[i] || '').trim() : ''; };
@@ -555,6 +560,10 @@ function fillFromRow(row){
   $('fHero').checked = truthy(cell('hero'));
   $('fRecent').value = /^[1-6]$/.test(cell('recent')) ? cell('recent') : '';
   if (cell('slug')){ $('fSlug').value = cell('slug'); state.slugLocked = true; $('fSlug').readOnly = true; }
+  // Russian already in the sheet is hers to edit there; Save never overwrites it.
+  for (const [col, id] of [['title_ru', 'fTitleRu'], ['description_ru', 'fDescRu']]){
+    if (cell(col)){ $(id).value = cell(col); $(id).readOnly = true; $(id).title = 'Already in the sheet: edit it there.'; }
+  }
   setStatus('saveStatus', 'This title is already on the site: Save will update it.', 'warn');
   updateAspectInfo();
 }
@@ -621,8 +630,10 @@ async function saveAll() {
     const foundIdx = findRowByTitle(rows, $('fTitle').value);
     const existing = foundIdx > 0 ? rows[foundIdx] : [];
     const slug = checkSlug(rows, foundIdx, existing);    // throws on a clash
+    await ensureRuColumns(token, rows);
     const driveFileId = await uploadToDrive(token);
-    const row = composeRow(driveFileId, existing, slug);
+    const ruSource = await ruSourceFor(existing);
+    const row = composeRow(driveFileId, existing, slug, ruSource);
     const rowNum = await writeRow(token, row, foundIdx, rows.length);
     const notes = [];
     if ($('fHero').checked) notes.push(...await clearOtherHeroes(token, rows, rowNum));
@@ -647,6 +658,33 @@ async function initHeader(token){
     { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ values: [DEFAULT_COLS] }) });
   if (!res.ok) throw new Error('Sheets header init failed: ' + res.status);
+}
+
+// Russian columns (EN·RU switch): added at the end of the header the first
+// time Russian is saved. Same names and rule as tools/image_pipeline/fill_ru.py.
+const RU_COLS = ['title_ru', 'description_ru', 'ru_source'];
+async function ensureRuColumns(token, rows){
+  if (!sanitizeCell($('fTitleRu').value) && !sanitizeCell($('fDescRu').value)) return;
+  const missing = RU_COLS.filter(c => colIdx(c) < 0);
+  if (!missing.length) return;
+  const header = (rows[0] || DEFAULT_COLS).map(h => String(h).trim()).concat(missing);
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!A1?valueInputOption=RAW`,
+    { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [header] }) });
+  if (!res.ok) throw new Error('Adding the Russian columns failed: ' + res.status);
+  state.header = header.map(h => h.toLowerCase());
+  if (rows[0]) rows[0] = header;
+}
+// sha1(title + "\n" + description), first 8 hex digits: which English the Russian
+// was made from. '' when this save fills no Russian cell.
+async function ruSourceFor(existing){
+  const fills = [['title_ru', 'fTitleRu'], ['description_ru', 'fDescRu']].some(([col, id]) =>
+    sanitizeCell($(id).value) && !(colIdx(col) >= 0 && sanitizeCell(existing[colIdx(col)])));
+  if (!fills) return '';
+  const di = colIdx('description');
+  const desc = sanitizeCell($('fDesc').value) || (di >= 0 ? sanitizeCell(existing[di]) : '');
+  const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(`${sanitizeCell($('fTitle').value)}\n${desc}`));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 8);
 }
 
 // The slug is written once and never changed. Returns '' when the sheet has no slug column.
@@ -681,15 +719,19 @@ function normalizeTitle(s) { return sanitizeCell(s).toLowerCase().replace(/\s+/g
 // One value per sheet column, in the sheet's own order. Text fields left empty
 // keep the sheet's current value; sold/hero/recent are always written as shown
 // (they were filled from the row). Unknown columns (cover, order…) are preserved.
-function composeRow(driveFileId, existing, slug){
+function composeRow(driveFileId, existing, slug, ruSource){
   const form = {
     title: $('fTitle').value, medium: $('fMedium').value, price: $('fPrice').value,
     size: $('fSize').value, description: $('fDesc').value, collection: $('fCollection').value,
     orientation: $('fOrientation').value, image: driveFileId, slug,
+    title_ru: $('fTitleRu').value, description_ru: $('fDescRu').value, ru_source: ruSource,
   };
   const explicit = { sold: $('fSold').checked ? 'yes' : 'no', hero: $('fHero').checked ? 'TRUE' : '', recent: $('fRecent').value };
+  const sheetWins = ['title_ru', 'description_ru'];    // Russian in the sheet is never overwritten
   return state.header.map((col, i) => {
     if (col in explicit) return explicit[col];
+    if (sheetWins.includes(col) && sanitizeCell(existing[i])) return sanitizeCell(existing[i]);
+    if (col === 'ru_source' && !ruSource) return sanitizeCell(existing[i]);
     const v = sanitizeCell(form[col]);
     return v || sanitizeCell(existing[i]);
   });
@@ -793,9 +835,12 @@ The site copy is in English. Sveta may write to you in Russian or English; answe
 
 Every proposal must follow the voice spec below exactly (length, sentence shape, forbidden moves, pre-publish tests). The corrections log shows how drafts went wrong before; do not repeat those mistakes. Keep the new text consistent with, but not repetitive of, the existing paintings listed at the end.
 
-Whenever you propose a candidate (a first draft or a revision), end your message with exactly these two lines and nothing after them:
+Whenever you propose a candidate (a first draft or a revision), end your message with exactly these four lines and nothing after them:
 TITLE: <title>
 DESCRIPTION: <description on one line>
+TITLE_RU: <a plain, straightforward Russian translation of the title>
+DESCRIPTION_RU: <a plain, straightforward Russian translation of the description, on one line>
+The Russian is a direct translation for the site's Russian version: keep the meaning, sentence order and punctuation; do not rewrite, embellish or add anything.
 If a message is only a question or a comment, leave those lines out.`;
 
 // Any other artist: a neutral prompt, so Sveta's voice never leaks into their
@@ -807,9 +852,12 @@ This is a conversation: ask a question when you need a fact (what the place is, 
 
 Write plainly and concretely. Say what is in the painting and one specific thing that makes it this painting. 30 to 55 words, two or three sentences, first person as ${artist} only if Sveta gives you ${artist}'s own words. Never invent facts, places or feelings. No art-statement vocabulary (explores, captures, evokes, journey, essence, interplay), no mood labels (serene, vibrant, luminous), no addressing the buyer, no "this piece" or "the artist". Keep it consistent with, but not repetitive of, the existing paintings listed at the end.
 
-Whenever you propose a candidate (a first draft or a revision), end your message with exactly these two lines and nothing after them:
+Whenever you propose a candidate (a first draft or a revision), end your message with exactly these four lines and nothing after them:
 TITLE: <title>
 DESCRIPTION: <description on one line>
+TITLE_RU: <a plain, straightforward Russian translation of the title>
+DESCRIPTION_RU: <a plain, straightforward Russian translation of the description, on one line>
+The Russian is a direct translation for the site's Russian version: keep the meaning, sentence order and punctuation; do not rewrite, embellish or add anything.
 If a message is only a question or a comment, leave those lines out.`;
 }
 function aiRules(){
@@ -889,7 +937,9 @@ function aiFieldsSummary(){
 
 function aiParseProposal(text){
   const t = text.match(/^\s*TITLE:\s*(.+)$/mi), d = text.match(/^\s*DESCRIPTION:\s*(.+)$/mi);
-  return (t && d) ? { title: t[1].trim(), description: d[1].trim() } : null;
+  if (!(t && d)) return null;
+  const tr = text.match(/^\s*TITLE_RU:\s*(.+)$/mi), dr = text.match(/^\s*DESCRIPTION_RU:\s*(.+)$/mi);
+  return { title: t[1].trim(), description: d[1].trim(), titleRu: tr ? tr[1].trim() : '', descriptionRu: dr ? dr[1].trim() : '' };
 }
 
 function aiRender(){
@@ -922,6 +972,9 @@ function aiUse(p){
   // defaults and could overwrite the description just chosen.
   document.getElementById('fTitle').value = p.title;
   document.getElementById('fDesc').value = p.description;
+  // Russian only where the sheet has none yet (a locked field came from the sheet).
+  if (p.titleRu && !$('fTitleRu').readOnly) $('fTitleRu').value = p.titleRu;
+  if (p.descriptionRu && !$('fDescRu').readOnly) $('fDescRu').value = p.descriptionRu;
   syncSlugFromTitle();
   ai.accepted = p;
   // Only a site with a voice skill has a corrections log to feed.

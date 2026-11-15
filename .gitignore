@@ -21,3 +21,6 @@ new-paintings/
 
 # Build output of scripts/build_site.py (Cloudflare Pages builds it itself)
 dist/
+
+# Olga Zai: original photos (paintings, portrait). Not published from git.
+/olga/

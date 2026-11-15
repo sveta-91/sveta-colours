@@ -13,7 +13,7 @@
     "ogImageAlt": "",
     "twitterTitle": "Olga Zai — Original Paintings",
     "twitterDescription": "Original watercolors and acrylics.",
-    "fontsHref": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Karla:wght@400;500&display=swap",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Karla:wght@400;500&family=Manrope:wght@400;500&display=swap",
     "jsonLd": {
       "@context": "https://schema.org",
       "@type": "Person",
@@ -35,12 +35,13 @@
     "artist": {
       "name": "Olga Zai",
       "location": "Thornhill, Ontario, Canada",
+      "locationRu": "Торнхилл, Онтарио, Канада",
       "yearsPracticing": null,
       "schooling": null,
       "influences": null,
       "exhibitions": [],
       "instagram": null,
-      "studioPhotoUrl": null
+      "studioPhotoUrl": "images/olga-in-studio.jpg"
     },
     "testimonials": [],
     "newsletter": {
@@ -58,7 +59,13 @@
     "heroPinTitle": "",
     "featuredTitles": [],
     "chapterBy": "medium",
-    "portrait": null,
+    "portrait": {
+      "src": "images/olga-portrait.jpg",
+      "fallback": "images/olga-portrait.jpg",
+      "alt": "Olga Zai, the painter",
+      "width": 600,
+      "height": 686
+    },
     "strings": {
       "logoLabel": "Olga Zai — home",
       "navNote": "Watercolors &amp; acrylics<br>Thornhill, Ontario",
@@ -66,7 +73,7 @@
       "replyNote": "I reply to every message by email.",
       "replyWhen": "soon",
       "contactLede": "A question about a painting, or a commission.",
-      "studioAlt": "Inside Olga's studio",
+      "studioAlt": "Olga Zai at the easel",
       "chapterLarge": "Watercolors",
       "chapterSmall": "Acrylics",
       "worksIntro": "Every painting one-of-a-kind, on paper or on canvas. Available works and pieces already in private collections.",
@@ -76,6 +83,36 @@
       "contactNote": "Paintings ship from Thornhill, Ontario.",
       "footerBottom": "All works one-of-a-kind. Shipped worldwide."
     },
+    "languages": [
+      "en",
+      "ru"
+    ],
+    "stringsRu": {
+      "logoLabel": "Olga Zai — на главную",
+      "navNote": "Акварель и акрил<br>Торнхилл, Онтарио",
+      "shippingNote": "Доставку считаем по вашему адресу. Со страховкой, из Канады.",
+      "replyNote": "Отвечаю на каждое письмо.",
+      "replyWhen": "в ближайшее время",
+      "contactLede": "Вопрос о картине или заказ.",
+      "studioAlt": "Ольга Зай за мольбертом",
+      "chapterLarge": "Акварели",
+      "chapterSmall": "Акрил",
+      "worksIntro": "Каждая картина в одном экземпляре, на бумаге или на холсте. Здесь и доступные работы, и те, что уже в частных коллекциях.",
+      "footerTagline": "Акварель и акрил &mdash;<br>оригинальные работы на бумаге и холсте.",
+      "mailSubject": "Письмо с olgazai.com",
+      "contactHeading": "Вопросы и заказы",
+      "contactNote": "Картины отправляются из Торнхилла, Онтарио.",
+      "footerBottom": "Каждая работа в одном экземпляре. Доставка по всему миру."
+    },
+    "collectionsRu": {
+      "City": "Город",
+      "Flowers": "Цветы",
+      "Landscapes": "Пейзажи",
+      "Still life": "Натюрморт",
+      "Water": "Вода",
+      "Winter": "Зима"
+    },
+    "textDocsRu": {},
     "fallbackPaintings": [],
     "placeholderGradients": [
       "linear-gradient(160deg, #e4e6e4, #cdd1cf)",

@@ -33,6 +33,7 @@ import argparse
 import csv
 import io
 import json
+import hashlib
 import re
 import sys
 import urllib.error
@@ -313,7 +314,7 @@ def find_phrases(text: str, phrases: Iterable[str]) -> list[str]:
 # --------------------------------------------------------------------------
 
 # Optional columns allowed after the 11 required ones, in any order.
-OPTIONAL_COLUMNS: tuple[str, ...] = ("cover", "order", "slug")
+OPTIONAL_COLUMNS: tuple[str, ...] = ("cover", "order", "slug", "titleru", "descriptionru", "mediumru", "rusource")
 
 
 def check_header(header: Sequence[str]) -> list[Finding]:
@@ -497,6 +498,7 @@ def check_rows(header: Sequence[str], rows: Sequence[Sequence[str]]) -> list[Fin
 
     findings.extend(check_duplicates(records))
     findings.extend(check_slugs(records))
+    findings.extend(check_russian(records))
     findings.extend(check_hero(records))
     findings.extend(check_recent(records))
     return findings
@@ -613,6 +615,38 @@ def check_slugs(records: Sequence[tuple[int, str, dict[str, str]]]) -> list[Find
                                f"{slug!r} is also used on row {seen[slug]}", sheet_row))
         else:
             seen[slug] = sheet_row
+    return out
+
+
+def check_russian(records: Sequence[tuple[int, str, dict[str, str]]]) -> list[Finding]:
+    """When the sheet has the Russian columns (EN·RU switch, sites/README.md):
+    INFO for an empty title_ru / description_ru (the site shows English there),
+    WARN when the English changed after the Russian was made (ru_source, the
+    sha1 prefix written by fill_ru.py / push_painting.py, no longer matches),
+    INFO for Latin words left inside the Russian. Never edits anything."""
+    if not records or "titleru" not in records[0][2]:
+        return []
+    out: list[Finding] = []
+    for sheet_row, label, d in records:
+        title = d.get("title", "").strip()
+        if not title:
+            continue
+        for key, col in (("titleru", "title_ru"), ("descriptionru", "description_ru")):
+            if not d.get(key, "").strip():
+                out.append(Finding("INFO", "ru-missing", label, col,
+                                   "empty: the Russian page shows the English here", sheet_row))
+        src = d.get("rusource", "").strip()
+        if src and (d.get("titleru") or d.get("descriptionru")):
+            now = hashlib.sha1(f"{title}\n{d.get('description', '').strip()}".encode("utf-8")).hexdigest()[:8]
+            if now != src:
+                out.append(Finding("WARN", "ru-stale", label, "description_ru",
+                                   "the English title or description changed after the Russian was made: "
+                                   "check the Russian (empty a cell to get a fresh translation)", sheet_row))
+        for key, col in (("titleru", "title_ru"), ("descriptionru", "description_ru")):
+            latin = re.findall(r"[A-Za-z]{3,}", d.get(key, ""))
+            if latin:
+                out.append(Finding("INFO", "ru-latin", label, col,
+                                   f"English words inside the Russian: {', '.join(latin[:4])}", sheet_row))
     return out
 
 

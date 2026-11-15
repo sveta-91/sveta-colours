@@ -33,6 +33,6 @@
 
   /* Type */
   --font-display: var(--font-brand);
-  --font-body: 'Karla', system-ui, -apple-system, sans-serif;
+  --font-body: 'Karla', 'Manrope', system-ui, -apple-system, sans-serif;
   --font-brand: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
 }

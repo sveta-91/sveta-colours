@@ -36,7 +36,7 @@
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   /* The site name and the home hero words (Sveta chose Marcellus, 2026-11-09).
      One weight only — never set it bold or italic. */
-  --font-brand: 'Marcellus', Georgia, 'Times New Roman', serif;
+  --font-brand: 'Marcellus', 'Forum', Georgia, 'Times New Roman', serif;
   /* Font rules (Sveta, 2026-11-09): two fonts per page. Names and headings
      → --font-brand, upright. Everything else (body, notes, counts, menu,
      prices) → --font-body. No italic anywhere. Fraunces is no longer loaded. */

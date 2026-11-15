@@ -77,6 +77,8 @@ nets, the artist's short wording) is generated. Change Sveta's values in
 | `collection` | Comma-separated, no spaces. Values: `Big City`, `Flowers`, `Forest`, `Seasons` |
 | `slug` *(column L, after `recent`)* | Permanent link key, e.g. `noise-and-silence` (site `slugify()` of the title). Written once, **never changed**, even when the title is. Unique; `audit_gallery.py` checks. `push_painting.py` (`--slug` to override) and `photo_manager.html` write it for new paintings |
 | `cover` *(optional, after `recent`)* | Collection name(s) this painting is the button picture for, e.g. `Forest`. Blank → first available painting in the collection's order |
+| `title_ru`, `description_ru` *(optional, at the end)* | Russian for the RU version (EN·RU switch). Start as a plain translation; Sveta may edit. Tools fill **only empty cells** and never overwrite them (`push_painting.py --title-ru/--description-ru`, `fill_ru.py`, photo manager). Empty → the Russian page shows English |
+| `ru_source` *(optional, at the end)* | 8-hex sha1 of the English title + description the Russian was made from. Written by the tools; `audit_gallery.py` warns when the English changed since. Don't edit by hand |
 | `order` *(optional)* | Position inside collections: `3` (every collection) or `Forest:2,Seasons:5`. Also accepted inline in `collection`: `Big City:1` (wins over `order`). Numbered first, then the rest in sheet order |
 
 **Long site texts** (home headline and paragraphs, About, FAQ) are read at load from three
@@ -86,6 +88,14 @@ A `[label]` line opens each block; a blank line starts a paragraph. Change copy 
 the Doc, then mirror it into `texts/` — never in `index.html`. Short copy (titles,
 subtitles, headings, contact, footer, buttons) stays in code. Format rules, why not
 .txt-in-Drive (403), publish lag: playbook → "Long texts in plain .txt files".
+
+**EN·RU switch** (both sites, English default; `?lang=ru` or the visitor's last choice).
+UI words: `t('English')` with the `I18N_RU` table in `index.html` — any new visible string
+goes through `t()` and gets a Russian entry. Per-site wording: `stringsRu` / `collectionsRu`
+in `site.json`. Russian long texts: three published Russian Docs in the sveta.colours Drive
+(`SITE.textDocsRu`), backup `texts/ru/*.txt` (drafts for Sveta to edit).
+Painting Russian: sheet columns `title_ru`, `description_ru` (see the table below);
+"publish this" adds a plain translation of the agreed English.
 
 Gallery cards lock rendered aspect to the **physical canvas** (`size`), never to the
 photo's pixel aspect; `push_painting.py`'s `check_canvas_aspect()` enforces the match at

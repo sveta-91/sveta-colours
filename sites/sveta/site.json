@@ -13,7 +13,7 @@
     "ogImageAlt": "Three original acrylic paintings by Sveta",
     "twitterTitle": "Sveta Colours — Original Paintings",
     "twitterDescription": "Original acrylic paintings — landscapes, light, quiet places.",
-    "fontsHref": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&display=swap",
+    "fontsHref": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Marcellus&family=Forum&display=swap",
     "jsonLd": {
       "@context": "https://schema.org",
       "@type": "Person",
@@ -35,6 +35,7 @@
     "artist": {
       "name": "Sveta",
       "location": "Thornhill, Ontario, Canada",
+      "locationRu": "Торнхилл, Онтарио, Канада",
       "yearsPracticing": 8,
       "schooling": "self-taught",
       "influences": null,
@@ -91,6 +92,38 @@
       "contactHeading": "<span class=\"italic\">Inquiries</span><br>&amp; studio visits",
       "contactNote": "Studio visits by appointment.",
       "footerBottom": "All works one-of-a-kind. Shipped worldwide."
+    },
+    "languages": [
+      "en",
+      "ru"
+    ],
+    "stringsRu": {
+      "logoLabel": "Sveta Colours — на главную",
+      "navNote": "Оригинальные картины<br>Торнхилл, Онтарио",
+      "shippingNote": "Доставку считаем по вашему адресу. Со страховкой, из Канады.",
+      "replyNote": "Отвечаю в течение дня-двух.",
+      "replyWhen": "в течение дня-двух",
+      "contactLede": "Вопрос, заказ, визит в мастерскую. Обычно отвечаю в течение дня-двух.",
+      "studioAlt": "В мастерской у Светы",
+      "chapterLarge": "Большие работы &mdash; 40 &times; 50 см",
+      "chapterSmall": "Небольшие работы &mdash; 28 &times; 36 см",
+      "worksIntro": "Каждая картина существует в одном экземпляре. Здесь и доступные работы, и те, что уже в частных коллекциях &mdash; беру заказы.",
+      "footerTagline": "Оригинальные картины &mdash;<br>неспешно, по одной.",
+      "mailSubject": "Письмо с sveta-colours.com",
+      "contactHeading": "<span class=\"italic\">Заказы</span><br>и визиты в мастерскую",
+      "contactNote": "Визит в мастерскую по договорённости.",
+      "footerBottom": "Каждая работа в одном экземпляре. Доставка по всему миру."
+    },
+    "collectionsRu": {
+      "Big City": "Большой город",
+      "Flowers": "Цветы",
+      "Forest": "Лес",
+      "Seasons": "Времена года"
+    },
+    "textDocsRu": {
+      "home": "https://docs.google.com/document/d/e/2PACX-1vTf5f_r8q7Tv6tOju6yNQtrv82XU6gByWNk_KZNxvuQh8EJOl1lRecOif0wvB05HFVjOSfrkNpKQPrV/pub",
+      "about": "https://docs.google.com/document/d/e/2PACX-1vTQkMVeb2qry9ahn7tGnDrSns-YHcqN_0kUQQCM4lsWEv53eg5L3egefu_I7WdfUye-yXrX0lkugfx_/pub",
+      "faq": "https://docs.google.com/document/d/e/2PACX-1vSAts3R7AY-7TP-Al_mGl5AVvGPhkIi1bvM0KXHzOJgxXQkVwZ4806DgAFaxhOIn2uAQFApGgpK_EyG/pub"
     },
     "fallbackPaintings": [
       {
