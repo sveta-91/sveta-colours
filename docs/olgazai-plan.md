@@ -1,7 +1,8 @@
 # olgazai.com: second gallery site plan
 
-Status: **Phases 1, 3 and 4 done; Phase 2 built and tested locally** (2026-11-12).
-olgazai.com waits on Olga's Cloudflare invite and her links (see `sites/README.md`).
+Status: **Phases 1–4 done; olgazai.com is live** (2026-11-15), on Cloudflare Pages
+project `olgazai` in Olga's account, built from this repo's `main`. Setup and
+gotchas: `sites/README.md`. Phase 5 is open.
 Source: brainstorm panel of 2026-11-12 (log: `.claude/brainstorm-panel/log.md`),
 then a working prototype of both proposed looks, checked with Selenium at
 390 / 1440 / 1920 / 2560 px.

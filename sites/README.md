@@ -60,15 +60,25 @@ python3 scripts/build_site.py olga --out /tmp/x --dev-csv some.csv   # local tes
 Never edit the block in `index.html` by hand: `--check` fails and the next
 `--root` overwrites it.
 
-## olgazai.com on Cloudflare Pages (once Olga has invited Sveta)
+## olgazai.com on Cloudflare Pages (live since 2026-11-15)
+
+Pages project `olgazai` in **Olga's** Cloudflare account (Sveta is an
+Administrator member); test address olgazai.pages.dev. How it was set up:
 
 1. Cloudflare dashboard, **Olga's account** → Workers & Pages → Create → Pages →
-   Connect to Git → this GitHub repo, branch `main`.
+   Connect to Git → this GitHub repo, branch `main`. The default "Create an app"
+   screen is the **Workers** flow (wants a deploy command and wrangler config):
+   take its "Continue to Pages" link instead. The Cloudflare GitHub app is
+   installed on `sveta-91/sveta-colours` only.
 2. Build settings: framework preset **None**; build command
    `python3 scripts/build_site.py olga --strict`; output directory `dist`.
 3. Save and deploy; check the `*.pages.dev` address first.
 4. Custom domains → add `olgazai.com` (and `www.olgazai.com`). The zone is in the
    same account, so Cloudflare creates the DNS records itself.
+   A read-only DNS record means another Cloudflare app owns the name: here it was
+   an earlier temporary Worker `olgazai` (repo DreamyRTFX/olgazai). Its custom
+   domains were removed; the Worker itself still runs on its workers.dev address.
+   The zone's MX/TXT records are Email Routing (hello@olgazai.com): leave them.
 5. Every push to `main` rebuilds olgazai.com. sveta-colours.com keeps deploying
    from GitHub Pages as before.
 
