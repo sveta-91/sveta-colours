@@ -485,6 +485,11 @@ function updateAspectInfo(){
   setStatus('aspectInfo', notes.join(' '), notes.length ? kind : '');
 }
 $('fSize').addEventListener('input', updateAspectInfo);
+// Greeting cards are 5x7 in by default (site: CARD_DEFAULT_SIZE); an empty Size gets it.
+$('fCollection').addEventListener('change', () => {
+  const card = $('fCollection').value.split(',').some(c => ['greeting cards','postcards'].includes(c.split(':')[0].trim().toLowerCase()));
+  if (card && !$('fSize').value.trim()) { $('fSize').value = '5x7 in'; updateAspectInfo(); }
+});
 $('fOrientation').addEventListener('change', updateAspectInfo);
 
 // ── Form ──

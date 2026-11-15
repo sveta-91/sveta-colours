@@ -2458,6 +2458,10 @@ function sheetRowToPainting(row, headers, index) {
   };
 
   const priceStr = get('price');
+  // Greeting cards are 5x7 in unless the row's `size` says otherwise.
+  const isCardRow = (get('collection') || '').split(',')
+    .some(c => CARD_TAGS.includes(c.replace(/:.*$/, '').trim().toLowerCase()));
+  const sizeCell = get('size') || (isCardRow ? CARD_DEFAULT_SIZE : '');
   // Sold determined ONLY by 'sold' column. Featured is a separate flag
   // (used for hero pickup / "recent" highlights), not for availability.
   const sold = yes(get('sold'));
@@ -2474,7 +2478,7 @@ function sheetRowToPainting(row, headers, index) {
   let widthIn = widthInStr ? parseFloat(widthInStr) : null;
   let heightIn = heightInStr ? parseFloat(heightInStr) : null;
   if ((!widthIn || isNaN(widthIn) || !heightIn || isNaN(heightIn))) {
-    const sizeStr = get('size');
+    const sizeStr = sizeCell;
     if (sizeStr) {
       const m = sizeStr.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/i);
       if (m) {
@@ -2522,7 +2526,7 @@ function sheetRowToPainting(row, headers, index) {
     mediumRu: get('mediumru'),
     price: priceStr ? parseFloat(priceStr.replace(/[^0-9.]/g, '')) : null,
     sold: sold,
-    size: get('size'),
+    size: sizeCell,
     image: driveImageURL(get('image')),
     description: (RU && get('descriptionru')) || get('description'),
     collections: collections,
@@ -2586,6 +2590,7 @@ async function loadFromSheet() {
 // (older tag "Postcards" counts too). The tag is a page of its own, never a
 // collection button, and the page shows a note until the first card is in.
 const CARD_TAGS = ['greeting cards', 'postcards'];
+const CARD_DEFAULT_SIZE = '5x7 in';
 function isCard(p) { return (p.collections || []).some(c => CARD_TAGS.includes(c.toLowerCase())); }
 
 /* ========================================================

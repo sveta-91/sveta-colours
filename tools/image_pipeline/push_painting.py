@@ -63,6 +63,9 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR.parent.parent / "scripts"))
 import site_config  # noqa: E402  (scripts/site_config.py)
 from fill_ru import RU_COLS, ru_source  # noqa: E402  (same folder)
+
+CARD_TAGS = ("greeting cards", "postcards")  # collection tag → Greeting Cards page
+CARD_DEFAULT_SIZE = "5x7 in"
 OAUTH_CLIENT_PATH = SCRIPT_DIR / "oauth-client.json"
 TOKEN_PATH = SCRIPT_DIR / "push-painting-token.json"
 
@@ -573,6 +576,12 @@ def main() -> int:
         if slug:
             print(f"slug:           {slug}")
 
+        # Greeting cards are 5x7 in unless told otherwise (site: CARD_DEFAULT_SIZE).
+        if not args.size and not existing.get("size", "").strip() and any(
+                c.split(":")[0].strip().lower() in CARD_TAGS
+                for c in (args.collection or existing.get("collection", "")).split(",")):
+            args.size = CARD_DEFAULT_SIZE
+            print(f"size:           {CARD_DEFAULT_SIZE} (greeting card default)")
         size_for_check = args.size or existing.get("size", "")
         if size_for_check and not args.size:
             print(f"canvas size:    {size_for_check} (from sheet row)")

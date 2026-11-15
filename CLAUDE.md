@@ -74,7 +74,7 @@ nets, the artist's short wording) is generated. Change Sveta's values in
 | `orientation` | `portrait`/`landscape`. Drives card sizing (transposed dims, flex layout) |
 | `hero` | `TRUE` or empty. **Exactly one at a time**; `--hero` does not unset the old one |
 | `recent` | `1`–`6`, a *position* in the home carousel, not a boolean |
-| `collection` | Comma-separated, no spaces. Values: `Big City`, `Flowers`, `Forest`, `Seasons`. The tag `Greeting cards` (or older `Postcards`) puts the row on the Greeting Cards page only: not a collection, and out of All Paintings, Recent, the hero and the counts |
+| `collection` | Comma-separated, no spaces. Values: `Big City`, `Flowers`, `Forest`, `Seasons`. The tag `Greeting cards` (or older `Postcards`) puts the row on the Greeting Cards page only: not a collection, and out of All Paintings, Recent, the hero and the counts. A card with an empty `size` is `5x7 in` (site, `push_painting.py`, photo manager) |
 | `slug` *(column L, after `recent`)* | Permanent link key, e.g. `noise-and-silence` (site `slugify()` of the title). Written once, **never changed**, even when the title is. Unique; `audit_gallery.py` checks. `push_painting.py` (`--slug` to override) and `photo_manager.html` write it for new paintings |
 | `cover` *(optional, after `recent`)* | Collection name(s) this painting is the button picture for, e.g. `Forest`. Blank → first available painting in the collection's order |
 | `title_ru`, `description_ru` *(optional, at the end)* | Russian for the RU version (EN·RU switch). Start as a plain translation; Sveta may edit. Tools fill **only empty cells** and never overwrite them (`push_painting.py --title-ru/--description-ru`, `fill_ru.py`, photo manager). Empty → the Russian page shows English |
