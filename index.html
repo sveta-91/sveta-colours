@@ -2997,7 +2997,9 @@ function openModal(id, opts) {
 
   const collectionsHTML = (p.collections || []).length
     ? `<div class="modal-collections">${(p.collections || []).map(c =>
-        `<button class="chip" type="button" onclick="closeModal(true);showPage('collection:${encodeURIComponent(c)}', { replace: true })">${collLabel(c)}</button>`
+        CARD_TAGS.includes(c.toLowerCase())
+          ? `<button class="chip" type="button" onclick="closeModal(true);showPage('cards', { replace: true })">${t('Greeting cards')}</button>`
+          : `<button class="chip" type="button" onclick="closeModal(true);showPage('collection:${encodeURIComponent(c)}', { replace: true })">${collLabel(c)}</button>`
       ).join('')}</div>`
     : '';
 
