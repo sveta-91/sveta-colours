@@ -2111,6 +2111,7 @@ body.cursor-hide * { cursor: none !important; }
       <li><a href="#collections" data-page="collections" onclick="event.preventDefault(); showPage('collections'); closeMenu();" data-i18n>Collections</a></li>
       <li class="nav-coll-li"><ul class="nav-colls" id="navCollections" aria-label="Collections" data-i18n-aria></ul></li>
       <li><a href="#paintings" data-page="paintings" onclick="event.preventDefault(); showPage('paintings'); closeMenu();" data-i18n>All Paintings</a></li>
+      <li><a href="#cards" data-page="cards" onclick="event.preventDefault(); showPage('cards'); closeMenu();" data-i18n>Greeting Cards</a></li>
       <li><a href="#about" data-page="about" onclick="event.preventDefault(); showPage('about'); closeMenu();" data-i18n>About</a></li>
       <li><a href="#faq" data-page="faq" onclick="event.preventDefault(); showPage('faq'); closeMenu();" data-i18n>FAQ</a></li>
     </ul>
@@ -2202,9 +2203,9 @@ const I18N_RU = {
   'Email address': 'Адрес эл. почты', 'Subscribe': 'Подписаться',
   // list pages
   'No paintings yet.': 'Картин пока нет.', 'Other works': 'Другие работы',
-  'The latest from the studio.': 'Последние работы из мастерской.', 'Postcards': 'Открытки',
-  'Small watercolor works &mdash; light, atmospheric, made by hand.': 'Небольшие акварели &mdash; лёгкие, воздушные, сделанные вручную.',
-  'Watercolor postcards drop seasonally. New batch this spring.': 'Акварельные открытки выходят раз в сезон. Новые будут весной.',
+  'The latest from the studio.': 'Последние работы из мастерской.',
+  'Greeting Cards': 'Открытки', 'Greeting cards': 'Открытки',
+  'Greeting cards are coming soon.': 'Открытки скоро появятся.',
   'Paintings grouped by mood, light, and atmosphere.': 'Картины, собранные по настроению, свету и атмосфере.',
   'All collections': 'Все коллекции', 'No collections defined yet.': 'Коллекций пока нет.',
   'No paintings in this collection yet.': 'В этой коллекции пока нет картин.',
@@ -2570,27 +2571,17 @@ async function loadFromSheet() {
   // Assign stable global catalog numbers (used in cards + hero + cursor).
   assignCatalogNumbers();
   injectPaintingsLD();
-  togglePostcardsNav();
   await textsReady;
   currentPage = pageFromHash(window.location.hash) || 'home';
   render();
   hydrateFromHash();
 }
 
-// Hide the "Postcards" nav entry while there's nothing to show under it.
-// We re-expose it the moment a watercolor lands in the Sheet — no extra
-// step needed when inventory grows.
-function togglePostcardsNav() {
-  const hasPostcards = PAINTINGS.some(p =>
-    p.medium === 'watercolor' ||
-    p.medium === 'watercolour' ||
-    (p.collections || []).map(c => c.toLowerCase()).includes('postcards')
-  );
-  document.querySelectorAll('a[data-page="postcards"], a[href="#postcards"]').forEach(a => {
-    const item = a.closest('li') || a;
-    item.hidden = !hasPostcards;
-  });
-}
+// Greeting cards are sheet rows tagged "Greeting cards" in `collection`
+// (older tag "Postcards" counts too). The tag is a page of its own, never a
+// collection button, and the page shows a note until the first card is in.
+const CARD_TAGS = ['greeting cards', 'postcards'];
+function isCard(p) { return (p.collections || []).some(c => CARD_TAGS.includes(c.toLowerCase())); }
 
 /* ========================================================
    HELPERS
@@ -2601,9 +2592,9 @@ let currentPage = 'home';
 /* ROUTING — every page has a hash URL so reload, share and Back work.
    home → no hash · paintings → #paintings (legacy #works accepted)
    collections → #collections · collection:<Name> → #collections/<slug>
-   about/faq/postcards/past → #<page>. #painting/<slug> stays the modal's.
+   about/faq/cards/past → #<page> (legacy #postcards → cards). #painting/<slug> stays the modal's.
    Unknown hashes (#main skip link, etc.) are ignored, never routed home. */
-const SIMPLE_ROUTES = ['recent', 'paintings', 'collections', 'postcards', 'about', 'faq', 'past'];
+const SIMPLE_ROUTES = ['recent', 'paintings', 'collections', 'cards', 'about', 'faq', 'past'];
 
 /* Painting links use the sheet's permanent `slug` column (#painting/noise-and-silence),
    not the row number: row numbers shift when rows are inserted or reordered,
@@ -2645,6 +2636,7 @@ function pageFromHash(hash) {
   const h = (hash || '').replace(/^#\/?/, '');
   if (h === '' || h === 'home') return 'home';
   if (h === 'works') return 'paintings';
+  if (h === 'postcards') return 'cards';
   if (SIMPLE_ROUTES.includes(h)) return h;
   const m = h.match(/^collections\/(.+)$/);
   if (m) {
@@ -3454,7 +3446,7 @@ function getHeroPiece() {
 
 function getAllCollections() {
   const set = new Set();
-  PAINTINGS.forEach(p => (p.collections || []).forEach(c => set.add(c)));
+  PAINTINGS.forEach(p => (p.collections || []).forEach(c => { if (!CARD_TAGS.includes(c.toLowerCase())) set.add(c); }));
   // SITE.collectionOrder (site.json) lists names in the order the nav and the
   // Collections page show them; names it leaves out follow, A to Z.
   const order = (SITE.collectionOrder || []).map(c => c.toLowerCase());
@@ -3793,24 +3785,18 @@ function renderRecent() {
   `;
 }
 
-function renderPostcards() {
-  // Watercolor + alternate spelling + opt-in via 'postcards' collection.
-  const postcards = PAINTINGS.filter(p =>
-    p.medium === 'watercolor' ||
-    p.medium === 'watercolour' ||
-    (p.collections || []).map(c => c.toLowerCase()).includes('postcards')
-  );
-  const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);font-size:1.05rem;padding:2rem;">${t('Watercolor postcards drop seasonally. New batch this spring.')}</p>`;
+function renderCards() {
+  const cards = PAINTINGS.filter(isCard);
+  const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);font-size:1.05rem;padding:2rem;">${t('Greeting cards are coming soon.')}</p>`;
   return `
     <div class="collection-header">
       <a href="#home" class="back-link" onclick="event.preventDefault(); showPage('home');">${t('&larr; Back')}</a>
-      <h1>${t('Postcards')}</h1>
-      <p>${t('Small watercolor works &mdash; light, atmospheric, made by hand.')}</p>
+      <h1>${t('Greeting Cards')}</h1>
     </div>
     <section style="padding-top: 1rem;">
       <div class="section-inner">
-        ${postcards.length
-          ? `<div class="gallery-grid" data-masonry>${postcards.map(cardHTML).join('')}</div>`
+        ${cards.length
+          ? `<div class="gallery-grid" data-masonry>${cards.map(cardHTML).join('')}</div>`
           : emptyMsg}
       </div>
     </section>
@@ -4029,7 +4015,7 @@ function pageTitleFor(page) {
   if (page === 'home')        return `${SUFFIX} — ${t('Original Paintings')}`;
   if (page === 'recent')      return `${t('Recent')} · ${SUFFIX}`;
   if (page === 'paintings')   return `${t('All Paintings')} · ${SUFFIX}`;
-  if (page === 'postcards')   return `${t('Postcards')} · ${SUFFIX}`;
+  if (page === 'cards')       return `${t('Greeting Cards')} · ${SUFFIX}`;
   if (page === 'collections') return `${t('Collections')} · ${SUFFIX}`;
   if (page === 'about')       return `${t('About')} · ${SUFFIX}`;
   if (page === 'faq')         return `${t('FAQ')} · ${SUFFIX}`;
@@ -4052,7 +4038,7 @@ function render() {
   } else switch (currentPage) {
     case 'recent':      html = renderRecent(); break;
     case 'paintings':   html = renderPaintings(); break;
-    case 'postcards':   html = renderPostcards(); break;
+    case 'cards':       html = renderCards(); break;
     case 'collections': html = renderCollections(); break;
     case 'about':       html = renderAbout(); break;
     case 'faq':         html = renderFAQ(); break;
@@ -4084,7 +4070,7 @@ function render() {
   else if (currentPage === 'recent') navKey = 'recent';
   else if (currentPage === 'paintings' || currentPage === 'past') navKey = 'paintings';
   else if (currentPage === 'collections' || currentPage.startsWith('collection:')) navKey = 'collections';
-  else if (currentPage === 'postcards') navKey = 'postcards';
+  else if (currentPage === 'cards') navKey = 'cards';
   else if (currentPage === 'about') navKey = 'about';
   else if (currentPage === 'faq') navKey = 'faq';
   if (navKey) {
@@ -4173,7 +4159,7 @@ function renderFooter() {
             <li><a href="#recent" onclick="event.preventDefault(); showPage('recent');">${t('Recent')}</a></li>
             <li><a href="#collections" onclick="event.preventDefault(); showPage('collections');">${t('Collections')}</a></li>
             <li><a href="#paintings" onclick="event.preventDefault(); showPage('paintings');">${t('All paintings')}</a></li>
-            <li><a href="#postcards" onclick="event.preventDefault(); showPage('postcards');">${t('Postcards')}</a></li>
+            <li><a href="#cards" onclick="event.preventDefault(); showPage('cards');">${t('Greeting cards')}</a></li>
             <li><a href="#past" onclick="event.preventDefault(); showPage('past');">${t('Past Work')}</a></li>
           </ul>
         </div>
@@ -4313,7 +4299,7 @@ function initMobileCTA() {
 initCustomCursor();
 initMobileCTA();
 if (SHEET_CSV_URL) loadFromSheet();
-else textsReady.then(() => { assignCatalogNumbers(); injectPaintingsLD(); togglePostcardsNav(); currentPage = pageFromHash(window.location.hash) || 'home'; render(); hydrateFromHash(); });
+else textsReady.then(() => { assignCatalogNumbers(); injectPaintingsLD(); currentPage = pageFromHash(window.location.hash) || 'home'; render(); hydrateFromHash(); });
 </script>
 
 <!--
