@@ -42,7 +42,7 @@ def a(v):
 
 def render_block(cfg, theme):
     h = cfg['head']
-    icons = '/' + cfg['files'].get('icons', 'icons').strip('/') + '/'
+    icons = '/icons/'  # the build copies files.icons to <out>/icons, whatever its source path
     og_image = h.get('ogImage')
     lines = [
         '<!-- SITE:BEGIN ===========================================================',

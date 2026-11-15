@@ -26,8 +26,8 @@
   "files": {
     "texts": "sites/olga/texts",
     "images": "sites/olga/images",
-    "icons": "icons",
-    "favicon": "favicon.ico"
+    "icons": "sites/olga/icons",
+    "favicon": "sites/olga/favicon.ico"
   },
   "site": {
     "name": "Olga Zai",

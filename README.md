@@ -20,7 +20,7 @@ images/                          — local fallbacks for site photos served from
 sites/                           — one folder per artist; build_site.py renders index.html's SITE block from it
   README.md                      — fields, commands, Cloudflare Pages setup for olgazai.com
   sveta/                         — site.json (head + SITE object) and theme.css (tokens); root index.html carries it
-  olga/                          — olgazai.com: site.json, theme.css, site.css (logo, watercolor mats), texts/ (placeholders + drafted FAQ terms; ru/ in Russian), images/ (empty: her portrait and studio photo are in her Drive)
+  olga/                          — olgazai.com: site.json, theme.css, site.css (logo, watercolor mats), texts/ (placeholders + drafted FAQ terms; ru/ in Russian), images/ (empty: her portrait and studio photo are in her Drive), icons/ + favicon.ico ("ZAI" in Cormorant Garamond on madder)
 inquiry/
   Code.gs                        — Apps Script backend for the inquiry form (deployed under sveta.colours; URL in site.json formEndpoint)
   README.md                      — site ↔ script contract and the one-time deploy steps
