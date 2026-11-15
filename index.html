@@ -2287,6 +2287,7 @@ const SITE_DATA = SITE;
    FALLBACK DATA (the artist's own fallback list is SITE.fallbackPaintings)
    ======================================================== */
 let PAINTINGS = SITE.fallbackPaintings;
+let CARDS = [];  // greeting cards: split out of PAINTINGS on load (isCard)
 
 /* ========================================================
    CONFIGURATION
@@ -2568,6 +2569,10 @@ async function loadFromSheet() {
   } catch (err) {
     console.warn('Could not load from Google Sheet:', err.message);
   }
+  // Greeting cards live on their own page only: out of All Paintings, Recent,
+  // the hero, collection counts and the sold count.
+  CARDS = PAINTINGS.filter(isCard);
+  PAINTINGS = PAINTINGS.filter(p => !isCard(p));
   // Assign stable global catalog numbers (used in cards + hero + cursor).
   assignCatalogNumbers();
   injectPaintingsLD();
@@ -2611,7 +2616,7 @@ function paintingFromHash(hash) {
   if (!m) return null;
   let key = m[1];
   try { key = decodeURIComponent(key); } catch (e) { /* keep raw */ }
-  return PAINTINGS.find(x => paintingSlug(x) === key.toLowerCase()) || null;
+  return PAINTINGS.concat(CARDS).find(x => paintingSlug(x) === key.toLowerCase()) || null;
 }
 
 function slugify(name) {
@@ -2923,7 +2928,7 @@ function cardClick(e, id) {
 
 function openModal(id, opts) {
   opts = opts || {};
-  const p = PAINTINGS.find(x => x.id === id);
+  const p = PAINTINGS.concat(CARDS).find(x => x.id === id);
   if (!p) return;
   lastFocusedElement = document.activeElement;
 
@@ -3786,7 +3791,7 @@ function renderRecent() {
 }
 
 function renderCards() {
-  const cards = PAINTINGS.filter(isCard);
+  const cards = CARDS;
   const emptyMsg = `<p style="text-align:center;color:var(--text-muted);font-family:var(--font-body);font-size:1.05rem;padding:2rem;">${t('Greeting cards are coming soon.')}</p>`;
   return `
     <div class="collection-header">
@@ -4234,36 +4239,36 @@ function wireCustomCursor() {
   // covering the very text the buyer wanted to read) until the entire card
   // was exited.
   const cardImages = document.querySelectorAll('.painting-card .card-image-inner');
-  cardImages.forEach(t => {
-    if (t._cursorWired) return;
-    t._cursorWired = true;
-    t.addEventListener('mouseenter', () => {
+  cardImages.forEach(el => {
+    if (el._cursorWired) return;
+    el._cursorWired = true;
+    el.addEventListener('mouseenter', () => {
       let label = t('View →');
-      const card = t.closest('.painting-card');
+      const card = el.closest('.painting-card');
       if (card) {
         const id = parseInt(card.getAttribute('data-card-id'), 10);
-        const painting = !isNaN(id) ? PAINTINGS.find(p => p.id === id) : null;
+        const painting = !isNaN(id) ? PAINTINGS.concat(CARDS).find(p => p.id === id) : null;
         const title = resolveTitle(painting);
         if (title) label = `${title} →`;
       }
       cursorEl.textContent = label;
       showCursor();
     });
-    t.addEventListener('mouseleave', hideCursor);
+    el.addEventListener('mouseleave', hideCursor);
   });
 
   // Hero image gets the same treatment — cursor over the painting only.
-  document.querySelectorAll('.hero-image-wrap').forEach(t => {
-    if (t._cursorWired) return;
-    t._cursorWired = true;
-    t.addEventListener('mouseenter', () => {
+  document.querySelectorAll('.hero-image-wrap').forEach(el => {
+    if (el._cursorWired) return;
+    el._cursorWired = true;
+    el.addEventListener('mouseenter', () => {
       let label = t('View →');
       const title = resolveTitle(getHeroPiece());
       if (title) label = `${title} →`;
       cursorEl.textContent = label;
       showCursor();
     });
-    t.addEventListener('mouseleave', hideCursor);
+    el.addEventListener('mouseleave', hideCursor);
   });
 }
 
