@@ -104,14 +104,13 @@
       "contactNote": "Картины отправляются из Торнхилла, Онтарио.",
       "footerBottom": "Каждая работа в одном экземпляре. Доставка по всему миру."
     },
-    "collectionOrder": ["Watercolor", "Acrylic", "Flowers", "Landscapes", "Water", "Winter", "City", "Still life"],
+    "collectionOrder": ["Watercolor", "Acrylic", "Flowers", "Landscapes", "Winter", "City", "Still life"],
     "collectionsRu": {
       "Acrylic": "Акрил",
       "City": "Город",
       "Flowers": "Цветы",
       "Landscapes": "Пейзажи",
       "Still life": "Натюрморт",
-      "Water": "Вода",
       "Watercolor": "Акварель",
       "Winter": "Зима"
     },
@@ -135,7 +134,7 @@
     "driveFolder": "",
     "watermark": "© olgazai",
     "voiceSkill": null,
-    "collections": ["Acrylic", "City", "Flowers", "Landscapes", "Still life", "Water", "Watercolor", "Winter"],
+    "collections": ["Acrylic", "City", "Flowers", "Landscapes", "Still life", "Watercolor", "Winter"],
     "orderTestCollections": []
   }
 }
