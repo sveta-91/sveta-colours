@@ -47,7 +47,7 @@ scripts/
 tools/
   photo_manager.html             — one-page publishing: prepared image → watermark → AI title/description → Drive + sheet → live check
   image_pipeline/                — Python pipeline (download → process → upload)
-  favicon/                       — favicon generation scripts (palette sampling + final render)
+  favicon/                       — favicon generation scripts (letter_icons.py: current SM and ZAI sets; older palette sampling + gradient render)
 .claude/
   skills/publish-painting/       — the per-painting publishing workflow (canonical spec)
   skills/sveta-writing/          — voice spec for site copy + bilingual prompt-reading rule

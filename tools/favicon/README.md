@@ -8,7 +8,8 @@ any future favicon (rebrand, sub-site, social-share avatar).
 | File | Purpose |
 |---|---|
 | `render_painting_palettes.py` | Download a named painting from the portfolio Drive folder, k-means cluster to 6 dominant colors, pick a 3-stop gradient (cool → warm → deep). Renders SM monogram preview on the sampled gradient with both ink-blue and warm-dark letter options. |
-| `render_final.py` | Lock-in renderer for the chosen design: extracts glyph paths from a system font via `fontTools` (so the SVG renders identically without depending on the visitor's installed fonts), then emits SVG + PNG at all standard favicon sizes (16, 32, 48, 64, 180, 192, 512) + a multi-size `.ico`. |
+| `letter_icons.py` | **Current icons of both sites (2026-11-15).** Initials on a rounded square in the site's own font: sveta-colours `SM` in Marcellus, navy `#1A2640` on light blue `#C7D2EC`; olgazai `ZAI` in Cormorant Garamond 600, `#FBFBF8` on madder `#7A2E2A`. Exact commands in the script's docstring; fonts from github.com/google/fonts. Rebuilds both sets pixel-identical. |
+| `render_final.py` | *Previous* sveta-colours icon (Cochin Italic SM on the Autumn Light gradient circle, replaced 2026-11-15). Lock-in renderer for the chosen design: extracts glyph paths from a system font via `fontTools` (so the SVG renders identically without depending on the visitor's installed fonts), then emits SVG + PNG at all standard favicon sizes (16, 32, 48, 64, 180, 192, 512) + a multi-size `.ico`. |
 
 ## Setup
 
