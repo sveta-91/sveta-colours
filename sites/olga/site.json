@@ -104,6 +104,7 @@
       "contactNote": "Картины отправляются из Торнхилла, Онтарио.",
       "footerBottom": "Каждая работа в одном экземпляре. Доставка по всему миру."
     },
+    "collectionOrder": ["Watercolor", "Acrylic", "Flowers", "Landscapes", "Water", "Winter", "City", "Still life"],
     "collectionsRu": {
       "Acrylic": "Акрил",
       "City": "Город",

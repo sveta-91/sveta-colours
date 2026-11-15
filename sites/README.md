@@ -23,6 +23,9 @@ One folder per artist. `index.html` is shared code plus one generated block
     `portrait` (null → none), `placeholderGradients` (card backgrounds before an
     image loads), `strings` (the artist's own short wording),
     `fallbackPaintings` (shown only when the sheet can't be read).
+  - `collectionOrder` (optional): collection names in the order the nav list and the
+    Collections page show them, e.g. `["Watercolor", "Acrylic", "Flowers"]`. Names it
+    leaves out follow, A to Z; empty or missing → all A to Z.
   - Languages: `languages` (`["en", "ru"]` shows the EN·RU switch; English is the
     default), `stringsRu` (Russian for each `strings` key), `collectionsRu`
     (collection name → Russian label; the English name stays the key and the URL),

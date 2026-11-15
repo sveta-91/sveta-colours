@@ -2554,7 +2554,7 @@ async function loadFromSheet() {
       <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
         <p style="color:var(--text-muted);font-family:var(--font-body);font-size:1.2rem;">Loading paintings&hellip;</p>
       </div>`;
-    const response = await fetch(SHEET_CSV_URL);
+    const response = await fetch(SHEET_CSV_URL, { cache: 'no-cache' });
     if (!response.ok) throw new Error('Could not fetch sheet');
     const text = await response.text();
     const rows = parseCSV(text);
@@ -3455,7 +3455,11 @@ function getHeroPiece() {
 function getAllCollections() {
   const set = new Set();
   PAINTINGS.forEach(p => (p.collections || []).forEach(c => set.add(c)));
-  return Array.from(set).sort();
+  // SITE.collectionOrder (site.json) lists names in the order the nav and the
+  // Collections page show them; names it leaves out follow, A to Z.
+  const order = (SITE.collectionOrder || []).map(c => c.toLowerCase());
+  const rank = n => { const i = order.indexOf(n.toLowerCase()); return i < 0 ? order.length : i; };
+  return Array.from(set).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
 }
 
 function renderHero() {
