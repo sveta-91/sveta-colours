@@ -2159,6 +2159,11 @@ const LANG = (() => {
 const RU = LANG === 'ru';
 if (RU) {
   document.documentElement.lang = 'ru';
+  // The visitor chose Russian: stop Chrome's "Translate this page?" offer.
+  // English pages keep it (useful to visitors who read neither language).
+  document.documentElement.setAttribute('translate', 'no');
+  const nt = document.createElement('meta'); nt.name = 'google'; nt.content = 'notranslate';
+  document.head.appendChild(nt);
   Object.assign(SITE.strings, SITE.stringsRu || {});
 }
 const I18N_RU = {
