@@ -146,8 +146,8 @@ If a draft says more than this, cut.
 Three panels and every logged correction point the same way. Read
 [`corrections.md`](corrections.md) for the evidence; this is the summary.
 
-**1. She corrects the SUBJECT, never the prose.** Not once has she said a word
-was wrong. Every correction has been *"you described the wrong thing."* The
+**1. Subject accuracy comes first.** Earlier corrections repeatedly concerned
+*"you described the wrong thing."* The
 funnels in *Vancouver*, the woman "looking" instead of smelling in *Warkworth* —
 both drafts were clean by every rule in this file and both were still wrong.
 
@@ -175,6 +175,13 @@ appear, the Russian is operative. Russian asides are content, not commentary.
 from describing a thumbnail — "deck chairs" that were funnels, "portholes" that
 were lifeboats. Open the image at full size and name only what you can actually
 see.
+
+**6. Preserve her exact revisions.** During sequential review, apply her wording,
+factual updates, and deletions literally; do not smooth them back into an earlier
+draft. A deleted claim is not evidence of its opposite. Keep approval attached
+to the reviewed passage, not to neighbouring unreviewed text. Evidence:
+three `AUTHOR-REVISION` entries on 2026-11-14 (years painting, «а каким — воздух»,
+and materials/starting points).
 
 ### The pre-publish test
 

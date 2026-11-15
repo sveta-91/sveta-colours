@@ -31,6 +31,8 @@ docs/
   olgazai-plan.md                — planned: second site olgazai.com from the same code (shared index.html + per-site block)
   portfolio-playbook.md          — how to build a similar site from scratch; ends with "Extending the site" (backend plan)
   review.txt                     — external review of the site (sales, SEO, images), in Russian
+  russian-copy-review.md          — approved Russian copy and review decisions; existing FAQ retained
+  english-description-review.md   — meaning comparison with approved Russian; English adjustments awaiting approval
   watermark-removal-playbook.md  — techniques for clearing watermarks off artwork photos
   superpowers/                   — design/spec docs and rewrite plans
 scripts/

@@ -175,20 +175,20 @@ const SITE = {
   ],
   "stringsRu": {
     "logoLabel": "Sveta Colours — на главную",
-    "navNote": "Оригинальные картины<br>Торнхилл, Онтарио",
-    "shippingNote": "Доставку считаем по вашему адресу. Со страховкой, из Канады.",
-    "replyNote": "Отвечаю в течение дня-двух.",
+    "navNote": "Живопись Светы<br>Торнхилл, Онтарио",
+    "shippingNote": "Отправляю из Канады со страховкой. Стоимость доставки рассчитаю по вашему адресу.",
+    "replyNote": "Обычно отвечаю за день-два.",
     "replyWhen": "в течение дня-двух",
-    "contactLede": "Вопрос, заказ, визит в мастерскую. Обычно отвечаю в течение дня-двух.",
+    "contactLede": "Хотите спросить о картине, обсудить заказ или заглянуть в мастерскую? Напишите мне. Обычно отвечаю за день-два.",
     "studioAlt": "В мастерской у Светы",
     "chapterLarge": "Большие работы &mdash; 40 &times; 50 см",
     "chapterSmall": "Небольшие работы &mdash; 28 &times; 36 см",
-    "worksIntro": "Каждая картина существует в одном экземпляре. Здесь и доступные работы, и те, что уже в частных коллекциях &mdash; беру заказы.",
-    "footerTagline": "Оригинальные картины &mdash;<br>неспешно, по одной.",
+    "worksIntro": "Здесь собраны картины, которые можно купить, и работы, уже нашедшие своих владельцев. Также пишу на заказ.",
+    "footerTagline": "О том, что замечаю и не хочу забыть.",
     "mailSubject": "Письмо с sveta-colours.com",
-    "contactHeading": "<span class=\"italic\">Заказы<\/span><br>и визиты в мастерскую",
+    "contactHeading": "Напишите мне<br>или приходите в мастерскую",
     "contactNote": "Визит в мастерскую по договорённости.",
-    "footerBottom": "Каждая работа в одном экземпляре. Доставка по всему миру."
+    "footerBottom": "Отправляю картины по всему миру."
   },
   "collectionsRu": {
     "Big City": "Большой город",
@@ -262,7 +262,15 @@ const SITE = {
     "linear-gradient(160deg, #b0a895, #918876)",
     "linear-gradient(160deg, #c4bcab, #a89f8c)",
     "linear-gradient(160deg, #d8d1c2, #c0b9a6)"
-  ]
+  ],
+  "uiStringsRu": {
+    "About": "Обо мне",
+    "FAQ": "Вопросы и ответы",
+    "Write to studio": "Написать мне",
+    "Write to studio &rarr;": "Написать мне &rarr;",
+    "Write to the studio": "Написать мне",
+    "Write to the studio &rarr;": "Написать мне &rarr;"
+  }
 };
 </script>
 <!-- SITE:END -->
@@ -2211,7 +2219,7 @@ const I18N_RU = {
   'Original Paintings': 'оригинальные картины', 'Site footer': 'Подвал сайта',
 };
 function t(s, ...args) {
-  let out = (RU && I18N_RU[s]) || s;
+  let out = (RU && ((SITE.uiStringsRu || {})[s] || I18N_RU[s])) || s;
   args.forEach((a, i) => { out = out.split('{' + i + '}').join(a); });
   return out;
 }
