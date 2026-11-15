@@ -54,7 +54,7 @@
     "currency": "$",
     "currencyCode": "CAD",
     "formEndpoint": "",
-    "sheetCsvUrl": "",
+    "sheetCsvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vST91lSDceFHo4AvdhWiwZu71y-QdoTVehBg2r8WB0h_4C7oYD2yXtQd82iUjzmh6i4ptcWGMVo0xnZ/pub?gid=1229238070&single=true&output=csv",
     "textDocs": {},
     "heroPinTitle": "",
     "featuredTitles": [],
@@ -129,7 +129,7 @@
     ]
   },
   "tools": {
-    "sheetId": "",
+    "sheetId": "1zrkkaxnGQINcUlinXDv5R_9DzAI_GUzxT8SGmqOU6vI",
     "sheetTab": "Paintings",
     "driveFolder": "1UlDyo3zY5jlhk7k4TDYjjY2S7aefW-wb",
     "watermark": "© olgazai",

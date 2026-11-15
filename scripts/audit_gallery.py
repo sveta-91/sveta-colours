@@ -314,7 +314,11 @@ def find_phrases(text: str, phrases: Iterable[str]) -> list[str]:
 # --------------------------------------------------------------------------
 
 # Optional columns allowed after the 11 required ones, in any order.
-OPTIONAL_COLUMNS: tuple[str, ...] = ("cover", "order", "slug", "titleru", "descriptionru", "mediumru", "rusource")
+OPTIONAL_COLUMNS: tuple[str, ...] = ("cover", "order", "slug", "framing", "titleru", "descriptionru", "mediumru", "rusource")
+
+# Greeting cards (collection tag) default to 5x7 in on the site (CARD_DEFAULT_SIZE).
+CARD_TAGS = ("greeting cards", "postcards")
+CARD_DEFAULT_SIZE = "5x7 in"
 
 
 def check_header(header: Sequence[str]) -> list[Finding]:
@@ -362,6 +366,9 @@ def check_rows(header: Sequence[str], rows: Sequence[Sequence[str]]) -> list[Fin
             ))
 
         size_str = d.get("size", "")
+        if not size_str and any(c.split(":")[0].strip().lower() in CARD_TAGS
+                                for c in d.get("collection", "").split(",")):
+            size_str = CARD_DEFAULT_SIZE
         orientation = d.get("orientation", "")
         dims = parse_size(size_str, orientation)
         if not size_str:
