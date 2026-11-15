@@ -65,7 +65,7 @@
     "chapterBy": "medium",
     "portrait": {
       "src": "https://lh3.googleusercontent.com/d/1XmiZp1Nk8rFcwKWE4ZQJx65lKRFBtfMB",
-      "fallback": "images/olga-portrait.jpg",
+      "fallback": "https://lh3.googleusercontent.com/d/1XmiZp1Nk8rFcwKWE4ZQJx65lKRFBtfMB",
       "alt": "Olga Zai, the painter",
       "width": 600,
       "height": 686
