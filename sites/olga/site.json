@@ -53,7 +53,7 @@
     "contactEmail": "olga.canvas.art@gmail.com",
     "currency": "$",
     "currencyCode": "CAD",
-    "formEndpoint": "",
+    "formEndpoint": "https://script.google.com/macros/s/AKfycbwoaEUYIxZb4g6-h-2oTdD2Tz0-qwbbt4hI_h3Pa2BUaoO9tgAV-UpNMnEweKWNqAr5ZQ/exec",
     "sheetCsvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vST91lSDceFHo4AvdhWiwZu71y-QdoTVehBg2r8WB0h_4C7oYD2yXtQd82iUjzmh6i4ptcWGMVo0xnZ/pub?gid=1229238070&single=true&output=csv",
     "textDocs": {
       "home": "https://docs.google.com/document/d/e/2PACX-1vRM34dc-oVScQVzE25Ub7-jPvuMTbLQUt9ARPqOd1rEQvi-kwbJ1d_mo-QzarfpJiHbzVeLLOU8kqZ_/pub",
