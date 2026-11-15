@@ -55,7 +55,11 @@
     "currencyCode": "CAD",
     "formEndpoint": "",
     "sheetCsvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vST91lSDceFHo4AvdhWiwZu71y-QdoTVehBg2r8WB0h_4C7oYD2yXtQd82iUjzmh6i4ptcWGMVo0xnZ/pub?gid=1229238070&single=true&output=csv",
-    "textDocs": {},
+    "textDocs": {
+      "home": "https://docs.google.com/document/d/e/2PACX-1vRM34dc-oVScQVzE25Ub7-jPvuMTbLQUt9ARPqOd1rEQvi-kwbJ1d_mo-QzarfpJiHbzVeLLOU8kqZ_/pub",
+      "about": "https://docs.google.com/document/d/e/2PACX-1vRt-TZzGQqaxI1n3ick0GdWWS7zpRZepHYaQhczrJ80FTDX_uOcC4Hb6f4UVfXb0KnJ8uyDutDgaB4T/pub",
+      "faq": "https://docs.google.com/document/d/e/2PACX-1vQ5Mzd9uRauz5mtSiYXlOhocfzKvM57fZ6Zpi4eLefWcBZ7e9QYF3_iiqeDIwm6ZeYKwtGfdKv_35P_/pub"
+    },
     "heroPinTitle": "",
     "featuredTitles": [],
     "chapterBy": "medium",
@@ -114,7 +118,11 @@
       "Watercolor": "Акварель",
       "Winter": "Зима"
     },
-    "textDocsRu": {},
+    "textDocsRu": {
+      "home": "https://docs.google.com/document/d/e/2PACX-1vRBzQJfXHlDXDp23PgWHepZE7a9_OXWWckRCNysIceIyJXBxa7nY7FCKvA7lwTXKdZsohDP2e0IYdF5/pub",
+      "about": "https://docs.google.com/document/d/e/2PACX-1vQhgTKbwBFKFbzwb01JCzlOhmPW1uFmo43Ayc4P8Ud6tFDQq5ab4ECr7bKisL8EVenE29ebFPhy0s8c/pub",
+      "faq": "https://docs.google.com/document/d/e/2PACX-1vQK0e59QWxBIs1QRpNZwmhKxNrcIC70HVo4Tz_1wi71MCc6SPVZvsC3urKkFNmGk-RJnR5-xqb-gyA-/pub"
+    },
     "fallbackPaintings": [],
     "placeholderGradients": [
       "linear-gradient(160deg, #e4e6e4, #cdd1cf)",
