@@ -43,6 +43,8 @@ scripts/
   verify_site.py                 — parameterized Selenium UI verification (`--site` required); `--smoke`: every page × language × 1440/390
   make_drive_kit.py              — Drive starter kit for a new artist (sheet CSV, photos named by title, site texts)
   verify_collection_order.py     — Selenium check: collection order + button pictures vs the sheet rules (`--site` required)
+  verify_admin.py                — Selenium checks for the admin page + hidden contact email (stubbed AI; `--live` for the deployed pages)
+  testdata/make_skewed.py        — synthetic framed, skewed painting photo with known corners (used by verify_admin.py)
   sync_texts.py                  — compare the published text Docs with the texts/ backups; --write updates them (`--site` required)
   site_config.py                 — per-site settings for the Python tools (`--site`, from sites/<name>/site.json)
   dev.sh                         — start the local static server for the photo manager

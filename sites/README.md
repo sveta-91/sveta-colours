@@ -84,3 +84,17 @@ Administrator member); test address olgazai.pages.dev. How it was set up:
 
 Until Olga's links are in `sites/olga/site.json`, `--strict` makes the Cloudflare
 build fail on purpose, so a half-filled site can't go live.
+
+## Accounts: who owns what (checked 2026-11-16)
+
+In Sveta's Chrome ("Sveta" profile) both Google accounts are signed in:
+sveta.mordkovich (`authuser=0`) and sveta.colours (`authuser=1`).
+
+| Thing | Owner account | Where | State |
+| --- | --- | --- | --- |
+| Google Cloud project `sveta-colours` (OAuth client `754552250731-…` for the admin page) | sveta.colours | `console.cloud.google.com/...?authuser=1&project=sveta-colours` (sveta.mordkovich sees no projects) | Testing mode; test users sveta.colours, olga.canvas.art; JS origins localhost:8000, 127.0.0.1:8000, both sveta-colours.com hosts, both olgazai.com hosts |
+| Cloudflare zone sveta-colours.com (DNS for GitHub Pages) | Cloudflare account "Sveta.colours@gmail.com's Account" | `dash.cloudflare.com` → that account | No Email Routing (no MX) |
+| Cloudflare zone olgazai.com + Pages project | Cloudflare account "Olga.canvas.art@gmail.com's Account" (Sveta's login is a member) | `dash.cloudflare.com` → that account | Email Routing enabled, destination olga.canvas.art verified, **no routing rules** (mail to hello@olgazai.com is not delivered) |
+
+The sites never show the contact address as text: `build_site.py` writes it
+base64-encoded (`contactEmailB64`) and the page shows "Email <site name>".

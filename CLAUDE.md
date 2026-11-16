@@ -128,6 +128,7 @@ trap, masonry timing, cursor scoping, and the CSV cache lag: all in the playbook
 | `scripts/sync_texts.py` | Compares the published text Docs (EN + RU) with their backup `.txt` copies block by block; `--write` updates the copies. `--site` required. Run it when Sveta says "sync texts" and after any lasting Doc edit |
 | `scripts/check_contrast.py` | WCAG contrast of a site's theme tokens (`--site`); run after any theme change |
 | `scripts/verify_collection_order.py` | Checks each collection's painting order and button picture against the `collection`/`order`/`cover` rules, on real sheet data plus synthetic cases. Run after touching ordering code. `--site` required |
+| `scripts/verify_admin.py` | Selenium checks for `admin/index.html` (straighten + zoom pass, AI dialog, form dropdowns, sign-in gate per host) and the hidden contact email; OpenAI is stubbed. `--live` checks the deployed `/admin/` pages and the Google sign-in window. Run with the image-pipeline venv after any admin-page change |
 | `scripts/templates/selenium_verify.py` | Generic verify scaffold — copy to `/tmp/<intent>_verify.py` and edit the assertions |
 
 ---

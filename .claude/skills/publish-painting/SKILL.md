@@ -32,7 +32,31 @@ Sveta agreed to this trigger on 2026-06-08 after running it end to end on
   description confirmation (step 3), a genuinely empty required field, a hard
   failure, or the pre-real-run confirmation in step 4.
 
-**Do:** acknowledge the image, hand her the Grok prompt, and go.
+**Do:** acknowledge the image, point her to the admin page (route A below),
+and go. Use the Grok + CLI route (B) only when she asks for it or for a re-push.
+
+### Route A (default since 2026-11-16): the admin page
+
+`https://www.sveta-colours.com/admin/` (Olga: `https://olgazai.com/admin/`) —
+unlisted, behind Google sign-in (approved test users: sveta.colours,
+olga.canvas.art; see `docs/photo-manager-setup.md`). It does the whole
+workflow in one page, and she has published with it:
+
+1. Drop the **raw** photo. Fill in **Size** first (dropdown; the crop takes the
+   canvas proportions from it).
+2. **Straighten + crop with AI**: gpt-5.4 marks the four corners, then checks
+   each on three zoomed crops; a corner whose answers disagree is drawn **red**
+   — drag that one. Her first real painting: "corners landed now". **Apply**
+   warps her own pixels; nothing is redrawn.
+3. **Title & description with AI**: three different options, each with **Use n**,
+   **title only**, **description only**. The `sveta-writing` rules and
+   `corrections.md` are read live, so log her corrections there as usual.
+4. Collection (required, checkboxes), Medium and Size (dropdowns from the sheet),
+   then **Save to Drive + Sheet**; the page watches the CSV until it is live.
+
+Your part on route A: help with the subject and wording in chat if she asks,
+log corrections, and verify the published row (step 5). Admin-page code and
+tests: `admin/index.html`, `scripts/verify_admin.py`.
 
 ### Which site — `--site` on every command
 
@@ -56,12 +80,7 @@ portions carry the truer meaning.
 
 ## 1. Grok perspective-correct + crop (manual, web UI)
 
-**Alternative since 2026-11-16, no Grok:** the admin page (`/admin/`) takes the raw
-photo. **Straighten + crop with AI** has OpenAI mark the four canvas corners; she
-drags them to fix, then **Apply** warps her own pixels to the Size proportions
-(never a redrawn image). Fill in Size first. On a synthetic test the corners came
-back 0–2.5% off, so expect to drag; on real photos it is untested — compare with
-Grok on the first few paintings before trusting it.
+*Route B. Route A (the admin page) replaces this step with Straighten + crop.*
 
 She pastes this into her already-open Grok tab, along with the raw photo.
 Give it verbatim:
