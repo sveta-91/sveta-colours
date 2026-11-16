@@ -45,7 +45,7 @@ The bar:
    plus a computed-CSS diff against the live site.
 6. **Tooling:** `--site` is **required, with no default**, in `push_painting.py`,
    `audit_gallery.py`, `verify_site.py` and `verify_collection_order.py`.
-   `photo_manager.html` takes `?site=olga`. The publish-painting skill asks
+   The photo manager (`admin/index.html`) takes `?site=olga`. The publish-painting skill asks
    "Sveta or Olga?" when it isn't clear and echoes the target sheet and URL
    before any real push. A bare "publish this" must never go to the wrong sheet.
 7. **Access:** Olga owns her Sheet, Drive folder, Docs and form, and shares the

@@ -110,7 +110,7 @@ read it and follow it. **For Olga's paintings sveta-writing does not apply**
 (`tools.voiceSkill` is null): use Olga's own words when Sveta has them; otherwise
 write plainly — what is in the painting and one specific thing, 30–55 words,
 no invented facts, no art-statement or mood vocabulary — the same neutral rules
-the photo manager uses (`aiRulesNeutral()` in `tools/photo_manager.html`).
+the photo manager uses (`aiRulesNeutral()` in `admin/index.html`).
 Do not restate, summarize, or "simplify" its rules; it owns length, sentence
 shapes, forbidden moves, and the three pre-publish tests.
 
@@ -224,6 +224,11 @@ refresh token is cached at `push-painting-token.json`, no browser afterwards.
   caches it: the site can lag the sheet by several minutes. Set that
   expectation and stop. Do not "debug" a missing row that is only cache lag —
   re-fetch the CSV a few minutes later if she wants proof.
+- A painting never changes the served HTML (titles come from the CSV), so
+  `verify_site.py --wait-for-text` can't detect it. Prove the row with the CSV
+  `curl` from step 3. `--wait-for-text` is for code pushes only: after
+  committing `index.html`, run `python3 scripts/verify_site.py --site sveta
+  --wait-for-text '<a string the commit added>'` instead of writing a poll loop.
 - Site image URLs are derived from the Drive file ID as
   `https://lh3.googleusercontent.com/d/<fileId>`.
 

@@ -401,12 +401,13 @@ that held the key) was built and tested but never deployed, then removed. Why:
 buyers of an original want the artist, not a bot, and the site's weak point is
 already trust. It also stored nothing, so it couldn't even show what visitors
 ask. The AI that earns its keep is on the artist's side: the title/description
-dialog in `tools/photo_manager.html`. To bring the chat back: `git show 74a5d5b`.
+dialog in `admin/index.html`. To bring the chat back: `git show 74a5d5b`.
 If it ever returns: log the questions, and hand buying/commission intent to the
 inquiry form instead of answering it.
 
 **Rule that still holds:** an API key never goes in a public page. A private
-local tool (the photo manager on localhost) may keep one in its own browser storage.
+local tool (the photo manager on localhost) may keep one in its own browser storage;
+the live admin page (`/admin/`, same file) keeps it only for one tab (sessionStorage).
 
 ### Modal class names
 

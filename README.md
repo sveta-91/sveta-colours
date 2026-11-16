@@ -45,8 +45,9 @@ scripts/
   site_config.py                 — per-site settings for the Python tools (`--site`, from sites/<name>/site.json)
   dev.sh                         — start the local static server for the photo manager
   templates/                     — reusable Selenium verify templates
+admin/
+  index.html                     — the photo manager, live at <site>/admin/ behind Google sign-in: prepared image → watermark → AI title/description → Drive + sheet → live check
 tools/
-  photo_manager.html             — one-page publishing: prepared image → watermark → AI title/description → Drive + sheet → live check
   image_pipeline/                — Python pipeline (download → process → upload)
   favicon/                       — favicon generation scripts (letter_icons.py: current SM and ZAI sets; older palette sampling + gradient render)
 .claude/
@@ -57,7 +58,7 @@ tools/
 CLAUDE.md                        — project instructions for Claude Code agents
 ```
 
-## Photo Manager (`tools/photo_manager.html`)
+## Photo Manager (`admin/index.html`, served at `/admin/`)
 
 Publishing a painting in one page. The image arrives already prepared (cropped);
 the page never edits it except for an optional watermark.
@@ -70,14 +71,16 @@ the page never edits it except for an optional watermark.
 3. **Title & description with AI**: a dialog with OpenAI about this painting.
    The voice rules are read live from `.claude/skills/sveta-writing/` (never
    copied). **Use this** fills the form; **Copy for corrections.md** keeps the
-   voice skill learning. The API key is pasted once and stays in this browser.
+   voice skill learning. The API key stays in this browser on localhost; on the
+   live admin page it lasts until the tab closes.
 4. **Save to Drive + Sheet** (under the form): uploads, writes the row by the
    sheet's own header (extra columns kept; `slug` written once if the column
    exists), moves `hero` if ticked, warns on a duplicate `recent` position, then
    watches the published CSV until the site shows the painting and links to it.
 
-Run `scripts/dev.sh` and open http://localhost:8000/tools/photo_manager.html?site=sveta
-(or `?site=olga`). Sheet, folder, watermark and writing voice come from
+Live: https://www.sveta-colours.com/admin/ and https://olgazai.com/admin/ (sign in
+with Google; unlisted, noindex). Locally: run `scripts/dev.sh` and open
+http://localhost:8000/admin/?site=sveta (or `?site=olga`). Sheet, folder, watermark and writing voice come from
 `sites/<site>/site.json`; a site without a voice skill gets a neutral prompt.
 OAuth as Sveta.
 
@@ -90,7 +93,7 @@ Python tooling. Two distinct workflows:
 - **Per-painting portfolio publishing** (the active path): Grok web UI for
   perspective+crop → `trim_borders.py` to strip Grok's white padding → discuss
   title/description with Claude in chat → `push_painting.py` to upload + upsert
-  the sheet row. The Claude Code path; `photo_manager.html` does the same in one page.
+  the sheet row. The Claude Code path; the photo manager (`admin/index.html`) does the same in one page.
 - **Batch pipeline** (`run_pipeline.py`): scan a Drive inbox folder, straighten
   tilted phone photos, crop background, save locally. Older workflow; see
   `docs/roadmap.md`.

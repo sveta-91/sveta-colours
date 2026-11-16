@@ -10,7 +10,9 @@ sites/<name>/site.css goes into a second slot after the shared <style>
 
   build_site.py sveta --root      rewrite the block in the root index.html
                                   (GitHub Pages serves the root as is)
-  build_site.py olga              write dist/ for Cloudflare Pages
+  build_site.py olga              write dist/ for Cloudflare Pages, with the
+                                  admin page (admin/index.html → /admin/) and
+                                  the sites/<name>/site.json it reads
   build_site.py olga --strict     the same, but fail while a required link
                                   is still empty or the theme fails
                                   scripts/check_contrast.py (Cloudflare uses this)
@@ -228,6 +230,11 @@ def main():
             shutil.copy2(p, dest)
         else:
             print(f'warning: files.{key}: {path} not found')
+    # The admin page (photo manager) and the config it reads at /sites/<name>/site.json.
+    (out / 'admin').mkdir()
+    shutil.copy2(REPO / 'admin' / 'index.html', out / 'admin' / 'index.html')
+    (out / 'sites' / args.site).mkdir(parents=True)
+    shutil.copy2(REPO / 'sites' / args.site / 'site.json', out / 'sites' / args.site / 'site.json')
     if args.dev_csv:
         (out / 'data').mkdir()
         shutil.copy2(args.dev_csv, out / 'data' / 'paintings.csv')

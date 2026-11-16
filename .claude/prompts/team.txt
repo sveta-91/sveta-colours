@@ -27,7 +27,7 @@ remove all watermarks (based on /Users/sveta/IdeaProjects/sveta-colours/docs/wat
 дать название (title)
 download or save to google drive with the title: https://drive.google.com/drive/folders/1M8wTOfPAYeJZZL6d7RYo2DLtIapuxDOX
 update excel https://docs.google.com/spreadsheets/d/170BuYN45Wk7H2g31gfRo35quok76JwrhFB8YV4-ckfI/edit?gid=1031748871#gid=1031748871:
-add new or update existing row with the same title (logic bases on /Users/sveta/IdeaProjects/sveta-colours/tools/photo_manager.html)
+add new or update existing row with the same title (logic bases on /Users/sveta/IdeaProjects/sveta-colours/admin/index.html)
 Claude analyses image and fills in empty fields automatically. User may adjust manually.
 
 Создай HTML-артефакт с кнопкой загрузки фото. Пользователь загружает изображение и видит его

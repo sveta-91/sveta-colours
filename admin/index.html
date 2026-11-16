@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Publish a Painting</title>
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root {
@@ -228,12 +229,22 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
 // Columns are read from the sheet's own header row, so extra columns (cover,
 // order, slug) are preserved, and a `slug` column is written once it exists.
 //
-// Which site: ?site=sveta or ?site=olga — required, no default, so a painting
-// can't land in the wrong sheet. The sheet, tab, Drive folder, site URL,
-// watermark and writing voice come from /sites/<site>/site.json (served by
-// scripts/dev.sh from the repo root). Olga's sheet and folder are shared with
-// Sveta's Google account, so the same sign-in serves both.
-const SITE_NAME = new URLSearchParams(location.search).get('site') || '';
+// Served as /admin/ on each live site and on localhost by scripts/dev.sh.
+// Which site: the live domain decides (sveta-colours.com → sveta,
+// olgazai.com → olga). Elsewhere (localhost, a *.pages.dev preview) ?site=sveta
+// or ?site=olga is required, no default, so a painting can't land in the wrong
+// sheet. The sheet, tab, Drive folder, site URL, watermark and writing voice
+// come from /sites/<site>/site.json. On a live domain the page stays behind a
+// Google sign-in: the controls show only once the signed-in account can read
+// that site's sheet, so access is whatever the sheet's sharing allows.
+const HOST_SITES = { 'www.sveta-colours.com': 'sveta', 'sveta-colours.com': 'sveta',
+                     'olgazai.com': 'olga', 'www.olgazai.com': 'olga' };
+const IS_LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+const HOST_SITE = HOST_SITES[location.hostname] || '';
+const SITE_NAME = HOST_SITE || new URLSearchParams(location.search).get('site') || '';
+// The voice skill isn't published with the site (GitHub Pages skips .claude/),
+// so off localhost it is read from the public repo.
+const VOICE_BASE = IS_LOCAL ? '' : 'https://raw.githubusercontent.com/sveta-91/sveta-colours/main';
 let SITE_CFG = null;
 let DRIVE_FOLDER = '', SHEET_ID = '', SHEET_TAB = '', SITE_URL = '', PUBLISHED_CSV = '';
 const CLIENT_ID='754552250731-hdl67ujna2lk1lataah35mnl69emi8qt.apps.googleusercontent.com';
@@ -825,10 +836,14 @@ function watchLive(title, fileId){
 // ── TITLE & DESCRIPTION WITH AI ──────────────────────────────────────────
 // A dialog with OpenAI about the loaded painting's title and description.
 // The voice rules are NOT copied here: they are read at runtime from the
-// sveta-writing skill (served by scripts/dev.sh from the repo root), so the
-// skill stays the one source. The key lives only in this browser's
-// localStorage on localhost — never in the repo.
+// sveta-writing skill (from the repo root on localhost, from the public repo
+// on a live site), so the skill stays the one source. The key is never in the
+// repo: on localhost it stays in this browser's localStorage; on a live site it
+// lives in sessionStorage and is gone when the tab closes, because any script
+// running on the public site's origin could read localStorage.
 const AI_KEY_STORE = 'pm-openai-key';
+const AI_KEY_HINT = IS_LOCAL ? 'sk-… (kept in this browser only)' : 'sk-… (kept until this tab closes)';
+function aiKeyStore(){ return IS_LOCAL ? localStorage : sessionStorage; }
 const AI_MODEL_STORE = 'pm-openai-model';
 const AI_DEFAULT_MODEL = 'gpt-5.4-mini';
 // Set by loadSite(): the voice skill's files (none for a site without one).
@@ -873,19 +888,19 @@ function aiRules(){
 
 const ai = { messages: [], context: null, firstDraft: null, accepted: null };
 
-function aiGetKey(){ try { return localStorage.getItem(AI_KEY_STORE) || ''; } catch(e){ return ''; } }
+function aiGetKey(){ try { return aiKeyStore().getItem(AI_KEY_STORE) || ''; } catch(e){ return ''; } }
 function aiGetModel(){ try { return localStorage.getItem(AI_MODEL_STORE) || AI_DEFAULT_MODEL; } catch(e){ return AI_DEFAULT_MODEL; } }
 function aiSaveSettings(){
   const k = document.getElementById('aiKey').value.trim();
   const m = document.getElementById('aiModel').value.trim() || AI_DEFAULT_MODEL;
-  try { if (k) localStorage.setItem(AI_KEY_STORE, k); localStorage.setItem(AI_MODEL_STORE, m); } catch(e){}
+  try { if (k) aiKeyStore().setItem(AI_KEY_STORE, k); localStorage.setItem(AI_MODEL_STORE, m); } catch(e){}
   document.getElementById('aiKey').value = '';
-  document.getElementById('aiKey').placeholder = aiGetKey() ? 'key saved — paste a new one to replace' : 'sk-… (kept in this browser only)';
+  document.getElementById('aiKey').placeholder = aiGetKey() ? 'key saved — paste a new one to replace' : AI_KEY_HINT;
   setStatus('aiStatus', aiGetKey() ? 'Settings saved.' : 'No key yet.', aiGetKey() ? 'ok' : 'err');
 }
 function aiForgetKey(){
-  try { localStorage.removeItem(AI_KEY_STORE); } catch(e){}
-  document.getElementById('aiKey').placeholder = 'sk-… (kept in this browser only)';
+  try { aiKeyStore().removeItem(AI_KEY_STORE); localStorage.removeItem(AI_KEY_STORE); } catch(e){}
+  document.getElementById('aiKey').placeholder = AI_KEY_HINT;
   setStatus('aiStatus', 'Key removed from this browser.', 'ok');
 }
 
@@ -1085,19 +1100,50 @@ async function loadSite(){
   const t = SITE_CFG.tools || {};
   DRIVE_FOLDER = t.driveFolder || ''; SHEET_ID = t.sheetId || ''; SHEET_TAB = t.sheetTab || 'Paintings';
   SITE_URL = SITE_CFG.head.url; PUBLISHED_CSV = SITE_CFG.site.sheetCsvUrl || '';
-  AI_VOICE_FILES = t.voiceSkill ? [`/.claude/skills/${t.voiceSkill}/SKILL.md`, `/.claude/skills/${t.voiceSkill}/corrections.md`] : [];
+  AI_VOICE_FILES = t.voiceSkill ? [`${VOICE_BASE}/.claude/skills/${t.voiceSkill}/SKILL.md`, `${VOICE_BASE}/.claude/skills/${t.voiceSkill}/corrections.md`] : [];
   document.title = `${SITE_CFG.site.name} — Publish a Painting`;
   if (!$('wmText').value.trim() && t.watermark) { $('wmText').value = t.watermark; onWatermarkChange(); }
   const bar = document.createElement('div');
   bar.id = 'siteBar';
   bar.style.cssText = 'padding:6px 16px;font:13px/1.4 system-ui,sans-serif;background:#14130F;color:#F7F5EF';
-  bar.innerHTML = `Publishing to <b>${SITE_CFG.site.name}</b> · ${SITE_URL} · sheet ${SHEET_ID || '—'} · <a style="color:inherit" href="?site=${SITE_NAME === 'sveta' ? 'olga' : 'sveta'}">switch site</a>`;
+  bar.innerHTML = `Publishing to <b>${SITE_CFG.site.name}</b> · ${SITE_URL} · sheet ${SHEET_ID || '—'} ${HOST_SITE ? '' : `· <a style="color:inherit" href="?site=${SITE_NAME === 'sveta' ? 'olga' : 'sveta'}">switch site</a>`}`;
   document.body.prepend(bar);
   const gaps = ['sheetId', 'driveFolder'].filter(k => !t[k]).concat(PUBLISHED_CSV ? [] : ['site.sheetCsvUrl']);
   if (gaps.length) siteBlock(`<h2 style="margin:0 0 8px">${SITE_CFG.site.name}: not set up yet</h2><p>sites/${SITE_NAME}/site.json still has empty: ${gaps.join(', ')}. Fill them in when the artist sends the links.</p>` + pick);
+  else if (!IS_LOCAL) showSignInGate();
+}
+
+// Off localhost nothing shows until Google says this account can read the
+// site's sheet. The real lock is the sheet and folder sharing; this only keeps
+// the controls out of sight of anyone else who finds the address.
+function showSignInGate(){
+  const g = document.createElement('div');
+  g.id = 'signInGate';
+  g.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:var(--bg);font:16px/1.5 system-ui,sans-serif;padding:16px';
+  g.innerHTML = `<div style="background:var(--paper);color:var(--text);padding:28px 32px;max-width:420px;border:1px solid var(--border);border-radius:6px">
+    <h2 style="margin:0 0 8px">${SITE_CFG.site.name}</h2>
+    <p style="margin:0 0 16px">Sign in with the Google account that edits this site's sheet.</p>
+    <button type="button" class="primary" id="gateBtn">Sign in with Google</button>
+    <p id="gateMsg" style="margin:12px 0 0;color:var(--text-muted)" aria-live="polite"></p></div>`;
+  document.body.appendChild(g);
+  document.getElementById('gateBtn').addEventListener('click', async () => {
+    const msg = document.getElementById('gateMsg');
+    msg.textContent = 'Waiting for Google…';
+    try {
+      const token = await getAccessToken();
+      const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_TAB + '!A1:A1')}`,
+                            { headers: { Authorization: 'Bearer ' + token } });
+      if (!r.ok) {
+        state.cachedToken = null; state.cachedTokenExpiresAt = 0;
+        msg.textContent = `This Google account can't open ${SITE_CFG.site.name}'s sheet (${r.status}). Try another account.`;
+        return;
+      }
+      g.remove();
+    } catch (e) { msg.textContent = e.message; }
+  });
 }
 loadSite();
-if (aiGetKey()) document.getElementById('aiKey').placeholder = 'key saved — paste a new one to replace';
+document.getElementById('aiKey').placeholder = aiGetKey() ? 'key saved — paste a new one to replace' : AI_KEY_HINT;
 document.getElementById('aiInput').addEventListener('keydown', e => {
   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); aiSend(); }
 });
