@@ -35,6 +35,9 @@ either way.
    (Sheets + send email as you). "Google hasn't verified this app" is expected
    for your own script: **Advanced → Go to sveta-colours inquiry (unsafe) → Allow**.
    The log prints the new Inquiries sheet's URL.
+   If the permission popup says "Page Not Found" or "unable to open the file",
+   several Google accounts are signed in (the URL has `authuser=1`). Open the
+   script in an Incognito window signed in to the studio account only.
 5. **Deploy → New deployment** → gear icon → **Web app**.
    - Execute as: **Me**
    - Who has access: **Anyone**

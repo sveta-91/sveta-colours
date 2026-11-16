@@ -144,6 +144,11 @@ trap, masonry timing, cursor scoping, and the CSV cache lag: all in the playbook
   `orientation` column, or the *cropped* image's dimensions, or ask.
 - Straighten or re-encode images that don't need it — pass through clean JPEGs.
 - Push visual QA onto Sveta as the default. Verify it yourself first.
+- Hide unused code behind a flag, `display:none` or "kept for later". Remove it; git
+  history keeps it ("why not remove it?").
+- Put painting data (titles, IDs, slug lists, legacy maps) in code. The sheet is the
+  only list, so she can change it any time. The documented fallback constants
+  (`HERO_PIN_TITLE`, `FEATURED_TITLES`) are the only exception.
 
 ### Always
 
