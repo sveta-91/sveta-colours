@@ -10,11 +10,11 @@ AI title/description dialog, Save to Drive + the `Paintings` sheet, live check.
    under the **sveta.colours@gmail.com** console account (sveta.mordkovich sees
    no projects); the live origins were added 2026-11-16.
 2. **OAuth consent screen** (Google Auth Platform → Audience) → External, Testing.
-   **Test user: the sveta.mordkovich Gmail account**, the one that owns the
-   `Paintings` sheet and the portfolio Drive folder. Sign in with that account
-   (it is not the old work address that used to be listed here; any other
-   account gets "access blocked"). For `olgazai.com/admin/`, also add the
-   Google account that owns Olga's sheet and Drive folder. Scopes:
+   **Test users (checked 2026-11-16): sveta.colours@gmail.com and
+   olga.canvas.art@gmail.com** (Olga's own account, for `olgazai.com/admin/`).
+   Any account not on this list gets "Access blocked … has not completed the
+   Google verification process" (Error 403: access_denied); add it under
+   **Test users → Add users**. Scopes:
    `https://www.googleapis.com/auth/drive.file`, `https://www.googleapis.com/auth/spreadsheets`.
 3. **Credentials** → the OAuth client → Authorized JavaScript origins:
    `http://localhost:8000`, `http://127.0.0.1:8000`, and for the live admin
