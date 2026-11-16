@@ -25,7 +25,7 @@ Options for local testing:
 
 Standard library only, so the Cloudflare build image needs no installs.
 """
-import argparse, html, json, re, shutil, sys
+import argparse, base64, html, json, re, shutil, sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -108,7 +108,7 @@ def render_block(cfg, theme):
         '</style>',
         '',
         '<script>',
-        'const SITE = ' + json.dumps(cfg['site'], indent=2, ensure_ascii=False).replace('</', '<\\/') + ';',
+        'const SITE = ' + json.dumps(site_for_page(cfg['site']), indent=2, ensure_ascii=False).replace('</', '<\\/') + ';',
         '</script>',
         END,
     ]
@@ -131,6 +131,15 @@ def swap_css(page, css):
 def render_page(shared, cfg, theme, css):
     page = swap_css(swap_block(shared, render_block(cfg, theme)), css)
     return fill_static(page, cfg['site'])
+
+
+def site_for_page(site):
+    """SITE as the page gets it: the contact address only base64-encoded, so it
+    never appears in the page source as text (spam harvesters); the page decodes it."""
+    out = dict(site)
+    if out.get('contactEmail'):
+        out['contactEmailB64'] = base64.b64encode(out.pop('contactEmail').encode()).decode()
+    return out
 
 
 def fill_static(page, site):

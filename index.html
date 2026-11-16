@@ -126,7 +126,6 @@ const SITE = {
   "shipping": {
     "fromCountry": "Canada"
   },
-  "contactEmail": "sveta.colours@gmail.com",
   "currency": "$",
   "currencyCode": "CAD",
   "formEndpoint": "https://script.google.com/macros/s/AKfycbwR1BEbGz6-hrPNqPA58dHhwz9IYgVO7UyKwoqh7YE6r8hxZHpM4MM7jpEkgNxgMZr_/exec",
@@ -270,7 +269,8 @@ const SITE = {
     "Write to studio &rarr;": "Написать мне &rarr;",
     "Write to the studio": "Написать мне",
     "Write to the studio &rarr;": "Написать мне &rarr;"
-  }
+  },
+  "contactEmailB64": "c3ZldGEuY29sb3Vyc0BnbWFpbC5jb20="
 };
 </script>
 <!-- SITE:END -->
@@ -2190,7 +2190,7 @@ const I18N_RU = {
   // writing to the studio
   'Write to studio': 'Написать в студию', 'Write to studio &rarr;': 'Написать в студию &rarr;',
   'Write to the studio': 'Написать в студию', 'Write to the studio &rarr;': 'Написать в студию &rarr;',
-  'Copy': 'Скопировать', 'Copied': 'Скопировано', 'Leave empty': 'Оставьте пустым',
+  'Copy': 'Скопировать', 'Email {0}': 'Написать {0}', 'Copy email': 'Скопировать e-mail', 'Copied': 'Скопировано', 'Leave empty': 'Оставьте пустым',
   'Your name': 'Ваше имя', 'Email': 'Эл. почта', 'Message': 'Сообщение', 'Send': 'Отправить',
   'or write directly:': 'или напишите напрямую:', 'Sending…': 'Отправляем…',
   // home
@@ -2292,7 +2292,23 @@ let CARDS = [];  // greeting cards: split out of PAINTINGS on load (isCard)
 /* ========================================================
    CONFIGURATION
    ======================================================== */
-const CONTACT_EMAIL = SITE.contactEmail;
+// The studio address is never shown and never sits in the page source as text
+// (spam harvesters read both). build_site.py stores it base64-encoded; links show
+// "Email <site name>" and build the mailto only when clicked.
+const CONTACT_EMAIL = SITE.contactEmail || (SITE.contactEmailB64 ? atob(SITE.contactEmailB64) : '');
+function mailUrl(subject) {
+  return 'mailto:' + CONTACT_EMAIL + (subject ? '?subject=' + encodeURIComponent(subject) : '');
+}
+function mailTo(e, subject) {
+  if (e) e.preventDefault();
+  window.location.href = mailUrl(subject);
+  return false;
+}
+// An <a> that shows the site name; data-subject is plain text, escaped for the attribute.
+function emailLink(subject, cls) {
+  const subj = subject ? String(subject).replace(/&/g, '&amp;').replace(/"/g, '&quot;') : '';
+  return `<a href="#contact" class="${cls || ''}" data-subject="${subj}" onclick="return mailTo(event, this.dataset.subject)">${t('Email {0}', SITE.name)}</a>`;
+}
 const CURRENCY = SITE.currency;
 // Prices in the sheet are Canadian dollars (playbook). Shown next to every
 // price so buyers don't guess CAD vs USD; JSON-LD uses it too.
@@ -3057,11 +3073,11 @@ function openModal(id, opts) {
 function inquiryHTML(p, subjectText) {
   const subject = encodeURIComponent(subjectText);
   const copyRow = `<div class="inquiry-email">
-      <a href="mailto:${CONTACT_EMAIL}?subject=${subject}">${CONTACT_EMAIL}</a>
-      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">${t('Copy')}</button>
+      ${emailLink(subjectText)}
+      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">${t('Copy email')}</button>
     </div>`;
   if (!FORM_ENDPOINT) {
-    return `<a href="mailto:${CONTACT_EMAIL}?subject=${subject}" class="cta-link">${t('Write to studio &rarr;')}</a>${copyRow}`;
+    return `<a href="#contact" class="cta-link" data-subject="${subjectText.replace(/"/g, '&quot;')}" onclick="return mailTo(event, this.dataset.subject)">${t('Write to studio &rarr;')}</a>${copyRow}`;
   }
   const safeSubject = subjectText.replace(/"/g, '&quot;');
   const intent = /^Commission/.test(subjectText) ? 'commission' : 'question';
@@ -3121,8 +3137,8 @@ async function sendInquiry(e) {
   } catch (err) {
     btn.disabled = false;
     status.textContent = RU
-      ? `Сейчас не получилось отправить. Напишите, пожалуйста, напрямую: ${CONTACT_EMAIL}.`
-      : `Couldn't send just now. Please write to ${CONTACT_EMAIL} directly.`;
+      ? `Сейчас не получилось отправить. Напишите, пожалуйста, напрямую: ${emailLink()}.`
+      : `Couldn't send just now. Please write directly: ${emailLink()}.`;
   }
   return false;
 }
@@ -3132,7 +3148,7 @@ async function sendInquiry(e) {
    FORM_ENDPOINT it returns true, so the link's mailto still works. */
 let contactReturnFocus = null;
 function openContact(e) {
-  if (!FORM_ENDPOINT) return true;
+  if (!FORM_ENDPOINT) return mailTo(e, e && e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.subject : '');
   if (e) e.preventDefault();
   contactReturnFocus = document.activeElement;
   document.getElementById('contactBody').innerHTML = `
@@ -3150,8 +3166,8 @@ function openContact(e) {
     </form>
     <div class="inquiry-alt">${t('or write directly:')}</div>
     <div class="inquiry-email">
-      <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
-      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">${t('Copy')}</button>
+      ${emailLink()}
+      <button type="button" class="inquiry-copy" onclick="copyStudioEmail(this)">${t('Copy email')}</button>
     </div>`;
   const form = document.querySelector('#contactBody form');
   form.dataset.openedAt = String(Date.now());
@@ -3174,17 +3190,18 @@ function closeContact() {
 document.getElementById('contactModal').addEventListener('click', function(e) { if (e.target === this) closeContact(); });
 
 function copyStudioEmail(btn) {
-  const done = () => { btn.textContent = t('Copied'); setTimeout(() => { btn.textContent = t('Copy'); }, 1800); };
+  const done = () => { btn.textContent = t('Copied'); setTimeout(() => { btn.textContent = t('Copy email'); }, 1800); };
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(CONTACT_EMAIL).then(done, () => {});
       return;
     }
   } catch (e) { /* fall through */ }
-  const t = document.createElement('textarea');
-  t.value = CONTACT_EMAIL; document.body.appendChild(t); t.select();
+  // Not named t: that would shadow the t() translation helper used by done().
+  const ta = document.createElement('textarea');
+  ta.value = CONTACT_EMAIL; document.body.appendChild(ta); ta.select();
   try { document.execCommand('copy'); done(); } catch (e) { /* ignore */ }
-  t.remove();
+  ta.remove();
 }
 
 function applyAccentTint(p) {
@@ -3700,7 +3717,7 @@ function renderContactSection() {
         <h2>${SITE.strings.contactHeading}</h2>
         <div class="contact-meta">
           ${FORM_ENDPOINT ? '<button type="button" class="contact-write" onclick="openContact(event)">' + t('Write to the studio &rarr;') + '</button>' : ''}
-          <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>
+          ${emailLink()}<br>
           ${SITE.strings.contactNote}
         </div>
       </div>
@@ -4180,7 +4197,7 @@ function renderFooter() {
           <ul>
             <li><a href="#about" onclick="event.preventDefault(); showPage('about');">${t('About')}</a></li>
             <li><a href="#faq" onclick="event.preventDefault(); showPage('faq');">${t('FAQ &amp; Shipping')}</a></li>
-            <li><a href="mailto:${CONTACT_EMAIL}" onclick="return openContact(event)">${t('Contact')}</a></li>
+            <li><a href="#contact" onclick="return openContact(event)">${t('Contact')}</a></li>
             ${instagramLink}
           </ul>
         </div>
@@ -4286,8 +4303,10 @@ function wireCustomCursor() {
 function initMobileCTA() {
   const cta = document.getElementById('mobileCTA');
   if (!cta) return;
-  // mailto stays as the href (long-press, no JS); a tap opens the form.
-  cta.setAttribute('href', `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(SITE.strings.mailSubject)}`);
+  // A tap opens the form (or the mail app when there is no form); the address
+  // itself is never put in the href.
+  cta.setAttribute('href', '#contact');
+  cta.dataset.subject = SITE.strings.mailSubject;
   cta.addEventListener('click', openContact);
   let ticking = false;
   const onScroll = () => {
