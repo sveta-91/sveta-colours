@@ -63,8 +63,12 @@ CLAUDE.md                        — project instructions for Claude Code agents
 Publishing a painting in one page. The image arrives already prepared (cropped);
 the page never edits it except for an optional watermark.
 
-1. Drop the image. It is uploaded **as is**; only a watermark (opacity > 0)
-   re-saves it as JPEG 95%. A warning shows when the photo's proportions don't
+1. Drop the image. A ready (cropped) image is uploaded **as is**; only a watermark
+   (opacity > 0) re-saves it as JPEG 95%. A raw photo: **Straighten + crop with AI**
+   (OpenAI `gpt-5.4` only marks the canvas corners), drag the dots onto the painted
+   surface (a magnifier shows full-resolution pixels), **Apply**: the page warps your
+   own pixels to the canvas proportions from Size and uploads that JPEG 95.
+   **Mark corners by hand** does the same without AI. A warning shows when the photo's proportions don't
    match the canvas `size`, or the image orientation disagrees with the form.
 2. The record fills itself from the sheet: an existing title loads its row
    (Save then updates it), otherwise medium/size/price take the most common values.

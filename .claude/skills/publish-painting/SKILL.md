@@ -56,6 +56,13 @@ portions carry the truer meaning.
 
 ## 1. Grok perspective-correct + crop (manual, web UI)
 
+**Alternative since 2026-11-16, no Grok:** the admin page (`/admin/`) takes the raw
+photo. **Straighten + crop with AI** has OpenAI mark the four canvas corners; she
+drags them to fix, then **Apply** warps her own pixels to the Size proportions
+(never a redrawn image). Fill in Size first. On a synthetic test the corners came
+back 0–2.5% off, so expect to drag; on real photos it is untested — compare with
+Grok on the first few paintings before trusting it.
+
 She pastes this into her already-open Grok tab, along with the raw photo.
 Give it verbatim:
 

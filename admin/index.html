@@ -125,10 +125,10 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
         <h2 id="painting-h" class="card-title">Painting</h2>
 
         <label id="dropZone" class="drop-zone" for="fileInput" tabindex="0" role="button"
-               aria-label="Add the prepared painting image: drag a file here or press Enter to browse">
+               aria-label="Add the painting photo: drag a file here or press Enter to browse">
           <i class="ti ti-upload" aria-hidden="true" style="font-size:36px;color:var(--text-faint)"></i>
-          <p>Drag &amp; drop or press Enter to add the prepared image</p>
-          <small>JPEG, PNG or WEBP, already cropped. Uploaded as is.</small>
+          <p>Drag &amp; drop or press Enter to add the painting photo</p>
+          <small>JPEG, PNG or WEBP. A raw photo can be straightened and cropped here; a ready one is uploaded as is.</small>
         </label>
         <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
 
@@ -138,6 +138,16 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
           </div>
           <div class="status" id="dimInfo" aria-live="polite"></div>
           <div class="status" id="aspectInfo" aria-live="polite"></div>
+          <div class="btn-row" id="prepStart">
+            <button type="button" id="prepFind" onclick="prepFindCorners()">Straighten + crop with AI</button>
+            <button type="button" onclick="prepManual()">Mark corners by hand</button>
+          </div>
+          <div class="btn-row" id="prepTools" hidden>
+            <button type="button" class="primary" id="prepApply" onclick="prepApply()">Apply straighten + crop</button>
+            <button type="button" onclick="prepCancel()">Cancel</button>
+          </div>
+          <div class="btn-row" id="prepUndoRow" hidden><button type="button" onclick="prepUndo()">Back to the original photo</button></div>
+          <div class="status" id="prepStatus" aria-live="polite"></div>
           <div class="btn-row"><button type="button" onclick="chooseAnother()">Choose another image</button></div>
           <hr class="divider">
           <div class="field-row center">
@@ -369,6 +379,7 @@ function handleFile(file){
       const oriented=applyOrientationToCanvas(img,orientation);
       state.file=file;
       state.origImg=oriented;
+      state.prep=null; state.prepared=null; prepUi(); setStatus('prepStatus','');
       dz.style.display='none';
       $('workArea').hidden=false;
       setupCanvasFromCanvas(oriented);
@@ -413,6 +424,7 @@ function drawPreview(){
   if(!state.fullCanvas.width) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(state.fullCanvas, 0, 0, canvas.width, canvas.height);
+  if (state.prep) { prepDrawOverlay(); return; }
   drawWatermarkOnContext(ctx, canvas.width, canvas.height);
 }
 
@@ -466,6 +478,217 @@ async function uploadPayload(){
   drawWatermarkOnContext(octx, out.width, out.height);
   const blob = await new Promise(r => out.toBlob(r, 'image/jpeg', 0.95));
   return { blob, ext: 'jpeg' };
+}
+
+// ── Straighten + crop ──────────────────────────────────────────────────
+// For a raw photo: OpenAI only *finds* the four corners of the painted canvas;
+// Sveta drags them to correct (a magnifier shows full-resolution pixels), and
+// the page itself maps that quadrilateral onto a rectangle. The painting is
+// resampled from her own photo, never redrawn by a model. Output proportions
+// follow the Size field when it parses (the site shows canvas proportions),
+// otherwise the measured edges. Saved as JPEG 95 named after the title.
+// Corner finding uses the larger model: on a skewed, framed test photo gpt-5.4
+// was 0–2.5% off per corner, gpt-5.4-mini 2–9% (2026-11-16).
+const PREP_MODEL = 'gpt-5.4';
+const PREP_HANDLE = 9, PREP_LOUPE = 140, PREP_LOUPE_ZOOM = 1.5; // loupe: full-res pixels at 1.5×
+function prepUi(){
+  const on = !!state.prep;
+  $('prepStart').hidden = on || !!state.prepared;
+  $('prepTools').hidden = !on;
+  $('prepUndoRow').hidden = on || !state.prepared;
+  canvas.style.touchAction = on ? 'none' : '';
+  canvas.style.cursor = on ? 'crosshair' : '';
+}
+function prepStartWith(corners, note){
+  state.prep = { corners, drag: -1 };
+  prepUi(); drawPreview();
+  setStatus('prepStatus', (note ? note + ' ' : '') + 'Drag the four dots onto the corners of the painted surface (not the frame), then Apply.', 'ok');
+}
+function prepManual(){
+  const w = state.fullCanvas.width, h = state.fullCanvas.height, m = 0.06;
+  prepStartWith([[w*m, h*m], [w*(1-m), h*m], [w*(1-m), h*(1-m)], [w*m, h*(1-m)]]);
+}
+function prepCancel(){ state.prep = null; prepUi(); drawPreview(); setStatus('prepStatus', ''); }
+
+async function prepFindCorners(){
+  const key = aiGetKey();
+  if (!key){ $('aiSettings').open = true; setStatus('prepStatus', 'Paste your OpenAI API key in "OpenAI settings" (Title & description card), then try again.', 'err'); return; }
+  const btn = $('prepFind'); btn.disabled = true;
+  setStatus('prepStatus', 'Looking for the canvas…');
+  try {
+    const sys = 'You locate the painted canvas in a photo of a painting. Reply with JSON only: ' +
+      '{"corners": [[x,y],[x,y],[x,y],[x,y]], "note": "<one short sentence>"}. Corners in this order: ' +
+      'top-left, top-right, bottom-right, bottom-left of the painted surface itself: exclude any frame, mat, ' +
+      'wall, easel, table or shadow. x and y are fractions of the image width and height (0 to 1), origin at ' +
+      'the top-left. The photo may be taken at an angle, so the corners need not form a rectangle. If a corner ' +
+      'is outside the photo, give the nearest point on the photo edge.';
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({ model: PREP_MODEL, max_completion_tokens: 4000, response_format: { type: 'json_object' },
+        messages: [{ role: 'system', content: sys },
+                   { role: 'user', content: [{ type: 'text', text: 'Find the four corners of the painted canvas.' },
+                                             { type: 'image_url', image_url: { url: aiImageDataURL(1536), detail: 'high' } }] }] })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data.error && data.error.message) || `HTTP ${res.status}`);
+    const txt = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    const j = JSON.parse(txt);
+    const c = j.corners;
+    if (!Array.isArray(c) || c.length !== 4 || c.some(p => !Array.isArray(p) || p.length !== 2 || !p.every(Number.isFinite)))
+      throw new Error('the reply had no usable corners');
+    const w = state.fullCanvas.width, h = state.fullCanvas.height;
+    const clamp = (v, max) => Math.min(Math.max(v, 0), 1) * max;
+    prepStartWith(prepOrder(c.map(([x, y]) => [clamp(x, w), clamp(y, h)])), 'AI marked the corners.');
+  } catch (e){
+    setStatus('prepStatus', `Could not find the canvas (${e.message}). Use "Mark corners by hand".`, 'err');
+  } finally { btn.disabled = false; }
+}
+// Put four points in TL, TR, BR, BL order whatever order they came in.
+function prepOrder(pts){
+  const cx = pts.reduce((a, p) => a + p[0], 0) / 4, cy = pts.reduce((a, p) => a + p[1], 0) / 4;
+  const byAngle = pts.slice().sort((a, b) => Math.atan2(a[1]-cy, a[0]-cx) - Math.atan2(b[1]-cy, b[0]-cx));
+  let tl = 0; byAngle.forEach((p, i) => { if (p[0] + p[1] < byAngle[tl][0] + byAngle[tl][1]) tl = i; });
+  return [0, 1, 2, 3].map(k => byAngle[(tl + k) % 4]);
+}
+function prepScale(){ return canvas.width / state.fullCanvas.width; }
+function prepDrawOverlay(){
+  const sc = prepScale(), c = state.prep.corners.map(([x, y]) => [x * sc, y * sc]);
+  ctx.save();
+  ctx.fillStyle = 'rgba(20,19,15,0.45)';           // dim everything outside the quad
+  ctx.beginPath(); ctx.rect(0, 0, canvas.width, canvas.height);
+  ctx.moveTo(c[0][0], c[0][1]); for (let i = 3; i >= 0; i--) ctx.lineTo(c[i][0], c[i][1]); ctx.closePath();
+  ctx.fill('evenodd');
+  ctx.strokeStyle = '#F2C94C'; ctx.lineWidth = 2;
+  ctx.beginPath(); c.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.stroke();
+  c.forEach(([x, y], i) => {
+    ctx.beginPath(); ctx.arc(x, y, PREP_HANDLE, 0, Math.PI * 2);
+    ctx.fillStyle = i === state.prep.drag ? '#F2C94C' : 'rgba(242,201,76,0.35)'; ctx.fill(); ctx.stroke();
+  });
+  const d = state.prep.drag;
+  if (d >= 0){                                      // magnifier on the far side of the dragged corner
+    const [fx, fy] = state.prep.corners[d], r = PREP_LOUPE / 2;
+    const lx = c[d][0] < canvas.width / 2 ? canvas.width - r - 8 : r + 8;
+    const ly = c[d][1] < canvas.height / 2 ? canvas.height - r - 8 : r + 8;
+    const fh = r / PREP_LOUPE_ZOOM;                 // full-res half-width shown
+    ctx.save(); ctx.beginPath(); ctx.arc(lx, ly, r, 0, Math.PI * 2); ctx.clip();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(state.fullCanvas, fx - fh, fy - fh, fh * 2, fh * 2, lx - r, ly - r, PREP_LOUPE, PREP_LOUPE);
+    ctx.restore();
+    ctx.beginPath(); ctx.arc(lx, ly, r, 0, Math.PI * 2); ctx.strokeStyle = '#F2C94C'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(lx - 10, ly); ctx.lineTo(lx + 10, ly); ctx.moveTo(lx, ly - 10); ctx.lineTo(lx, ly + 10);
+    ctx.strokeStyle = '#E5484D'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  ctx.restore();
+}
+function prepPointer(e){
+  const r = canvas.getBoundingClientRect();
+  return [(e.clientX - r.left) * canvas.width / r.width, (e.clientY - r.top) * canvas.height / r.height];
+}
+canvas.addEventListener('pointerdown', e => {
+  if (!state.prep) return;
+  const [px, py] = prepPointer(e), sc = prepScale();
+  let best = -1, bd = 28 * 28;
+  state.prep.corners.forEach(([x, y], i) => { const d = (x*sc-px)**2 + (y*sc-py)**2; if (d < bd){ bd = d; best = i; } });
+  if (best < 0) return;
+  state.prep.drag = best; canvas.setPointerCapture(e.pointerId); e.preventDefault(); drawPreview();
+});
+canvas.addEventListener('pointermove', e => {
+  if (!state.prep || state.prep.drag < 0) return;
+  const [px, py] = prepPointer(e), sc = prepScale();
+  const w = state.fullCanvas.width, h = state.fullCanvas.height;
+  state.prep.corners[state.prep.drag] = [Math.min(Math.max(px / sc, 0), w), Math.min(Math.max(py / sc, 0), h)];
+  drawPreview();
+});
+const prepRelease = () => { if (state.prep && state.prep.drag >= 0){ state.prep.drag = -1; drawPreview(); } };
+canvas.addEventListener('pointerup', prepRelease);
+canvas.addEventListener('pointercancel', prepRelease);
+
+// Homography H with H·(dst) = src for the 4 point pairs (8×8 solve).
+function prepHomography(dst, src){
+  const A = [], b = [];
+  for (let i = 0; i < 4; i++){
+    const [x, y] = dst[i], [u, v] = src[i];
+    A.push([x, y, 1, 0, 0, 0, -x*u, -y*u]); b.push(u);
+    A.push([0, 0, 0, x, y, 1, -x*v, -y*v]); b.push(v);
+  }
+  for (let c = 0; c < 8; c++){
+    let p = c; for (let r = c + 1; r < 8; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]]; [b[c], b[p]] = [b[p], b[c]];
+    if (Math.abs(A[c][c]) < 1e-12) throw new Error('the corners are degenerate');
+    for (let r = 0; r < 8; r++){
+      if (r === c) continue;
+      const f = A[r][c] / A[c][c];
+      for (let k = c; k < 8; k++) A[r][k] -= f * A[c][k];
+      b[r] -= f * b[c];
+    }
+  }
+  return b.map((v, i) => v / A[i][i]);
+}
+function prepOutputSize(c){
+  const dist = (a, b) => Math.hypot(a[0]-b[0], a[1]-b[1]);
+  let W = Math.max(dist(c[0], c[1]), dist(c[3], c[2])), H = Math.max(dist(c[0], c[3]), dist(c[1], c[2]));
+  const m = $('fSize').value.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/);
+  let fromSize = false;
+  if (m){
+    const a = +m[1], b2 = +m[2], small = Math.min(a, b2), large = Math.max(a, b2);
+    const aspect = W > H ? large / small : small / large;   // width / height
+    if (W / H > aspect) W = H * aspect; else H = W / aspect; // never upscale
+    fromSize = `${a}×${b2}`;
+  }
+  return { W: Math.round(W), H: Math.round(H), fromSize };
+}
+async function prepApply(){
+  const c = state.prep.corners.map(p => p.slice());
+  const { W, H, fromSize } = prepOutputSize(c);
+  if (W < 50 || H < 50){ setStatus('prepStatus', 'The marked area is too small.', 'err'); return; }
+  $('prepApply').disabled = true;
+  setStatus('prepStatus', 'Straightening…');
+  await new Promise(r => setTimeout(r, 30));
+  try {
+    const h = prepHomography([[0,0],[W,0],[W,H],[0,H]], c);
+    const sw = state.fullCanvas.width, sh = state.fullCanvas.height;
+    const sd = fullCtx.getImageData(0, 0, sw, sh).data;
+    const out = document.createElement('canvas'); out.width = W; out.height = H;
+    const octx = out.getContext('2d'), img = octx.createImageData(W, H), d = img.data;
+    for (let y = 0; y < H; y++){
+      const yc = y + 0.5;
+      for (let x = 0; x < W; x++){
+        const xc = x + 0.5, den = h[6]*xc + h[7]*yc + 1;
+        let sx = (h[0]*xc + h[1]*yc + h[2]) / den - 0.5, sy = (h[3]*xc + h[4]*yc + h[5]) / den - 0.5;
+        sx = Math.min(Math.max(sx, 0), sw - 1.001); sy = Math.min(Math.max(sy, 0), sh - 1.001);
+        const x0 = sx | 0, y0 = sy | 0, fx = sx - x0, fy = sy - y0;
+        const i00 = (y0*sw + x0) * 4, i10 = i00 + 4, i01 = i00 + sw*4, i11 = i01 + 4, o = (y*W + x) * 4;
+        for (let k = 0; k < 3; k++){
+          const top = sd[i00+k] + (sd[i10+k] - sd[i00+k]) * fx, bot = sd[i01+k] + (sd[i11+k] - sd[i01+k]) * fx;
+          d[o+k] = top + (bot - top) * fy;
+        }
+        d[o+3] = 255;
+      }
+    }
+    octx.putImageData(img, 0, 0);
+    const blob = await new Promise(r => out.toBlob(r, 'image/jpeg', 0.95));
+    const name = ($('fTitle').value.trim() || 'painting') + '.jpeg';
+    if (!state.prepared) state.prepared = { file: state.file, img: state.origImg };
+    state.file = new File([blob], name, { type: 'image/jpeg' });
+    state.origImg = out;
+    state.prep = null;
+    setupCanvasFromCanvas(out);
+    $('fOrientation').value = W > H ? 'landscape' : 'portrait';
+    updateAspectInfo(); prepUi();
+    setStatus('prepStatus', `Straightened and cropped to ${W} × ${H} px` +
+      (fromSize ? ` at ${fromSize} canvas proportions.` : ' (fill in Size first to match the canvas proportions exactly).') +
+      ' This JPEG is what Save uploads.', 'ok');
+  } catch (e){
+    setStatus('prepStatus', 'Could not straighten: ' + e.message, 'err');
+  } finally { $('prepApply').disabled = false; }
+}
+function prepUndo(){
+  if (!state.prepared) return;
+  state.file = state.prepared.file; state.origImg = state.prepared.img; state.prepared = null;
+  setupCanvasFromCanvas(state.origImg);
+  $('fOrientation').value = state.origImg.width > state.origImg.height ? 'landscape' : 'portrait';
+  updateAspectInfo(); prepUi(); setStatus('prepStatus', 'Back to the original photo.', 'ok');
 }
 
 // ── Photo vs canvas ── (warning only; the site sizes cards by the canvas)
@@ -939,8 +1162,8 @@ function parseCsvSimple(text){
   return rows;
 }
 
-function aiImageDataURL(){
-  const src = state.fullCanvas, max = 1024;
+function aiImageDataURL(max = 1024){
+  const src = state.fullCanvas;
   const sc = Math.min(1, max / Math.max(src.width, src.height));
   const c = document.createElement('canvas');
   c.width = Math.round(src.width * sc); c.height = Math.round(src.height * sc);
