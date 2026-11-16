@@ -183,7 +183,10 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
           <div class="field-row"><label for="fTitleRu">Title (RU)</label><input id="fTitleRu" type="text" lang="ru"></div>
           <div class="field-row"><label for="fDescRu">Description (RU)</label><textarea id="fDescRu" rows="4" lang="ru"></textarea></div>
           <div class="status" id="ruInfo">Russian: a plain translation for the site's RU version. Saved only into empty cells; edit existing Russian in the sheet.</div>
-          <div class="field-row"><label for="fMedium">Medium</label><input id="fMedium" type="text" placeholder="acrylic"></div>
+          <div class="field-row"><label for="fMediumSel">Medium</label>
+            <select id="fMediumSel"><option value="">—</option></select>
+            <input id="fMedium" type="text" placeholder="New medium, e.g. oil on canvas" aria-label="New medium" hidden>
+          </div>
           <div class="field-row"><label for="fSize">Size</label><input id="fSize" type="text" placeholder="16x20 in"></div>
           <div class="field-row"><label for="fOrientation">Orientation</label>
             <select id="fOrientation">
@@ -798,7 +801,7 @@ $('fOrientation').addEventListener('change', updateAspectInfo);
 // ── Form ──
 function resetForm(){
   for (const id of ['fTitle','fSlug','fDesc','fTitleRu','fDescRu','fMedium','fSize','fCollection','fPrice']) $(id).value='';
-  $('fRecent').value=''; $('fSold').checked=false; $('fHero').checked=false; collRender();
+  $('fRecent').value=''; $('fSold').checked=false; $('fHero').checked=false; collRender(); mediumRender();
   state.slugLocked=false; $('fSlug').readOnly=false; state.filledFor=null;
   for (const id of ['fTitleRu', 'fDescRu']){ $(id).readOnly = false; $(id).title = ''; }
 }
@@ -873,7 +876,7 @@ function fillFromRow(row){
     if (cell(col)){ $(id).value = cell(col); $(id).readOnly = true; $(id).title = 'Already in the sheet: edit it there.'; }
   }
   setStatus('saveStatus', 'This title is already on the site: Save will update it.', 'warn');
-  collRender();
+  collRender(); mediumRender();
   updateAspectInfo();
 }
 
@@ -888,6 +891,7 @@ function fillFromMostCommon(data){
     for (const [v, c] of counts) if (c > n){ best = v; n = c; }
     if (best) $(id).value = best;
   }
+  mediumRender();
   updateAspectInfo();
 }
 
@@ -923,7 +927,43 @@ function collFromBoxes(){
   if (picked.length) $('fCollBoxes').classList.remove('missing');
   $('fCollection').dispatchEvent(new Event('change'));
 }
+// ── Medium: a dropdown of the media the sheet already uses (most common first)
+// plus "Other…" for a new one. #fMedium holds the value that is saved.
+const mediumCounts = new Map();
+const MEDIUM_OTHER = '__other';
+function mediumRender(){
+  const sel = $('fMediumSel'), cur = $('fMedium').value.trim();
+  const names = [...mediumCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(e => e[0]);
+  if (cur && !names.some(n => n.toLowerCase() === cur.toLowerCase())) names.push(cur);
+  sel.textContent = '';
+  const add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); };
+  add('', '—'); names.forEach(n => add(n, n)); add(MEDIUM_OTHER, 'Other…');
+  const match = names.find(n => n.toLowerCase() === cur.toLowerCase());
+  sel.value = match || '';
+  if (match) $('fMedium').value = match;            // keep the sheet's spelling
+  $('fMedium').hidden = true;
+}
+$('fMediumSel').addEventListener('change', () => {
+  const v = $('fMediumSel').value;
+  if (v === MEDIUM_OTHER){ $('fMedium').value = ''; $('fMedium').hidden = false; $('fMedium').focus(); }
+  else { $('fMedium').value = v; $('fMedium').hidden = true; }
+});
+function collectMedia(data){
+  const idx = colIdx('medium');
+  if (idx < 0) return;
+  // Spellings that differ only in case count as one; the most used spelling is shown.
+  const by = new Map();
+  for (const r of data){
+    const v = String(r[idx] || '').trim(); if (!v) continue;
+    const e = by.get(v.toLowerCase()) || { n: 0, sp: new Map() };
+    e.n++; e.sp.set(v, (e.sp.get(v) || 0) + 1); by.set(v.toLowerCase(), e);
+  }
+  mediumCounts.clear();
+  for (const e of by.values()) mediumCounts.set([...e.sp.entries()].sort((x, y) => y[1] - x[1])[0][0], e.n);
+}
+
 function populateCollectionDatalist(data){
+  collectMedia(data); mediumRender();
   const idx = colIdx('collection');
   if (idx >= 0) for (const r of data) collParse(r[idx]).forEach(c => collKnown.add(c.name));
   collRender();
