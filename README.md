@@ -33,7 +33,8 @@ docs/
   portfolio-playbook.md          — how to build a similar site from scratch; ends with "Extending the site" (backend plan)
   review.txt                     — external review of the site (sales, SEO, images), in Russian
   russian-copy-review.md          — approved Russian copy and review decisions; existing FAQ retained
-  english-description-review.md   — meaning comparison with approved Russian; English adjustments awaiting approval
+  english-description-review.md   — meaning comparison with approved Russian; seven approved English updates applied
+  english-site-text-review.md     — approved English homepage, process and footer copy with publication decisions
   watermark-removal-playbook.md  — techniques for clearing watermarks off artwork photos
   superpowers/                   — design/spec docs and rewrite plans
 scripts/

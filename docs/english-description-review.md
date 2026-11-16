@@ -1,6 +1,6 @@
 # English descriptions: changes for approval
 
-Compared all 22 current English descriptions with the approved Russian descriptions on 14 November 2026. English edits below are proposals only; none has been published. Titles are outside this comparison.
+Compared all 22 current English descriptions with the approved Russian descriptions on 14 November 2026. Review complete: seven English edits approved; Vancouver and Under Vancouver Sky explicitly retained unchanged. All seven approved English edits were written to the Paintings sheet at Sveta’s request: “change the sheet, don't test”. Tests were not run. Titles are outside this comparison.
 
 ## Changes that affect meaning or facts
 
@@ -14,6 +14,8 @@ with:
 
 > The CN Tower is somewhere ahead.
 
+Approved by Sveta: “approve. next”. Written to the Paintings sheet.
+
 The family and the contrast with the winter city remain the same in both versions.
 
 ### 2. Lost In The Fog
@@ -26,11 +28,15 @@ with:
 
 > The autumn fog doesn't move.
 
+Approved by Sveta: “approve. next”. Written to the Paintings sheet.
+
 ### 3. Noise And Silence
 
 Russian specifies a main road, replaces an exact ten metres with a few metres, and makes the neutral strip between noise and quiet explicit. Proposed full description:
 
 > On the left, a main road with traffic and lit windows; on the right, two people walking their dogs along a snowy path under a streetlamp. The same street, the same hour, just a few metres between noise and quiet. A row of trees stands between them, something like neutral ground.
+
+Approved by Sveta: “approve. next”. Written to the Paintings sheet.
 
 ### 4. Snowfall
 
@@ -42,6 +48,8 @@ with:
 
 > The snow falls between me and the building thick enough to forget almost everything.
 
+Approved by Sveta: “approve. next”. Written to the Paintings sheet.
+
 ### 5. Waiting For Rain
 
 Russian explicitly identifies coffee; English says teacup. Replace the opening:
@@ -52,11 +60,15 @@ with:
 
 > Pink wildflowers in a glass jar on a window-sill, a cup of coffee beside it.
 
+Approved by Sveta: “approve. next”. Written to the Paintings sheet.
+
 ### 6. Walking Home
 
 Russian does not identify the adult as the father and explicitly has the pair walking away into a snowstorm. Proposed full description, retaining the existing English middle sentence:
 
 > An adult holds a child's hand on a snowy sidewalk. The child's coat is the only red in the painting — the clock tower, the wires, the grey sky all let it carry. I watch them walk away into the snowstorm.
+
+Approved by Sveta: “approve. next”. Written to the Paintings sheet.
 
 ### 7. Inner Spring
 
@@ -64,21 +76,15 @@ The setting changes substantially: the jar is on a windowsill rather than a tabl
 
 > Cherry twigs have blossomed in a glass jar on the windowsill. Outside, rain falls against dark tree branches, and spring is still a long way off. But here, on this side of the window, there is already spring and white blossom.
 
+Approved by Sveta: “approve. next”. Written to the Paintings sheet.
+
 ### 8. Vancouver
 
-The approved Russian restores Sveta's own original «горы»; English currently says hills. In the final sentence, replace only:
-
-> against the hills
-
-with:
-
-> against the mountains
+The approved Russian uses «горы»; English says hills. Sveta explicitly chose to retain **hills**: “leave hills”. No English change for this description.
 
 ### 9. Under Vancouver Sky
 
-Russian identifies rocks on a small island, puts the city explicitly across on the other shore, and gives the clouds a heavier presence. Proposed full description:
-
-> A bit of sun got through the clouds and landed on the rocks of the little island. On the opposite shore, clouds hang over the city towers. From here, the city no longer looks as though it will stand forever — these stones were here long before it.
+Russian identifies rocks on a small island, puts the city explicitly across on the other shore, and gives the clouds a heavier presence. Sveta explicitly chose to retain the existing English description: “leave as it is”. No English change for this description.
 
 ## Differences that do not require an English rewrite
 
@@ -98,4 +104,4 @@ Russian identifies rocks on a small island, puts the city explicitly across on t
 | Sunset in Vancouver | Russian identifies two people as sitting on the log; the log ends, light and horizon ships remain consistent. |
 | Warkworth Lilac Festival | Russian states plainly that scent cannot be painted. The woman's action and her waiting companion remain the same. |
 
-If English changes are approved, update only the specified English description cells. Keep titles, permanent slugs and approved Russian wording. Refresh the affected `ru_source` hashes against the new English descriptions after verifying those pairs, so the translation audit reflects the reconciled versions.
+Updated the seven specified English description cells and their `ru_source` hashes. Titles, permanent slugs, approved Russian wording, Vancouver and Under Vancouver Sky were retained. The connector acknowledged the batch update successfully; no tests or post-write browser checks were run, as requested.
