@@ -1078,7 +1078,9 @@ The site copy is in English. Sveta may write to you in Russian or English; answe
 
 Every proposal must follow the voice spec below exactly (length, sentence shape, forbidden moves, pre-publish tests). The corrections log shows how drafts went wrong before; do not repeat those mistakes. Keep the new text consistent with, but not repetitive of, the existing paintings listed at the end.
 
-Whenever you propose a candidate (a first draft or a revision), end your message with exactly these four lines and nothing after them:
+Your FIRST reply gives exactly three candidates that are genuinely different: each built on a different reading of what the painting is about, or a different small thing in it, not three wordings of one idea. Before the candidates, say in one short line what each one is built on. After the first reply, propose one candidate per message unless she asks for more.
+
+Each candidate is a block of exactly these four lines, preceded by a line "OPTION <n>" when there are several; put the blocks at the end of the message, nothing after them:
 TITLE: <title>
 DESCRIPTION: <description on one line>
 TITLE_RU: <a plain, straightforward Russian translation of the title>
@@ -1095,7 +1097,9 @@ This is a conversation: ask a question when you need a fact (what the place is, 
 
 Write plainly and concretely. Say what is in the painting and one specific thing that makes it this painting. 30 to 55 words, two or three sentences, first person as ${artist} only if Sveta gives you ${artist}'s own words. Never invent facts, places or feelings. No art-statement vocabulary (explores, captures, evokes, journey, essence, interplay), no mood labels (serene, vibrant, luminous), no addressing the buyer, no "this piece" or "the artist". Keep it consistent with, but not repetitive of, the existing paintings listed at the end.
 
-Whenever you propose a candidate (a first draft or a revision), end your message with exactly these four lines and nothing after them:
+Your FIRST reply gives exactly three candidates that are genuinely different: each built on a different reading of what the painting is about, or a different small thing in it, not three wordings of one idea. Before the candidates, say in one short line what each one is built on. After the first reply, propose one candidate per message unless she asks for more.
+
+Each candidate is a block of exactly these four lines, preceded by a line "OPTION <n>" when there are several; put the blocks at the end of the message, nothing after them:
 TITLE: <title>
 DESCRIPTION: <description on one line>
 TITLE_RU: <a plain, straightforward Russian translation of the title>
@@ -1178,11 +1182,17 @@ function aiFieldsSummary(){
     .filter(([, x]) => x).map(([k, x]) => `${k}: ${x}`).join('\n');
 }
 
-function aiParseProposal(text){
-  const t = text.match(/^\s*TITLE:\s*(.+)$/mi), d = text.match(/^\s*DESCRIPTION:\s*(.+)$/mi);
-  if (!(t && d)) return null;
-  const tr = text.match(/^\s*TITLE_RU:\s*(.+)$/mi), dr = text.match(/^\s*DESCRIPTION_RU:\s*(.+)$/mi);
-  return { title: t[1].trim(), description: d[1].trim(), titleRu: tr ? tr[1].trim() : '', descriptionRu: dr ? dr[1].trim() : '' };
+// Every TITLE/DESCRIPTION(/_RU) block in a reply, in order (the first reply has three).
+function aiParseProposals(text){
+  const out = []; let cur = null;
+  for (const line of text.split(/\r?\n/)){
+    const m = line.match(/^\s*\**\s*(TITLE_RU|DESCRIPTION_RU|TITLE|DESCRIPTION)\s*\**\s*:\s*\**\s*(.+?)\s*\**\s*$/i);
+    if (!m) continue;
+    const key = m[1].toUpperCase(), val = m[2].trim();
+    if (key === 'TITLE'){ cur = { title: val, description: '', titleRu: '', descriptionRu: '' }; out.push(cur); }
+    else if (cur){ cur[{ DESCRIPTION: 'description', TITLE_RU: 'titleRu', DESCRIPTION_RU: 'descriptionRu' }[key]] = val; }
+  }
+  return out.filter(p => p.title && p.description);
 }
 
 function aiRender(){
@@ -1193,14 +1203,17 @@ function aiRender(){
     div.className = 'ai-msg ' + (m.role === 'user' ? 'me' : 'ai');
     div.textContent = m.display;
     if (m.role === 'assistant'){
-      const p = aiParseProposal(m.content);
-      if (p){
+      const ps = aiParseProposals(m.content);
+      if (ps.length){
         const bar = document.createElement('div');
         bar.className = 'ai-proposal';
-        const b = document.createElement('button');
-        b.type = 'button'; b.className = 'primary'; b.textContent = 'Use this';
-        b.onclick = () => aiUse(p);
-        bar.appendChild(b);
+        ps.forEach((p, i) => {
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'primary';
+          b.textContent = ps.length > 1 ? `Use ${i + 1}: ${p.title}` : 'Use this';
+          b.onclick = () => aiUse(p);
+          bar.appendChild(b);
+        });
         div.appendChild(bar);
       }
     }
@@ -1238,7 +1251,7 @@ async function aiSend(){
   try {
     const system = await aiLoadContext();
     if (!ai.messages.length){
-      const intro = `Here is my new painting.\n${aiFieldsSummary()}${text ? `\n\nMy notes: ${text}` : ''}\n\nPropose a title and description.`;
+      const intro = `Here is my new painting.\n${aiFieldsSummary()}${text ? `\n\nMy notes: ${text}` : ''}\n\nPropose three different title and description options to start from.`;
       ai.messages.push({ role: 'user', display: text || '(painting + form fields sent)',
         content: [{ type: 'text', text: intro }, { type: 'image_url', image_url: { url: aiImageDataURL() } }] });
     } else {
@@ -1257,7 +1270,7 @@ async function aiSend(){
     const reply = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
     if (!reply.trim()) throw new Error('Empty reply (try again, or raise the model in settings).');
     ai.messages.push({ role: 'assistant', display: reply, content: reply });
-    if (!ai.firstDraft) ai.firstDraft = aiParseProposal(reply);
+    if (!ai.firstDraft){ const ps = aiParseProposals(reply); if (ps.length) ai.firstDraft = ps; }
     aiRender();
     setStatus('aiStatus', '');
   } catch (e){
@@ -1287,7 +1300,7 @@ function aiCopyCorrection(){
   const said = ai.messages.filter(m => m.role === 'user').slice(1).map(m => m.content).join(' / ');
   const today = new Date().toISOString().slice(0, 10);
   const entry = `### ${today} — description: ${ai.accepted.title} — \`CATEGORY\`\n` +
-    `- **I wrote:** ${ai.firstDraft.title} — ${ai.firstDraft.description}\n` +
+    `- **I wrote:** ${ai.firstDraft.map((p, i) => `(${i + 1}) ${p.title} — ${p.description}`).join(' / ')}\n` +
     `- **She said:** ${said || '(accepted the first draft)'}\n` +
     `- **She meant:** <fill in>\n` +
     `- **Fix applied:** final — ${ai.accepted.title} — ${ai.accepted.description}\n`;

@@ -73,6 +73,8 @@ the page never edits it except for an optional watermark.
 2. The record fills itself from the sheet: an existing title loads its row
    (Save then updates it), otherwise medium/size/price take the most common values.
 3. **Title & description with AI**: a dialog with OpenAI about this painting.
+   It opens with three different options (each from a different reading of the
+   painting), each with its own **Use** button; revisions come one at a time.
    The voice rules are read live from `.claude/skills/sveta-writing/` (never
    copied). **Use this** fills the form; **Copy for corrections.md** keeps the
    voice skill learning. The API key stays in this browser on localhost; on the
