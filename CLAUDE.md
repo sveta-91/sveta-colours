@@ -82,7 +82,7 @@ nets, the artist's short wording) is generated. Change Sveta's values in
 | `order` *(optional)* | Position inside collections: `3` (every collection) or `Forest:2,Seasons:5`. Also accepted inline in `collection`: `Big City:1` (wins over `order`). Numbered first, then the rest in sheet order |
 
 **Long site texts** (home headline and paragraphs, About, FAQ) are read at load from three
-**published Google Docs** in the sveta.mordkovich Drive (`home`, `about`, `faq`; links in
+**published Google Docs** in the sveta.colours Drive (`home`, `about`, `faq`; links in
 `SITE.textDocs`, from `sites/sveta/site.json`). The plain-text copies in `texts/*.txt` are the backup if a Doc can't be read.
 A `[label]` line opens each block; a blank line starts a paragraph. Change copy by editing
 the Doc, then mirror it into `texts/` — never in `index.html`. Short copy (titles,
@@ -122,7 +122,8 @@ trap, masonry timing, cursor scoping, and the CSV cache lag: all in the playbook
 | `tools/image_pipeline/` | All Python tooling. Venv at `.venv/`; run commands from this dir |
 | `tools/photo_manager.html` | One-page publishing for a prepared image: watermark, AI title/description dialog (OpenAI, voice rules read live from `sveta-writing`), Save to Drive + sheet, live check. Serve via `scripts/dev.sh`. Open with `?site=sveta` or `?site=olga` (no default) |
 | `scripts/audit_gallery.py` | Read-only pre-deploy data audit of the gallery (`--site` required). CSV-only by default; `--check-drive` opts into Drive checks; the voice checks run only for a site whose `tools.voiceSkill` is `sveta-writing` |
-| `scripts/verify_site.py` | Parameterized Selenium UI verification against the deployed site. `--site sveta` (or `olga`) is required |
+| `scripts/verify_site.py` | Parameterized Selenium UI verification against the deployed site. `--site sveta` (or `olga`) is required. **Waiting for a deploy after a push:** `--wait-for-text '<a string the commit added>'` (and `--deploy-timeout SEC`). Don't hand-roll `for i in $(seq…); curl \| grep -q` loops |
+| `scripts/sync_texts.py` | Compares the published text Docs (EN + RU) with their backup `.txt` copies block by block; `--write` updates the copies. `--site` required. Run it when Sveta says "sync texts" and after any lasting Doc edit |
 | `scripts/check_contrast.py` | WCAG contrast of a site's theme tokens (`--site`); run after any theme change |
 | `scripts/verify_collection_order.py` | Checks each collection's painting order and button picture against the `collection`/`order`/`cover` rules, on real sheet data plus synthetic cases. Run after touching ordering code. `--site` required |
 | `scripts/templates/selenium_verify.py` | Generic verify scaffold — copy to `/tmp/<intent>_verify.py` and edit the assertions |

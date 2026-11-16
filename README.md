@@ -41,6 +41,7 @@ scripts/
   check_contrast.py              — WCAG check of a site's theme tokens (`--site`): text 4.5:1, focus ring 3:1
   verify_site.py                 — parameterized Selenium UI verification (`--site` required)
   verify_collection_order.py     — Selenium check: collection order + button pictures vs the sheet rules (`--site` required)
+  sync_texts.py                  — compare the published text Docs with the texts/ backups; --write updates them (`--site` required)
   site_config.py                 — per-site settings for the Python tools (`--site`, from sites/<name>/site.json)
   dev.sh                         — start the local static server for the photo manager
   templates/                     — reusable Selenium verify templates

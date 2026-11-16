@@ -85,7 +85,7 @@ texts live in plain text files she can read and edit as text.
 
 **Step 2 (live): Google Docs are the source, `texts/` is the backup.**
 
-- Three Google Docs in the sveta.mordkovich Drive (the .txt originals are in sveta.colours) — `home`, `about`, `faq` — made
+- Three Google Docs, owned by sveta.colours since 2026-11-16 (made in sveta.mordkovich, ownership transferred; links unchanged; the .txt originals are trashed) — `home`, `about`, `faq` — made
   with "Open with Google Docs" from the .txt files, then File → Share → Publish
   to web. `textDocs` in `sites/sveta/site.json` (rendered into `index.html`'s SITE block) holds the three `…/d/e/2PACX-…/pub` links.
   Same `[label]` format; each Doc paragraph = one line, empty paragraph = blank line
@@ -102,8 +102,17 @@ texts live in plain text files she can read and edit as text.
 - **Publish lag:** an edit reaches the `/pub` link at once for some Google
   servers, but the copy a browser gets lagged ~5–6 min (measured 2026-11-09).
 - The `texts/` backup is not synced automatically — after Sveta changes a Doc
-  for good, copy the text into `texts/<name>.txt` too (or the backup shows old
-  text if Google is down).
+  for good, run `python3 scripts/sync_texts.py --site <name>` (check) and then
+  with `--write` (or the backup shows old text if Google is down). It reads the
+  Docs the same way the site does, for EN and RU, and diffs block by block.
+- **Making a new published Doc through Chrome (Claude in Chrome):**
+  - File → Share → Publish to web opens a native `confirm()` that freezes the
+    extension. Set `window.confirm = () => true` with the javascript tool first.
+  - Cmd+End doesn't reliably reach the end of a Doc; a typed test line once
+    landed mid-document. Don't type test edits into her Docs. To check a new Doc,
+    run `sync_texts.py --check` instead.
+  - Selenium checks of the live site: load `about:blank` before each `get()`,
+    or a hash-only URL change won't reload the page.
 - Docs autocorrect may turn `'` into `’` and `--` into `—` as she types. Fine.
 - Editing: open the Doc in Drive, change it; no Publish step needed again.
   Text changes go through the `sveta-writing` skill like any site copy.
