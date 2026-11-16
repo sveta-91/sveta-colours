@@ -50,6 +50,13 @@ h1 { font-size: 1.75rem; margin-bottom: 1rem; }
 @media (max-width: 1000px) {
   .top-layout { grid-template-columns: 1fr; }
 }
+/* Wide screens: the AI dialog stays beside the form while the left column scrolls. */
+@media (min-width: 1001px) {
+  .top-layout > .col:last-child { position: sticky; top: 1rem; }
+  .ai-log { max-height: calc(100vh - 330px); min-height: 180px; }
+}
+.ai-proposal .ai-opt { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; width: 100%; }
+.ai-proposal .ai-mini { font-size: 0.8rem; padding: 0.2rem 0.55rem; }
 .check-row { display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.6rem; padding-left: calc(80px + 0.5rem); }
 .check-row label { font-size: 0.9rem; color: var(--text-secondary); display: inline-flex; gap: 0.4rem; align-items: center; }
 .field-row input[type=text], .field-row textarea, .field-row select { flex: 1; min-width: 0; }
@@ -108,7 +115,7 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
 .ai-msg { padding: 0.6rem 0.8rem; border-radius: var(--radius-md); font-size: 0.9rem; white-space: pre-wrap; line-height: 1.45; }
 .ai-msg.me { background: var(--surface-alt); align-self: flex-end; max-width: 85%; }
 .ai-msg.ai { background: var(--surface); border: 1px solid var(--border); }
-.ai-proposal { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--hairline); display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.ai-proposal { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 0.4rem; }
 .ai-row { display: flex; gap: 0.5rem; align-items: flex-end; }
 .ai-row textarea { flex: 1; width: 100%; resize: vertical; }
 .ai-settings { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.6rem; }
@@ -539,11 +546,67 @@ async function prepFindCorners(){
       throw new Error('the reply had no usable corners');
     const w = state.fullCanvas.width, h = state.fullCanvas.height;
     const clamp = (v, max) => Math.min(Math.max(v, 0), 1) * max;
-    prepStartWith(prepOrder(c.map(([x, y]) => [clamp(x, w), clamp(y, h)])), 'AI marked the corners.');
+    const first = prepOrder(c.map(([x, y]) => [clamp(x, w), clamp(y, h)]));
+    prepStartWith(first, 'First guess. Zooming in on each corner…');
+    const { corners, flags } = await prepRefine(first, key);
+    if (!state.prep) return;                        // cancelled meanwhile
+    state.prep.corners = corners; state.prep.flags = flags; drawPreview();
+    const bad = flags.filter(Boolean).length;
+    setStatus('prepStatus', bad
+      ? `AI checked each corner up close; ${bad} corner${bad > 1 ? 's' : ''} in red didn't settle. Drag ${bad > 1 ? 'those' : 'that one'} onto the painted corner, check the rest, then Apply.`
+      : 'AI checked each corner up close. Check them (drag if needed), then Apply.', bad ? 'warn' : 'ok');
   } catch (e){
     setStatus('prepStatus', `Could not find the canvas (${e.message}). Use "Mark corners by hand".`, 'err');
   } finally { btn.disabled = false; }
 }
+// Zoom pass: each corner is asked again on three full-resolution crops of
+// different sizes. Two answers that agree (within 0.6% of the photo) are
+// averaged; otherwise the first guess stays and the corner is flagged red.
+// Why: on a framed test photo a single zoom usually landed within 1-5 px but
+// sometimes jumped ~70 px onto the frame's edge; agreeing pairs were all ≤3 px.
+const PREP_ZOOMS = [0.12, 0.15, 0.18], PREP_NAMES = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
+async function prepZoomOnce(i, pt, frac, key){
+  const src = state.fullCanvas, W = src.width, H = src.height, side = Math.round(2 * frac * Math.max(W, H));
+  const s = Math.min(side, W, H);
+  const x0 = Math.round(Math.min(Math.max(pt[0] - s / 2, 0), W - s)), y0 = Math.round(Math.min(Math.max(pt[1] - s / 2, 0), H - s));
+  const out = 768, c = document.createElement('canvas'); c.width = c.height = Math.min(out, s);
+  c.getContext('2d').drawImage(src, x0, y0, s, s, 0, 0, c.width, c.height);
+  const sys = 'You are given a zoomed crop of a photo of a painting, centred near one corner of the painted canvas. ' +
+    'Reply with JSON only: {"x": <0..1>, "y": <0..1>} giving that corner of the painted surface (where the paint ends; ' +
+    'not the frame, mat, wall or shadow), as fractions of THIS crop\'s width and height, origin top-left. Follow the two ' +
+    'canvas edges that meet there and give their intersection. If the corner is not in the crop, reply {"x": null, "y": null}.';
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+    body: JSON.stringify({ model: PREP_MODEL, max_completion_tokens: 4000, response_format: { type: 'json_object' },
+      messages: [{ role: 'system', content: sys }, { role: 'user', content: [
+        { type: 'text', text: `Where exactly is the ${PREP_NAMES[i]} corner of the painted canvas in this crop?` },
+        { type: 'image_url', image_url: { url: c.toDataURL('image/jpeg', 0.88), detail: 'high' } }] }] })
+  });
+  if (!res.ok) return null;
+  const data = await res.json().catch(() => null);
+  try {
+    const j = JSON.parse(data.choices[0].message.content);
+    if (!Number.isFinite(j.x) || !Number.isFinite(j.y)) return null;
+    return [x0 + Math.min(Math.max(j.x, 0), 1) * s, y0 + Math.min(Math.max(j.y, 0), 1) * s];
+  } catch (e){ return null; }
+}
+async function prepRefine(first, key){
+  const tol = 0.006 * Math.max(state.fullCanvas.width, state.fullCanvas.height);
+  const answers = await Promise.all(first.map((pt, i) =>
+    Promise.all(PREP_ZOOMS.map(f => prepZoomOnce(i, pt, f, key).catch(() => null)))));
+  const corners = [], flags = [];
+  answers.forEach((as, i) => {
+    let best = null;
+    for (let a = 0; a < as.length; a++) for (let b = a + 1; b < as.length; b++){
+      if (!as[a] || !as[b]) continue;
+      const d = Math.hypot(as[a][0] - as[b][0], as[a][1] - as[b][1]);
+      if (d < tol && (!best || d < best.d)) best = { d, p: [(as[a][0] + as[b][0]) / 2, (as[a][1] + as[b][1]) / 2] };
+    }
+    corners.push(best ? best.p : first[i]); flags.push(!best);
+  });
+  return { corners, flags };
+}
+
 // Put four points in TL, TR, BR, BL order whatever order they came in.
 function prepOrder(pts){
   const cx = pts.reduce((a, p) => a + p[0], 0) / 4, cy = pts.reduce((a, p) => a + p[1], 0) / 4;
@@ -563,7 +626,10 @@ function prepDrawOverlay(){
   ctx.beginPath(); c.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.stroke();
   c.forEach(([x, y], i) => {
     ctx.beginPath(); ctx.arc(x, y, PREP_HANDLE, 0, Math.PI * 2);
-    ctx.fillStyle = i === state.prep.drag ? '#F2C94C' : 'rgba(242,201,76,0.35)'; ctx.fill(); ctx.stroke();
+    const flagged = state.prep.flags && state.prep.flags[i];
+    ctx.strokeStyle = flagged ? '#E5484D' : '#F2C94C';
+    ctx.fillStyle = i === state.prep.drag ? ctx.strokeStyle : (flagged ? 'rgba(229,72,77,0.45)' : 'rgba(242,201,76,0.35)');
+    ctx.fill(); ctx.stroke();
   });
   const d = state.prep.drag;
   if (d >= 0){                                      // magnifier on the far side of the dragged corner
@@ -591,7 +657,7 @@ canvas.addEventListener('pointerdown', e => {
   let best = -1, bd = 28 * 28;
   state.prep.corners.forEach(([x, y], i) => { const d = (x*sc-px)**2 + (y*sc-py)**2; if (d < bd){ bd = d; best = i; } });
   if (best < 0) return;
-  state.prep.drag = best; canvas.setPointerCapture(e.pointerId); e.preventDefault(); drawPreview();
+  state.prep.drag = best; if (state.prep.flags) state.prep.flags[best] = false; canvas.setPointerCapture(e.pointerId); e.preventDefault(); drawPreview();
 });
 canvas.addEventListener('pointermove', e => {
   if (!state.prep || state.prep.drag < 0) return;
@@ -1186,7 +1252,7 @@ function aiFieldsSummary(){
 function aiParseProposals(text){
   const out = []; let cur = null;
   for (const line of text.split(/\r?\n/)){
-    const m = line.match(/^\s*\**\s*(TITLE_RU|DESCRIPTION_RU|TITLE|DESCRIPTION)\s*\**\s*:\s*\**\s*(.+?)\s*\**\s*$/i);
+    const m = line.match(/^\s*(?:[-*•]\s+|\d+[.)]\s*|option\s*\d+\s*[:.)\-–—]?\s*)?\**\s*(TITLE_RU|DESCRIPTION_RU|TITLE|DESCRIPTION)\s*\**\s*:\s*\**\s*(.+?)\s*\**\s*$/i);
     if (!m) continue;
     const key = m[1].toUpperCase(), val = m[2].trim();
     if (key === 'TITLE'){ cur = { title: val, description: '', titleRu: '', descriptionRu: '' }; out.push(cur); }
@@ -1208,11 +1274,13 @@ function aiRender(){
         const bar = document.createElement('div');
         bar.className = 'ai-proposal';
         ps.forEach((p, i) => {
-          const b = document.createElement('button');
-          b.type = 'button'; b.className = 'primary';
-          b.textContent = ps.length > 1 ? `Use ${i + 1}: ${p.title}` : 'Use this';
-          b.onclick = () => aiUse(p);
-          bar.appendChild(b);
+          const row = document.createElement('div'); row.className = 'ai-opt';
+          const mk = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button';
+            b.className = cls; b.textContent = label; b.onclick = fn; row.appendChild(b); };
+          mk(ps.length > 1 ? `Use ${i + 1}: ${p.title}` : 'Use this', 'primary', () => aiUse(p));
+          mk('title only', 'ai-mini', () => aiUsePart(p, 'title'));
+          mk('description only', 'ai-mini', () => aiUsePart(p, 'description'));
+          bar.appendChild(row);
         });
         div.appendChild(bar);
       }
@@ -1223,6 +1291,19 @@ function aiRender(){
   document.getElementById('aiSend').textContent = ai.messages.length ? 'Send' : 'Start';
 }
 
+// Mix and match: one field (with its Russian) from one option.
+function aiUsePart(p, part){
+  if (part === 'title'){
+    $('fTitle').value = p.title; syncSlugFromTitle();
+    if (p.titleRu && !$('fTitleRu').readOnly) $('fTitleRu').value = p.titleRu;
+  } else {
+    $('fDesc').value = p.description;
+    if (p.descriptionRu && !$('fDescRu').readOnly) $('fDescRu').value = p.descriptionRu;
+  }
+  ai.accepted = { title: $('fTitle').value, description: $('fDesc').value };
+  $('aiCopyLog').hidden = !ai.firstDraft || !(SITE_CFG && SITE_CFG.tools && SITE_CFG.tools.voiceSkill);
+  setStatus('aiStatus', `${part === 'title' ? 'Title' : 'Description'} filled in.`, 'ok');
+}
 function aiUse(p){
   // Set values directly: firing 'change' on fTitle would re-apply sheet
   // defaults and could overwrite the description just chosen.

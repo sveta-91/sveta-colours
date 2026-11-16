@@ -65,7 +65,8 @@ the page never edits it except for an optional watermark.
 
 1. Drop the image. A ready (cropped) image is uploaded **as is**; only a watermark
    (opacity > 0) re-saves it as JPEG 95%. A raw photo: **Straighten + crop with AI**
-   (OpenAI `gpt-5.4` only marks the canvas corners), drag the dots onto the painted
+   (OpenAI `gpt-5.4` marks the canvas corners, then checks each one on three zoomed
+   crops; a corner whose answers disagree is shown red), drag the dots onto the painted
    surface (a magnifier shows full-resolution pixels), **Apply**: the page warps your
    own pixels to the canvas proportions from Size and uploads that JPEG 95.
    **Mark corners by hand** does the same without AI. A warning shows when the photo's proportions don't
@@ -74,7 +75,8 @@ the page never edits it except for an optional watermark.
    (Save then updates it), otherwise medium/size/price take the most common values.
 3. **Title & description with AI**: a dialog with OpenAI about this painting.
    It opens with three different options (each from a different reading of the
-   painting), each with its own **Use** button; revisions come one at a time.
+   painting), each with **Use n**, **title only** and **description only** buttons;
+   revisions come one at a time. On wide screens the dialog stays beside the form.
    The voice rules are read live from `.claude/skills/sveta-writing/` (never
    copied). **Use this** fills the form; **Copy for corrections.md** keeps the
    voice skill learning. The API key stays in this browser on localhost; on the
