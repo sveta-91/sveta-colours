@@ -94,14 +94,16 @@ CURSOR_TARGETS = (".card-image-inner", ".hero-image-wrap")
 PAGES: dict[str, str] = {
     "home":        ".hero-title",
     "paintings":   ".hang-chapter, .gallery-grid",
-    "postcards":   ".collection-header, .gallery-grid",
+    "recent":      ".gallery-grid, .collection-header",
+    "cards":       ".collection-header, .gallery-grid",
     "collections": ".category-grid",
     "about":       ".about-full",
     "faq":         ".faq-list",
     "past":        ".gallery-grid--all-sold, .collection-header",
 }
 # The nav labels these pages by different words than showPage() uses.
-PAGE_ALIASES = {"works": "paintings", "pastwork": "past", "past-work": "past"}
+PAGE_ALIASES = {"works": "paintings", "pastwork": "past", "past-work": "past",
+                "postcards": "cards"}
 # collection:<Name> is also valid (render() -> renderCollectionDetail).
 COLLECTION_WAIT = ".collection-header, .gallery-grid"
 
@@ -660,6 +662,193 @@ examples:
 """
 
 
+# --------------------------------------------------------------------------
+# --smoke: every page x language x width, one line each.
+# --------------------------------------------------------------------------
+
+SMOKE_PAGES = ("home", "recent", "paintings", "cards", "collections",
+               "collection:*", "about", "faq")
+# Which TEXTS_SOURCE key each page reads its long text from.
+SMOKE_TEXT_KEY = {"home": "home", "about": "about", "faq": "faq"}
+# Pages that must show at least one image (cards/recent may legitimately be empty).
+SMOKE_NEED_IMAGES = {"home", "paintings", "collection:*"}
+
+SMOKE_PAGE_JS = r"""
+// Only rendered images count: a layout may hide a whole block at some widths
+// (the Collections card grid is display:none on phones), and lazy images
+// inside it never load, by design.
+const all = Array.from(document.querySelectorAll('#app img'));
+const imgs = all.filter(i => i.getClientRects().length > 0);
+let src = null;
+try { src = TEXTS_SOURCE[arguments[0]] || null; } catch (e) {}
+return {
+  page: (() => { try { return currentPage; } catch (e) { return null; } })(),
+  lang: document.documentElement.lang,
+  title: document.title,
+  imgs: imgs.length,
+  hidden: all.length - imgs.length,
+  loaded: imgs.filter(i => i.complete && i.naturalWidth > 0).length,
+  broken: imgs.filter(i => i.complete && i.naturalWidth === 0).map(i => i.src.slice(0, 80)),
+  pending: imgs.filter(i => !i.complete).length,
+  hscroll: document.documentElement.scrollWidth > innerWidth + 1,
+  text: src,
+};
+"""
+
+
+SMOKE_PENDING_JS = r"""
+const p = [...document.querySelectorAll('#app img')]
+  .filter(i => !i.complete && i.getClientRects().length > 0);
+p.forEach(i => i.scrollIntoView({block: 'center', behavior: 'instant'}));
+return p.length > 0;
+"""
+
+
+SMOKE_BROKEN_JS = r"""
+const b = [...document.querySelectorAll('#app img')]
+  .filter(i => i.complete && i.naturalWidth === 0 && i.getClientRects().length > 0);
+if (arguments[0]) b.forEach(i => {
+  const ss = i.srcset, s = i.src;
+  i.removeAttribute('srcset'); i.src = '';
+  if (ss) i.srcset = ss;
+  i.src = s;
+});
+return b.length;
+"""
+
+
+def _smoke_scroll(driver) -> None:
+    """Lazy images load only near the viewport: walk down the page in steps
+    (a jump to the bottom skips them), then go back to the top."""
+    last = -1
+    for _ in range(80):
+        y = driver.execute_script(
+            "window.scrollBy(0, innerHeight * 0.8); return scrollY;")
+        time.sleep(0.25)
+        if y == last:
+            break
+        last = y
+    driver.execute_script("window.scrollTo(0, 0);")
+
+
+def run_smoke(args, out: Out) -> int:
+    from selenium import webdriver
+
+    with open(os.path.join(SITES_DIR, args.site, "site.json"), encoding="utf-8") as fh:
+        langs = json.load(fh).get("site", {}).get("languages") or ["en"]
+    widths = [int(w) for w in args.smoke_widths.split(",")]
+    base = args.url.split("#")[0].split("?")[0]
+    local = bool(re.match(r"https?://(localhost|127\.0\.0\.1|\[::1\])[:/]", base))
+
+    opts = webdriver.ChromeOptions()
+    opts.add_argument("--headless=new")          # a batch check: always headless
+    opts.add_argument("--force-device-scale-factor=1")
+    opts.add_argument("--hide-scrollbars")
+    opts.set_capability("goog:loggingPrefs", {"browser": "SEVERE"})
+    driver = webdriver.Chrome(options=opts)
+    fails, rows = [], []
+    try:
+        for w in widths:
+            # Headless Chrome won't size a window below 500 px; emulate the
+            # viewport instead, so "390" really is a 390 px phone layout.
+            driver.set_window_size(max(w, 500), 1000)
+            driver.execute_cdp_cmd("Emulation.setDeviceMetricsOverride", {
+                "width": w, "height": 1000 if w >= 768 else 844,
+                "deviceScaleFactor": 1, "mobile": w < 768})
+            for lang in langs:
+                driver.get(f"{base}?lang={lang}")
+                deadline = time.time() + args.timeout
+                while time.time() < deadline and not driver.execute_script(BOOT_JS):
+                    time.sleep(0.25)
+                pages = []
+                for pg in SMOKE_PAGES:
+                    if pg == "collection:*":
+                        names = driver.execute_script(
+                            "try { return getAllCollections(); } catch (e) { return []; }")
+                        if not names:
+                            continue
+                        pg = "collection:" + names[0]
+                    pages.append(pg)
+                for pg in pages:
+                    key = "collection:*" if pg.startswith("collection:") else pg
+                    driver.execute_script("showPage(arguments[0], {replace:true});", pg)
+                    time.sleep(1.0)                    # let the smooth scroll-to-top finish
+                    _smoke_scroll(driver)
+                    # Any image still pending sits outside what the walk reached
+                    # (showPage's smooth scroll-to-top can cancel a step): bring
+                    # each one into view, then give them --timeout to arrive.
+                    end = time.time() + args.timeout
+                    while time.time() < end and driver.execute_script(SMOKE_PENDING_JS):
+                        time.sleep(0.4)
+                    # lh3.googleusercontent.com refuses some requests in a burst
+                    # (a page of 20+ images loading at once): the same URL loads
+                    # fine a moment later. Retry once; only what still fails counts.
+                    retried = 0
+                    if driver.execute_script(SMOKE_BROKEN_JS, False):
+                        time.sleep(3)
+                        retried = driver.execute_script(SMOKE_BROKEN_JS, True)
+                        end = time.time() + args.timeout
+                        while time.time() < end and driver.execute_script(SMOKE_PENDING_JS):
+                            time.sleep(0.4)
+                    driver.execute_script("window.scrollTo(0, 0);")
+                    r = driver.execute_script(SMOKE_PAGE_JS, SMOKE_TEXT_KEY.get(key, ""))
+                    errs = [e["message"][:120] for e in driver.get_log("browser")
+                            if e.get("level") == "SEVERE" and "favicon" not in e["message"]]
+                    bad, warn = [], ""
+                    if r["page"] != pg:
+                        bad.append(f"landed on {r['page']!r}")
+                    if r["lang"] != lang:
+                        bad.append(f"html lang={r['lang']!r}")
+                    if not r["title"]:
+                        bad.append("empty title")
+                    if r["broken"] and local:
+                        # Chrome blocks some lh3 responses to a page served from
+                        # 127.0.0.1 / localhost (net::ERR_BLOCKED_BY_ORB); the same
+                        # images load on the live site. Not a failure locally.
+                        warn += (f"  ({len(r['broken'])} img blocked from the local origin "
+                                 f"(ERR_BLOCKED_BY_ORB): check images on the live URL)")
+                    elif r["broken"]:
+                        bad.append(f"{len(r['broken'])} broken img")
+                    if r["pending"]:
+                        bad.append(f"{r['pending']} img never loaded")
+                    if key in SMOKE_NEED_IMAGES and r["loaded"] == 0:
+                        bad.append("no images")
+                    if r["hscroll"]:
+                        bad.append("horizontal scroll")
+                    if key in SMOKE_TEXT_KEY and r["text"] in (None, "none"):
+                        bad.append(f"text source {r['text']!r}")
+                    if errs:
+                        bad.append(f"JS errors: {errs}")
+                    recovered = retried - len(r["broken"]) if retried else 0
+                    if recovered > 0:
+                        warn += f"  ({recovered} img loaded on retry)"
+                    if key in SMOKE_TEXT_KEY and r["text"] and r["text"].startswith("backup"):
+                        warn += f"  (text from {r['text']}: the Doc was not read)"
+                    status = "FAIL" if bad else "ok"
+                    line = (f"{status:<4} {w:>4} {lang} {pg[:28]:<28} "
+                            f"img {r['loaded']}/{r['imgs']:<3} "
+                            f"text {r['text'] or '-':<8} {r['title'][:40]!r}"
+                            + (f"  <- {'; '.join(bad)}" if bad else "") + warn)
+                    out.say(line)
+                    rows.append({"width": w, "lang": lang, "page": pg, "fail": bad, **r})
+                    if bad:
+                        fails.append(line)
+                    if args.screenshot:
+                        os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+                        safe = re.sub(r"[^A-Za-z0-9_-]+", "-", pg)
+                        driver.save_screenshot(os.path.join(
+                            SCREENSHOT_DIR, f"{args.screenshot}-{w}-{lang}-{safe}.png"))
+    finally:
+        driver.quit()
+
+    out.say(f"\n{len(rows)} page views, {len(fails)} failed"
+            + (f"; screenshots in {SCREENSHOT_DIR}/{args.screenshot}-*.png" if args.screenshot else ""))
+    if args.as_json:
+        json.dump(rows, sys.stdout, indent=2, default=str)
+        sys.stdout.write("\n")
+    return 6 if fails else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="verify_site.py",
@@ -722,6 +911,16 @@ def build_parser() -> argparse.ArgumentParser:
                         "refinement (default 2.0)")
     p.add_argument("--timeout", type=float, default=25.0, metavar="SEC",
                    help="per-wait timeout (default 25)")
+    p.add_argument("--smoke", action="store_true",
+                   help="check every page (home, recent, paintings, cards, collections, "
+                        "the first collection, about, faq) in each of the site's languages "
+                        "at each --smoke-widths: page landed, html lang, title, images "
+                        "loaded after a slow scroll, long-text source (doc / backup), "
+                        "no horizontal scroll, no JS errors. One line per page; exit 6 "
+                        "on any failure. Always headless. Works with --url "
+                        "(localhost, *.pages.dev, live) and --screenshot NAME")
+    p.add_argument("--smoke-widths", default="1440,390", metavar="W,W",
+                   help="window widths for --smoke (default 1440,390)")
     p.add_argument("--headless", action="store_true",
                    help="run Chrome headless (no window)")
     p.add_argument("--json", action="store_true", dest="as_json",
@@ -765,6 +964,13 @@ def main(argv=None) -> int:
             "--wait-for-text 'some string you just added'."
         )
         return 2
+
+    if args.smoke:
+        if args.wait_for_local and not wait_for_local(args.url, args.deploy_timeout, out, site_local_index(args.site)):
+            return 4
+        if args.wait_for_text and not wait_for_text(args.url, args.wait_for_text, args.deploy_timeout, out):
+            return 4
+        return run_smoke(args, out)
 
     favicon_guard(args, out)
     page = resolve_page(args.page, out) if args.page else None

@@ -182,7 +182,7 @@ others):
 | `--medium "..."` | |
 | `--size "..."` | e.g. `16x20 in`; feeds the canvas-aspect gate below |
 | `--price "..."` | |
-| `--collection "A,B"` | comma-separated, no spaces. Known names per site: `tools.collections` in `sites/<site>/site.json` (Sveta: `Big City`, `Flowers`, `Forest`, `Seasons`). A greeting card: `--collection "Greeting cards"` (its own page, out of the painting lists); `--size` defaults to `5x7 in` for a card |
+| `--collection "A,B"` | comma-separated, no spaces. Known names per site: `tools.collections` in `sites/<site>/site.json` (Sveta: `Big City`, `Flowers`, `Forest`, `Seasons`). A greeting card: `--collection "Greeting cards"` (its own page, out of the painting lists); `--size` defaults to `5x7 in` for a card. Crop a card photo to the **whole card edge, white border included**: that matches 5x7 and passes the aspect gate; the painted area alone is ~10% off (2026-11-14). Photograph one card per shot; cards cut from a group photo come out too small |
 | `--orientation portrait\|landscape` | choices enforced; omit → preserved (existing) or auto-detected (new) |
 | `--sold` | store_true → `sold=yes`. No flag: `no` for new, preserved for existing. Reverting to `no` is a manual sheet edit |
 | `--hero` | store_true → `hero=TRUE`. No flag: `''` for new, preserved for existing |

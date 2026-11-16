@@ -15,6 +15,7 @@ watermark removal, and publishing to the portfolio (Drive + Paintings sheet).
 | `server.py` | Flask sidecar exposing `/analyze` for browser tools. Wraps `geometry.analyze()`. |
 | `watermark_diagnose.py` | Dump per-corner crops + brightness stats to plan a watermark removal. |
 | `watermark_remove.py` | Apply a JSON-spec'd plan: TELEA inpaint + tone-matched NORMAL_CLONE. Honors `preserve_zones` (e.g. signature). |
+| `drive_tool.py` | Drive / Sheets helper on the same OAuth: `ls` a shared folder (edit / view-only), `info`, `upload` (skips names already there), `ids` (name → Drive ID JSON), `fill` a sheet column's empty cells from that JSON, `public` (images load signed out). Writes are dry runs unless `--apply`. |
 | `drive_auth.py` | Google API auth helpers (service account + OAuth user) shared by the pipeline scripts. |
 | `config.example.json` | Template for local config. |
 | `config.json` | Your local config (git-ignored). |

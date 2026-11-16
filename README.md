@@ -29,6 +29,7 @@ docs/
   photo-manager-setup.md         — one-time Google setup + acceptance checklist
   painting-pages-plan.md         — planned: /paintings/<slug> pages with link previews via a Cloudflare Worker
   olgazai-plan.md                — planned: second site olgazai.com from the same code (shared index.html + per-site block)
+  new-artist-onboarding.md       — runbook for the next artist's site: kit → Drive → sheet/Docs → form → Cloudflare, who does each step
   portfolio-playbook.md          — how to build a similar site from scratch; ends with "Extending the site" (backend plan)
   review.txt                     — external review of the site (sales, SEO, images), in Russian
   russian-copy-review.md          — approved Russian copy and review decisions; existing FAQ retained
@@ -39,7 +40,8 @@ scripts/
   audit_gallery.py               — read-only pre-deploy audit of the gallery sheet data (`--site` required)
   build_site.py                  — render a site's SITE block: `sveta --root` (root index.html), `olga` (→ dist/), `--check`
   check_contrast.py              — WCAG check of a site's theme tokens (`--site`): text 4.5:1, focus ring 3:1
-  verify_site.py                 — parameterized Selenium UI verification (`--site` required)
+  verify_site.py                 — parameterized Selenium UI verification (`--site` required); `--smoke`: every page × language × 1440/390
+  make_drive_kit.py              — Drive starter kit for a new artist (sheet CSV, photos named by title, site texts)
   verify_collection_order.py     — Selenium check: collection order + button pictures vs the sheet rules (`--site` required)
   sync_texts.py                  — compare the published text Docs with the texts/ backups; --write updates them (`--site` required)
   site_config.py                 — per-site settings for the Python tools (`--site`, from sites/<name>/site.json)
