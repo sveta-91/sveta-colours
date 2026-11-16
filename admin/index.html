@@ -187,7 +187,10 @@ hr.divider { border: 0; border-top: 1px solid var(--border); margin: 0.75rem 0; 
             <select id="fMediumSel"><option value="">—</option></select>
             <input id="fMedium" type="text" placeholder="New medium, e.g. oil on canvas" aria-label="New medium" hidden>
           </div>
-          <div class="field-row"><label for="fSize">Size</label><input id="fSize" type="text" placeholder="16x20 in"></div>
+          <div class="field-row"><label for="fSizeSel">Size</label>
+            <select id="fSizeSel"><option value="">—</option></select>
+            <input id="fSize" type="text" placeholder="New size, e.g. 12x16 in" aria-label="New size" hidden>
+          </div>
           <div class="field-row"><label for="fOrientation">Orientation</label>
             <select id="fOrientation">
               <option value="portrait">Portrait</option>
@@ -794,14 +797,14 @@ $('fSize').addEventListener('input', updateAspectInfo);
 // Greeting cards are 5x7 in by default (site: CARD_DEFAULT_SIZE); an empty Size gets it.
 $('fCollection').addEventListener('change', () => {
   const card = $('fCollection').value.split(',').some(c => ['greeting cards','postcards'].includes(c.split(':')[0].trim().toLowerCase()));
-  if (card && !$('fSize').value.trim()) { $('fSize').value = '5x7 in'; updateAspectInfo(); }
+  if (card && !$('fSize').value.trim()) { $('fSize').value = '5x7 in'; sizeRender(); updateAspectInfo(); }
 });
 $('fOrientation').addEventListener('change', updateAspectInfo);
 
 // ── Form ──
 function resetForm(){
   for (const id of ['fTitle','fSlug','fDesc','fTitleRu','fDescRu','fMedium','fSize','fCollection','fPrice']) $(id).value='';
-  $('fRecent').value=''; $('fSold').checked=false; $('fHero').checked=false; collRender(); mediumRender();
+  $('fRecent').value=''; $('fSold').checked=false; $('fHero').checked=false; collRender(); mediumRender(); sizeRender();
   state.slugLocked=false; $('fSlug').readOnly=false; state.filledFor=null;
   for (const id of ['fTitleRu', 'fDescRu']){ $(id).readOnly = false; $(id).title = ''; }
 }
@@ -876,7 +879,7 @@ function fillFromRow(row){
     if (cell(col)){ $(id).value = cell(col); $(id).readOnly = true; $(id).title = 'Already in the sheet: edit it there.'; }
   }
   setStatus('saveStatus', 'This title is already on the site: Save will update it.', 'warn');
-  collRender(); mediumRender();
+  collRender(); mediumRender(); sizeRender();
   updateAspectInfo();
 }
 
@@ -891,7 +894,7 @@ function fillFromMostCommon(data){
     for (const [v, c] of counts) if (c > n){ best = v; n = c; }
     if (best) $(id).value = best;
   }
-  mediumRender();
+  mediumRender(); sizeRender();
   updateAspectInfo();
 }
 
@@ -927,43 +930,56 @@ function collFromBoxes(){
   if (picked.length) $('fCollBoxes').classList.remove('missing');
   $('fCollection').dispatchEvent(new Event('change'));
 }
-// ── Medium: a dropdown of the media the sheet already uses (most common first)
-// plus "Other…" for a new one. #fMedium holds the value that is saved.
-const mediumCounts = new Map();
-const MEDIUM_OTHER = '__other';
-function mediumRender(){
-  const sel = $('fMediumSel'), cur = $('fMedium').value.trim();
-  const names = [...mediumCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(e => e[0]);
-  if (cur && !names.some(n => n.toLowerCase() === cur.toLowerCase())) names.push(cur);
-  sel.textContent = '';
-  const add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); };
-  add('', '—'); names.forEach(n => add(n, n)); add(MEDIUM_OTHER, 'Other…');
-  const match = names.find(n => n.toLowerCase() === cur.toLowerCase());
-  sel.value = match || '';
-  if (match) $('fMedium').value = match;            // keep the sheet's spelling
-  $('fMedium').hidden = true;
-}
-$('fMediumSel').addEventListener('change', () => {
-  const v = $('fMediumSel').value;
-  if (v === MEDIUM_OTHER){ $('fMedium').value = ''; $('fMedium').hidden = false; $('fMedium').focus(); }
-  else { $('fMedium').value = v; $('fMedium').hidden = true; }
-});
-function collectMedia(data){
-  const idx = colIdx('medium');
-  if (idx < 0) return;
-  // Spellings that differ only in case count as one; the most used spelling is shown.
-  const by = new Map();
-  for (const r of data){
-    const v = String(r[idx] || '').trim(); if (!v) continue;
-    const e = by.get(v.toLowerCase()) || { n: 0, sp: new Map() };
-    e.n++; e.sp.set(v, (e.sp.get(v) || 0) + 1); by.set(v.toLowerCase(), e);
+// ── Medium and Size: dropdowns of the values the sheet already uses (most
+// common first) plus "Other…", which reveals a text box for a new value. The
+// text input (#fMedium, #fSize) holds the value that is saved. Spellings that
+// mean the same (Medium: case; Size: case, spaces, "in") count as one, shown
+// in the most used spelling.
+const DD_OTHER = '__other';
+function sheetDropdown({ col, sel, input, key, onChange }){
+  const counts = new Map();                          // shown spelling → rows
+  const k = v => key(String(v || '').trim());
+  function render(){
+    const s = $(sel), inp = $(input), cur = inp.value.trim();
+    const names = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], undefined, { numeric: true })).map(e => e[0]);
+    if (cur && !names.some(n => k(n) === k(cur))) names.push(cur);
+    s.textContent = '';
+    const add = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; s.appendChild(o); };
+    add('', '—'); names.forEach(n => add(n, n)); add(DD_OTHER, 'Other…');
+    const match = cur ? names.find(n => k(n) === k(cur)) : '';
+    s.value = match || '';
+    if (match) inp.value = match;                    // the sheet's usual spelling
+    inp.hidden = true;
   }
-  mediumCounts.clear();
-  for (const e of by.values()) mediumCounts.set([...e.sp.entries()].sort((x, y) => y[1] - x[1])[0][0], e.n);
+  function collect(data){
+    const idx = colIdx(col);
+    if (idx < 0) return;
+    const by = new Map();
+    for (const r of data){
+      const v = String(r[idx] || '').trim(); if (!v) continue;
+      const e = by.get(k(v)) || { n: 0, sp: new Map() };
+      e.n++; e.sp.set(v, (e.sp.get(v) || 0) + 1); by.set(k(v), e);
+    }
+    counts.clear();
+    for (const e of by.values()) counts.set([...e.sp.entries()].sort((x, y) => y[1] - x[1])[0][0], e.n);
+  }
+  $(sel).addEventListener('change', () => {
+    const v = $(sel).value, inp = $(input);
+    if (v === DD_OTHER){ inp.value = ''; inp.hidden = false; inp.focus(); }
+    else { inp.value = v; inp.hidden = true; }
+    if (onChange) onChange();
+  });
+  return { render, collect };
 }
+const mediumDD = sheetDropdown({ col: 'medium', sel: 'fMediumSel', input: 'fMedium', key: v => v.toLowerCase() });
+const sizeDD = sheetDropdown({ col: 'size', sel: 'fSizeSel', input: 'fSize', onChange: () => updateAspectInfo(),
+  key: v => v.toLowerCase().replace(/×/g, 'x').replace(/\s+/g, '').replace(/(in|inch|inches|")\.?$/, '') });
+function mediumRender(){ mediumDD.render(); }
+function sizeRender(){ sizeDD.render(); }
 
 function populateCollectionDatalist(data){
-  collectMedia(data); mediumRender();
+  mediumDD.collect(data); mediumRender(); sizeDD.collect(data); sizeRender();
   const idx = colIdx('collection');
   if (idx >= 0) for (const r of data) collParse(r[idx]).forEach(c => collKnown.add(c.name));
   collRender();
